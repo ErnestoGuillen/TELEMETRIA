@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoreo García</title>
+    <link rel="stylesheet" href="/Pagina/css/pozosmetropolitanos.css" />
+</head>
+
+<body>
+
+    <!-- ===== HEADER PRINCIPAL ===== -->
+    <header class="main-header">
+        <a href="/Pagina/html/index.html" class="back-btn">
+            <img src="/Pagina/imagenes/boton de regreso.png" alt="Regresar">
+            <span class="texto-inicio">( INICIO )</span>
+        </a>
+        <div class="titulo-centrado">
+            <h1>POZOS METROPOLITANOS</h1>
+            <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+        </div>
+        <img src="/Pagina/imagenes/poniente esquina.jpg" class="logo-agua" alt="Logo">
+    </header>
+
+    <!-- ===== SIMBOLOGÍA ===== -->
+    <div class="simbologia-wrapper">
+        <span class="simbologia-title">SIMBOLOGÍA</span>
+        <div class="chips-row">
+            <span class="badge rojo">Sin Comunicación</span>
+            <span class="badge verde">Operando</span>
+            <span class="badge checar">Activado por PLC</span>
+            <span class="badge pide">Pide Agua</span>
+        </div>
+    </div>
+
+    <!-- ===== FLUJO TOTAL ===== -->
+    <table id="t4" border="1" cellspacing="0" cellpadding="2" align="center" bgcolor="#FFFFcc" bordercolor="#000080"
+        width="40%">
+        <tr bgcolor="#FF9900">
+            <td></td>
+            <td align="center"><b>Someros</b></td>
+            <td align="center"><b>Profundos</b></td>
+        </tr>
+        <tr align="center">
+            <td>
+                <font size="+2"><b>Flujo Total</b></font>
+            </td>
+            <td>
+                <font size="+2">
+                    <div id="somero">15 Lps</div>
+                </font>
+            </td>
+            <td>
+                <font size="+2">
+                    <div id="profundo">89 Lps</div>
+                </font>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+
+    <!-- ===== POZOS SOMEROS ===== -->
+    <table id="Somero" border="1" cellspacing="0" cellpadding="2" align="center" bgcolor="#FFFFcc" bordercolor="#000080"
+        width="90%">
+        <tr bgcolor="#FF9900">
+            <th colspan="4">POZOS SOMEROS</th>
+        </tr>
+        <tr bgcolor="#FF9900">
+            <th width="20%">UBICACION</th>
+            <th width="20%">ACTUALIZACION</th>
+            <th width="40%">FLUJO</th>
+            <th width="20%">EQUIPOS</th>
+        </tr>
+        <tr align="center">
+            <td>California II</td>
+            <td>05/08<br>08:27</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Hospital Civil<br>Norte</td>
+            <td>05/08<br>09:51</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td rowspan="2">Monterrey I<br>Monterrey III</td>
+            <td rowspan="2">00/00<br>00:00</td>
+            <td rowspan="2">0 lps</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>EQ2</td>
+        </tr>
+        <tr align="center">
+            <td>El Roble</td>
+            <td>05/08<br>00:00</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>San Pedro<br>(Auditorio San Pedro)</td>
+            <td>05/08<br>08:40</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Nueva Castilla III</td>
+            <td>05/08<br>08:35</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 17745.6 x10 m³
+            </td>
+            <td>N/A</td>
+        </tr>
+        <tr align="center">
+            <td>Rincón del Valle I</td>
+            <td>05/08<br>08:27</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Rincón del Valle II</td>
+            <td>05/08<br>08:27</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Mitras Sur II</td>
+            <td>00/00<br>00:00</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Mitras Sur III</td>
+            <td>00/00<br>00:00</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Agustín Lara</td>
+            <td>05/08<br>07:13</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 2970.2 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Fierro</td>
+            <td>05/08<br>08:28</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Tampiquito</td>
+            <td>05/08<br>08:22</td>
+            <td>
+                <a href="#">9 lps</a><br>
+                Acumulado: 90530.4 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Rosario</td>
+            <td>05/08<br>08:29</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Miravalle</td>
+            <td>05/08<br>08:28</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 65541553.5 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Miravalle II</td>
+            <td>05/08<br>08:27</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Miravalle III</td>
+            <td>05/08<br>08:24</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 129662.1 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Año de Juárez</td>
+            <td>05/08<br>08:33</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 13920.9 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Rancho Viejo</td>
+            <td>05/08<br>08:49</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 37.9 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Suchiate I</td>
+            <td>05/08<br>08:26</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Bombeo Mezquital</td>
+            <td>05/08<br>08:32</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Central Lincoln</td>
+            <td>05/08<br>08:32</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Ciudad Mitras</td>
+            <td>05/08<br>08:30</td>
+            <td>
+                <a href="#">6 lps</a><br>
+                Acumulado: 5.7 x10 m³
+            </td>
+            <td>EQ1</td>
+        </tr>
+    </table>
+
+    <br>
+
+    <!-- ===== POZOS PROFUNDOS ===== -->
+    <table id="Profundo" border="1" cellspacing="0" cellpadding="2" align="center" bgcolor="#FFFFcc"
+        bordercolor="#000080" width="90%">
+        <tr bgcolor="#FF9900">
+            <th colspan="5">POZOS PROFUNDOS</th>
+        </tr>
+        <tr bgcolor="#FF9900">
+            <th width="20%">UBICACION</th>
+            <th width="20%">ACTUALIZACION</th>
+            <th width="20%">FLUJO</th>
+            <th width="20%">PRESION</th>
+            <th width="20%">EQUIPOS</th>
+        </tr>
+        <tr align="center">
+            <td>Monterrey I</td>
+            <td>05/08<br>08:39</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Monterrey II</td>
+            <td>05/08<br>08:42</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Monterrey III</td>
+            <td>05/08<br>08:42</td>
+            <td>
+                <a href="#">89 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Monterrey IV</td>
+            <td>00/00<br>00:00</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Monterrey V</td>
+            <td>05/08<br>08:31</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 13.2 x10 m³
+            </td>
+            <td>
+                <a href="#">2.26 Kg/cm²</a>
+            </td>
+            <td>N/A</td>
+        </tr>
+        <tr align="center">
+            <td>Monterrey VI</td>
+            <td>05/08<br>08:43</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>N/A</td>
+            <td>N/A</td>
+        </tr>
+        <tr align="center">
+            <td>Monterrey IX</td>
+            <td colspan="4"><b>Pozo inhabilitado</b></td>
+        </tr>
+        <tr align="center">
+            <td>Monterrey X</td>
+            <td>00/00<br>00:00</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Topo Chico III</td>
+            <td>05/08<br>08:28</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Topo Chico IV</td>
+            <td>05/08<br>08:30</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 0 x10 m³
+            </td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+        <tr align="center">
+            <td>Topo Chico X</td>
+            <td>05/08<br>05:46</td>
+            <td>
+                <a href="#">0 lps</a><br>
+                Acumulado: 65541553.5 x10 m³
+            </td>
+            <td>N/A</td>
+            <td>EQ1</td>
+        </tr>
+    </table>
+
+    <br>
+
+    <!-- ===== BOTÓN SUBIR ===== -->
+    <button id="btnSubir" onclick="window.scrollTo({ top:0, behavior:'smooth' })" aria-label="Subir">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 4l-8 8h5v8h6v-8h5z" fill="white" />
+        </svg>
+    </button>
+    <script>
+        const btn = document.getElementById('btnSubir');
+        window.addEventListener('scroll', () => {
+            btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+        });
+    </script>
+
+</body>
+
+</html>

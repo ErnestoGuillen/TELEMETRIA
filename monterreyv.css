@@ -1,0 +1,304 @@
+/* ================================
+   RESET Y FUENTE
+   ================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: #f4f6f9;
+  color: #000;
+  display: flex;
+}
+
+/* ================================
+   SIDEBAR
+   ================================ */
+.sidebar {
+  width: 80px;
+  background: linear-gradient(180deg, #ff6a00, #ffb885);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar .logo {
+  width: 55px;
+  height: 55px;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar .logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.sidebar nav a.back-btn {
+  color: #ffffff;
+  font-size: 0.9rem;
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-weight: bold;
+  margin-top: auto;
+  transition: all 0.3s ease;
+}
+
+.sidebar nav a.back-btn:hover {
+  background: #ff8800;
+  transform: scale(1.05);
+}
+
+/* ================================
+   CONTENIDO PRINCIPAL
+   ================================ */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #ffffff;
+  transform-origin: top center;
+  overflow: hidden;
+}
+
+/* ================================
+   CABECERA
+   ================================ */
+.header {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.8rem;
+  background: #ffffff;
+  border-bottom: 4px solid #ff6600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* === Tarjetas del encabezado === */
+.card {
+  background: #ffffff;
+  width: 180px;
+  height: 80px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  border: 2px solid #ff6600;
+  transition: transform 0.25s ease;
+  text-align: center;
+  padding: 6px;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+/* === Encabezado de cada tarjeta === */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+}
+
+.card-header span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #000;
+}
+
+/* === Íconos dentro de las tarjetas === */
+.icono-card {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  margin-right: 3px;
+  vertical-align: middle;
+}
+
+/* === Valor dentro de las tarjetas === */
+.card h2 {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #000000;
+  margin-top: 4px;
+  line-height: 1;
+}
+
+/* ================================
+   DASHBOARD
+   ================================ */
+.dashboard {
+  display: flex;
+  flex: 1;
+  padding: 0.8rem;
+  gap: 1rem;
+  height: 100%;
+}
+
+/* ================================
+   VISOR
+   ================================ */
+.visor {
+  flex: 5;
+  background: #ffffff;
+  border: 3px solid #000000;
+  border-radius: 14px;
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+.visor-title {
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+  color: #000000;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.visor img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 2px solid #000000;
+}
+
+/* ================================
+   PANEL LATERAL (SIN SCROLL)
+   ================================ */
+.side-panel {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: calc(100vh - 160px);
+  gap: 0.6rem;
+  padding: 0.2rem 0;
+}
+
+/* === Cuadros azules === */
+.panel-card {
+  background: #fff;
+  border: 2px solid #000000;
+  border-radius: 10px;
+  padding: 0.5rem;
+  width: 88%;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.panel-title {
+  color: #000000;
+  font-weight: bold;
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+}
+
+/* === Botones naranjas === */
+.panel-card h2 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.panel-card h2 a {
+  display: block;
+  padding: 3px 5px;
+  border: 2px solid #000000;
+  border-radius: 6px;
+  color: #ff6600;
+  font-weight: bold;
+  font-size: 0.85rem;
+  text-decoration: none;
+  line-height: 1.1;
+  transition: all 0.25s ease;
+}
+
+.panel-card h2 a:hover {
+  background: #ff6600;
+  color: #fff;
+  transform: scale(1.02);
+}
+
+/* === Efecto al hacer click o seleccionar === */
+.panel-card h2 a:active,
+.panel-card h2 a:focus {
+  background: #ffffff;
+  color: #000000;
+  border-color: #000000;
+  outline: none;
+  transform: scale(0.98);
+  transition: all 0.1s ease;
+}
+
+/* ================================
+   SCROLLBAR GLOBAL (por si aparece)
+   ================================ */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff6600;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #003366;
+}
+
+/* ================================
+   RESPONSIVO
+   ================================ */
+@media (max-width: 900px) {
+  .dashboard {
+    flex-direction: column;
+  }
+
+  .visor {
+    flex: none;
+    height: 50vh;
+  }
+
+  .side-panel {
+    flex: none;
+    height: auto;
+    width: 100%;
+  }
+
+  .panel-card {
+    width: 95%;
+  }
+
+  .card {
+    width: 160px;
+    height: 70px;
+  }
+
+  .icono-card {
+    width: 18px;
+    height: 18px;
+  }
+}

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tanque Fraile I</title>
+    <link rel="stylesheet" href="/Pagina/css/fraile1.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <!-- BOTÓN REGRESAR -->
+    <a href="/Pagina/html/monterreyv.html" class="back-btn" aria-label="Regresar">
+        <img src="/Pagina/imagenes/boton de regreso.png" alt="Regresar">
+        <span class="texto-inicio">REGRESO</span>
+    </a>
+
+    <!-- HEADER -->
+    <header class="header">
+        <h1>TANQUE FRAILE I</h1>
+    </header>
+
+    <!-- DASHBOARD -->
+    <div class="dashboard-container">
+        <div class="layout">
+            <!-- PANEL IZQUIERDO -->
+            <aside class="panel izquierdo">
+                <div class="card">
+                    <h3>Nivel Actual</h3>
+                    <p>506 cm</p>
+                </div>
+                <div class="card">
+                    <h3>Presión</h3>
+                    <p>2.4 kgr/cm²</p>
+                </div>
+                <div class="card">
+                    <h3>Gasto</h3>
+                    <p>145 lps</p>
+                </div>
+                <div class="card">
+                    <h3>Porcentaje Llenado</h3>
+                    <p>86 %</p>
+                </div>
+            </aside>
+
+            <!-- TANQUE CENTRAL -->
+            <div class="tanque-central">
+                <div class="tanque">
+                    <svg viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stop-color="#b0b0b0" />
+                                <stop offset="50%" stop-color="#e6e6e6" />
+                                <stop offset="100%" stop-color="#8d8d8d" />
+                            </linearGradient>
+                            <linearGradient id="aguaAzul" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#4fc3f7" />
+                                <stop offset="100%" stop-color="#1565c0" />
+                            </linearGradient>
+                        </defs>
+
+                        <ellipse cx="150" cy="60" rx="120" ry="25" fill="#ccc" stroke="#888" stroke-width="2" />
+                        <rect x="30" y="60" width="240" height="280" fill="url(#metal)" stroke="#666"
+                            stroke-width="2" />
+                        <path id="wave1" d="" fill="url(#aguaAzul)" opacity="0.8"></path>
+                        <path id="wave2" d="" fill="url(#aguaAzul)" opacity="0.6"></path>
+                        <ellipse cx="150" cy="340" rx="120" ry="25" fill="#aaa" stroke="#666" stroke-width="2" />
+                        <text id="textoNivel" x="150" y="240" text-anchor="middle" fill="#fff" font-size="26"
+                            font-weight="bold">181 cm</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- PANEL DERECHO -->
+            <aside class="panel derecho">
+                <div class="card grafica-card">
+                    <h3>Nivel en las últimas 24 horas</h3>
+                    <canvas id="graficaNivel"></canvas>
+                </div>
+                <div class="card card-historico">
+                    <button class="btn-historico" id="btnHistorico">📊 Ver histórico completo</button>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- MODAL HISTÓRICO -->
+    <div id="modalTabla" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button id="btnDiaAnterior" class="btn-dia">📅 Día anterior</button>
+
+                <div class="modal-title">
+                    <h2>Histórico Completo - Tanque Fraile I (Últimas 24 Horas)</h2>
+                    <span id="fechaActual">Día 7 de Oct del 2025</span>
+                </div>
+
+                <button id="btnImprimir" class="btn-imprimir">🖨️ Imprimir PDF</button>
+                <button class="btn-close" id="cerrarEquis">×</button>
+            </div>
+
+            <div class="tabla-scroll">
+                <table id="tablaDatos">
+                    <thead>
+                        <tr>
+                            <th>Hora(24Hrs)<br>80%</th>
+                            <th>Nivel 1<br>(cm)</th>
+                            <th>Presión 1<br>(Kgr/cm²)</th>
+                            <th>Gasto 1<br>(lps)</th>
+                            <th>Epo.#1<br>Horas Activo:<br>11:35 Hr<br>Arranques:<br>0</th>
+                            <th>Epo.#2<br>Horas Activo:<br>11:35 Hr<br>Arranques:<br>0</th>
+                            <th>Epo.#3<br>Horas Activo:<br>00:00 Hr</th>
+                            <th>Epo.#4<br>Horas Activo:<br>11:35 Hr<br>Arranques:<br>1</th>
+                            <th>Epo.#5<br>Horas Activo:<br>00:00 Hr</th>
+                            <th>STATUS<br>CFE</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <button class="btn-cerrar" id="cerrarModal">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL GRÁFICA AMPLIADA -->
+    <div id="modalGrafica" class="modal">
+        <div class="modal-content modal-grafica">
+            <button class="btn-close" id="cerrarGrafica">×</button>
+
+            <!-- BOTONES SUPERIORES -->
+            <div class="grafica-botones">
+                <button id="btnDiaAnteriorGrafica">📅 Día anterior</button>
+                <button id="btnDescargarPDFGrafica">📄 Descargar PDF</button>
+            </div>
+
+            <!-- ENCABEZADO DE LA GRÁFICA -->
+            <div class="grafica-grande-header">
+                <h2>EL FRAILE I</h2>
+                <span>Día 07 de Octubre del 2025</span>
+            </div>
+
+            <h3 class="titulo-subgrafica">Nivel</h3>
+            <canvas id="graficaGrande" height="300"></canvas>
+        </div>
+    </div>
+
+    <script>
+        /* ==== ANIMACIÓN AGUA ==== */
+        const wave1 = document.getElementById("wave1");
+        const wave2 = document.getElementById("wave2");
+        const textoNivel = document.getElementById("textoNivel");
+        let ancho = 240, amplitud1 = 5, amplitud2 = 3, frecuencia1 = 0.02, frecuencia2 = 0.015;
+        let fase1 = 0, fase2 = 0, baseAltura = 180, direccion = 1, delta = 0.004;
+
+        function generarOla(path, altura, amplitud, frecuencia, fase) {
+            let d = "M30 " + (340 - altura);
+            for (let x = 0; x <= ancho; x++) {
+                let y = Math.sin(x * frecuencia + fase) * amplitud;
+                d += ` L${30 + x} ${340 - altura + y}`;
+            }
+            d += " L270 340 L30 340 Z";
+            path.setAttribute("d", d);
+        }
+
+        function animar() {
+            fase1 += 0.015;
+            fase2 -= 0.01;
+            baseAltura += delta * direccion;
+            if (baseAltura >= 210 || baseAltura <= 160) direccion *= -1;
+            generarOla(wave1, baseAltura, amplitud1, frecuencia1, fase1);
+            generarOla(wave2, baseAltura + 2, amplitud2, frecuencia2, fase2);
+            textoNivel.textContent = `${Math.floor(baseAltura)} cm`;
+            requestAnimationFrame(animar);
+        }
+        animar();
+
+        /* ==== GRÁFICA PEQUEÑA ==== */
+        const ctx = document.getElementById("graficaNivel");
+        const horas = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
+        const niveles = horas.map(() => Math.floor(Math.random() * (550 - 420 + 1)) + 420);
+
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: horas,
+                datasets: [{
+                    label: "Nivel (cm)",
+                    data: niveles,
+                    borderColor: "#42a5f5",
+                    backgroundColor: "rgba(66,165,245,0.3)",
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: "#1e88e5"
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+
+        /* ==== TABLA HISTÓRICA ==== */
+        const modal = document.getElementById("modalTabla");
+        const cerrarModal = document.getElementById("cerrarModal");
+        const cerrarEquis = document.getElementById("cerrarEquis");
+        const btnHistorico = document.getElementById("btnHistorico");
+        const tbody = document.querySelector("#tablaDatos tbody");
+        const btnDiaAnterior = document.getElementById("btnDiaAnterior");
+        const btnImprimir = document.getElementById("btnImprimir");
+
+        function generarTabla() {
+            tbody.innerHTML = "";
+            horas.forEach(hora => {
+                const nivel = Math.floor(Math.random() * (550 - 420 + 1)) + 420;
+                const presion = (Math.random() * 2.5).toFixed(1);
+                const gasto = Math.floor(Math.random() * (200 - 100 + 1)) + 100;
+                const epo = Array.from({ length: 5 }, () => (Math.random() > 0.5 ? "ON" : "OFF"));
+                const cfe = Math.random() > 0.9 ? "OFF" : "ON";
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${hora}</td>
+                    <td>${nivel}</td>
+                    <td>${presion}</td>
+                    <td>${gasto}</td>
+                    ${epo.map(e => `<td class="${e === "ON" ? "on" : "off"}">${e}</td>`).join("")}
+                    <td class="${cfe === "ON" ? "on" : "off"}">${cfe}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+        generarTabla();
+
+        btnHistorico.onclick = () => modal.classList.add("active");
+        cerrarModal.onclick = () => modal.classList.remove("active");
+        cerrarEquis.onclick = () => modal.classList.remove("active");
+        btnDiaAnterior.onclick = () => {
+            alert("Aquí se cargará el día anterior desde la base de datos.");
+            generarTabla();
+        };
+        btnImprimir.onclick = () => window.print();
+
+        /* ==== GRÁFICA AMPLIADA ==== */
+        window.addEventListener("DOMContentLoaded", () => {
+            const modalGrafica = document.getElementById("modalGrafica");
+            const cerrarGrafica = document.getElementById("cerrarGrafica");
+            const graficaGrandeCanvas = document.getElementById("graficaGrande");
+            const btnDescargarPDFGrafica = document.getElementById("btnDescargarPDFGrafica");
+            const btnDiaAnteriorGrafica = document.getElementById("btnDiaAnteriorGrafica");
+
+            let graficaGrande = null;
+
+            const graficaPequena = document.getElementById("graficaNivel");
+            graficaPequena.addEventListener("click", () => {
+                modalGrafica.classList.add("active");
+                if (graficaGrande) graficaGrande.destroy();
+
+                graficaGrande = new Chart(graficaGrandeCanvas, {
+                    type: "line",
+                    data: {
+                        labels: horas,
+                        datasets: [
+                            {
+                                label: "Nivel cm",
+                                data: niveles,
+                                fill: true,
+                                borderColor: "rgba(0,0,255,1)",
+                                backgroundColor: "rgba(30,144,255,0.5)",
+                                pointBackgroundColor: "#0066ff",
+                                borderWidth: 2,
+                                tension: 0.3
+                            },
+                            {
+                                label: "Nivel Máximo",
+                                data: Array(horas.length).fill(770),
+                                borderColor: "red",
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                fill: false
+                            },
+                            {
+                                label: "Nivel Medio",
+                                data: Array(horas.length).fill(300),
+                                borderColor: "blue",
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                fill: false
+                            },
+                            {
+                                label: "Nivel Bajo",
+                                data: Array(horas.length).fill(100),
+                                borderColor: "red",
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: "rgba(255,255,255,0.95)",
+                                titleColor: "#000",
+                                bodyColor: "#000",
+                                borderColor: "#2196f3",
+                                borderWidth: 1.5,
+                                padding: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    title: function (tooltipItems) {
+                                        const hora = tooltipItems[0].label;
+                                        const fecha = new Date();
+                                        const opciones = { weekday: 'short', month: 'short', day: 'numeric' };
+                                        const fechaTexto = fecha.toLocaleDateString('es-MX', opciones);
+                                        return `${fechaTexto}, ${hora}`;
+                                    },
+                                    label: function (tooltipItem) {
+                                        return `💧 Nivel: ${tooltipItem.formattedValue} cm`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: "Nivel (cm)" }
+                            }
+                        }
+                    }
+                });
+            });
+
+            cerrarGrafica.addEventListener("click", () => {
+                modalGrafica.classList.remove("active");
+            });
+
+            btnDiaAnteriorGrafica.addEventListener("click", () => {
+                alert("Aquí se mostrará el día anterior desde la base de datos.");
+            });
+
+            btnDescargarPDFGrafica.addEventListener("click", () => {
+                window.print();
+            });
+        });
+    </script>
+</body>
+
+</html>

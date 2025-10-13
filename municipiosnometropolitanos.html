@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Municipios no Metropolitanos</title>
+  <link rel="stylesheet" href="/Pagina/css/municipiosnometropolitanos.css" />
+  <script>
+    function cambiar_color_over(celda) {
+      if (celda.id === "norte") document.getElementById('matrix').src = "/Pagina/imagenes/mapa_norte.jpg";
+      if (celda.id === "periferica_norte") document.getElementById('matrix').src = "/Pagina/imagenes/mapa_periferica_norte.jpg";
+      if (celda.id === "este") document.getElementById('matrix').src = "/Pagina/imagenes/mapa_este.jpg";
+      if (celda.id === "santiago") document.getElementById('matrix').src = "/Pagina/imagenes/mapa_santiago.jpg";
+      if (celda.id === "sur_este") document.getElementById('matrix').src = "/Pagina/imagenes/mapa_sureste.jpg";
+      if (celda.id === "sur") document.getElementById('matrix').src = "/Pagina/imagenes/mapa_sur.jpg";
+
+      document.getElementById('jmc').textContent =
+        celda.id !== "cienega" ? celda.id.toUpperCase() : "Rotar Zonas";
+    }
+
+    function cambiar_color_out(celda) {
+      document.getElementById('matrix').src = "/Pagina/imagenes/nuevo_leon_mapa.jpg";
+    }
+
+    function nuevo_link(url) {
+      window.open(url);
+    }
+  </script>
+</head>
+
+<body>
+  <!-- CABECERA -->
+  <header class="main-header">
+    <a href="/Pagina/html/index.html" class="back-btn" aria-label="Regresar">
+      <img src="/Pagina/imagenes/boton de regreso.png" alt="Botón de regreso">
+      <span class="texto-inicio">( INICIO )</span>
+    </a>
+    <div class="header-center">
+      <h1>MUNICIPIOS NO METROPOLITANOS</h1>
+      <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+    </div>
+    <img src="/Pagina/imagenes/poniente esquina.jpg" class="logo-agua" alt="Logo AyD">
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL CENTRADO -->
+  <div class="main-content">
+    <!-- Menú lateral -->
+    <div class="menu-wrapper">
+      <table class="menu-table">
+        <tr>
+          <th>MONITOREO<br>TELEMETRÍA</th>
+        </tr>
+        <tr>
+          <td id="norte" class="menu-item"
+            onmouseover="cambiar_color_over(this)"
+            onmouseout="cambiar_color_out(this)"
+            onclick="nuevo_link('/regiones/Norte.html')">
+            Norte
+          </td>
+        </tr>
+        <tr>
+          <td id="periferica_norte" class="menu-item"
+            onmouseover="cambiar_color_over(this)"
+            onmouseout="cambiar_color_out(this)"
+            onclick="nuevo_link('/regiones/Periferica_Norte.html')">
+            Periférica Norte
+          </td>
+        </tr>
+        <tr>
+          <td id="este" class="menu-item"
+            onmouseover="cambiar_color_over(this)"
+            onmouseout="cambiar_color_out(this)"
+            onclick="nuevo_link('/regiones/Este.html')">
+            Este
+          </td>
+        </tr>
+        <tr>
+          <td id="santiago" class="menu-item"
+            onmouseover="cambiar_color_over(this)"
+            onmouseout="cambiar_color_out(this)"
+            onclick="nuevo_link('/santiago/santiago.html')">
+            Santiago
+          </td>
+        </tr>
+        <tr>
+          <td id="sur_este" class="menu-item"
+            onmouseover="cambiar_color_over(this)"
+            onmouseout="cambiar_color_out(this)"
+            onclick="nuevo_link('/regiones/Sur_Este.html')">
+            Sureste
+          </td>
+        </tr>
+        <tr>
+          <td id="sur" class="menu-item"
+            onmouseover="cambiar_color_over(this)"
+            onmouseout="cambiar_color_out(this)"
+            onclick="nuevo_link('/regiones/Region_Sur.html')">
+            Sur
+          </td>
+        </tr>
+        <tr>
+          <td id="cienega" class="menu-item"
+            onmouseover="cambiar_color_over(this)"
+            onmouseout="cambiar_color_out(this)"
+            onclick="nuevo_link('/regiones/rota.html')">
+            Rotar Zonas
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Mapa central -->
+    <div class="map-wrapper">
+      <img id="matrix" src="/Pagina/imagenes/nuevo_leon_mapa.jpg" alt="Mapa Nuevo León">
+      <div id="jmc" class="map-label">JMCABRIALES</div>
+    </div>
+  </div>
+
+  <!-- BOTÓN SUBIR -->
+  <button id="btnSubir" onclick="window.scrollTo({top:0, behavior:'smooth'})">↑</button>
+  <script>
+    const btn = document.getElementById('btnSubir');
+    window.addEventListener('scroll', () => {
+      btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+    });
+  </script>
+</body>
+
+</html>

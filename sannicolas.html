@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoreo San Nicolas</title>
+    <link rel="stylesheet" href="/Pagina/css/sannicolas.css" />
+</head>
+
+<body>
+
+    <!-- ==== BARRA SUPERIOR ==== -->
+    <header class="main-header">
+        <a href="/Pagina/html/index.html" class="back-btn" aria-label="Regresar">
+            <img src="/Pagina/imagenes/boton de regreso.png" alt="Regresar al inicio">
+            <span class="texto-inicio">( INICIO )</span>
+        </a>
+        <div class="titulo-centrado">
+            <h1>MONITOREO SAN NICOLAS</h1>
+            <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+        </div>
+        <img src="/Pagina/imagenes/poniente esquina.jpg" alt="Logo Agua y Drenaje" class="logo-agua">
+    </header>
+
+    <!-- =========== SIMBOLOGÍA =========== -->
+    <div class="simbologia-wrapper">
+        <span class="simbologia-title">Simbología</span>
+        <div class="chips-row">
+            <span class="badge rojo">Sin Comunicación</span>
+            <span class="badge verde">Operando</span>
+            <span class="badge checar">Activado por PLC</span>
+            <span class="badge pide">Pide Agua</span>
+        </div>
+    </div>
+
+    <!-- =========== ANILLO DE TRANSFERENCIA =========== -->
+    <section class="table-section">
+        <h2>ANILLO DE TRANSFERENCIA</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th colspan="4">FLUJO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tanque Escobedo</td>
+                    <td>07/07<br>14:11</td>
+                    <td>Monitoreo</td>
+                    <td class="highlight-level">788 cm</td>
+                    <td>A Red: 698 lps</td>
+                    <td>Llega San Roque-Escobedo: 252 lps</td>
+                    <td>Escobedo-Canadá: 0 lps</td>
+                </tr>
+                <tr>
+                    <td>Tanque Topo Chico</td>
+                    <td>07/07<br>14:12</td>
+                    <td>Monitoreo</td>
+                    <td class="highlight-level">678 cm</td>
+                    <td colspan="3">A Red 20":<br> 0 lps</td>
+                </tr>
+                <tr>
+                    <td>Salida a red 20" T. Topo Chico</td>
+                    <td>07/07<br>14:02</td>
+                    <td>Monitoreo</td>
+                    <td class="highlight-level">678 cm</td>
+                    <td colspan="3">A Red 20":<br> 0 lps</td>
+                </tr>
+                <tr>
+                    <td>Tanque San Nicolas</td>
+                    <td>07/07<br>14:12</td>
+                    <td>Monitoreo</td>
+                    <td class="highlight-level">485 cm</td>
+                    <td colspan="4" class="na-cell">N/A</td>
+                </tr>
+                <tr>
+                    <td>Tanque Penal</td>
+                    <td>07/07<br>14:08</td>
+                    <td>Monitoreo</td>
+                    <td class="highlight-level">491 cm</td>
+                    <td>De Loma Larga:<br> 608 lps</td>
+                    <td>A Red:<br>0 lps</td>
+                    <td>A San Bernabé:<br> 536 lps</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- =========== SISTEMA CANADÁ =========== -->
+    <section class="table-section">
+        <h2>SISTEMA CANADÁ</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th colspan="4">EQUIPOS</th>
+                    <th>FLUJO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Canadá</td>
+                    <td>07/07<br>14:12</td>
+                    <td>Monitoreo</td>
+                    <td class="highlight-level">645 cm</td>
+                    <td colspan="4" class="na-cell">N/A</td>
+                    <td class="na-cell">N/A</td>
+                </tr>
+                <tr>
+                    <td>Salidas Tanque Canadá</td>
+                    <td>07/07<br>14:12</td>
+                    <td>Monitoreo</td>
+                    <td class="na-cell">N/A</td>
+                    <td colspan="4">N/A</td>
+                    <td style="padding: 0; border: 1px solid #000000;">
+                        <div style="display: flex; text-align: center;">
+                            <div style="flex: 1; border-right: 1px solid #000000; padding: 8px;">
+                                A Red 30":<br>0 lps
+                            </div>
+                            <div style="flex: 1; padding: 8px;">
+                                A Red 36":<br>171 lps
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Bombeo Canadá</td>
+                    <td>07/07<br>14:09</td>
+                    <td>Automático</td>
+                    <td class="na-cell">N/A</td>
+                    <td class="eq-activo">EQ1</td>
+                    <td class="eq-activo">EQ2</td>
+                    <td>*EQ3*</td>
+                    <td>*EQ4*</td>
+                    <td class="na-cell">N/A</td>
+                </tr>
+                <tr>
+                    <td>Canadá II</td>
+                    <td>07/07<br>14:09</td>
+                    <td>Monitoreo</td>
+                    <td class="highlight-level">331 cm<br><span style="color: #0066d6;">◆ Pide Agua ◆</span>
+                    <td class="eq-activo">EQ1</td>
+                    <td class="eq-activo">EQ2</td>
+                    <td>EQ3</td>
+                    <td class="na-cell">N/A</td>
+                    <td class="na-cell">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- =========== PROVILEÓN =========== -->
+    <section class="table-section">
+        <h2>PROVILEÓN</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th>PRESION</th>
+                    <th colspan="3">EQUIPOS</th>
+                    <th>CFE</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Bombeo Provileón</td>
+                    <td>07/07<br>14:09</td>
+                    <td>Monitoreo</td>
+                    <td class="na-cell">N/A</td>
+                    <td>0 kg/cm²</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td class="eq-activo">CFE</td>
+                </tr>
+                <tr>
+                    <td>Tanque Provileón</td>
+                    <td>07/07<br>14:12</td>
+                    <td>Monitoreo</td>
+                    <td>280 cm</td>
+                    <td class="na-cell">N/A</td>
+                    <td colspan="3" class="na-cell">N/A</td>
+                    <td class="na-cell">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <!-- =========== SISTEMA LOMAS DE AZTLÁN =========== -->
+    <section class="table-section">
+        <h2>SISTEMA LOMAS DE AZTLÁN</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th colspan="2">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cárcamo Lomas De Aztlán</td>
+                    <td>07/07<br>14:16</td>
+                    <td>Monitoreo</td>
+                    <td>188 cm</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- =========== PARQUE INDUSTRIAL =========== -->
+    <section class="table-section">
+        <h2>PARQUE INDUSTRIAL</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th>PRESION</th>
+                    <th colspan="2">EQUIPOS</th>
+                    <th>CFE</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tanque Parque Industrial I</td>
+                    <td>07/07<br>14:15</td>
+                    <td>Monitoreo</td>
+                    <td>386 cm</td>
+                    <td>4.467 kg/cm²</td>
+                    <td class="eq-activo">EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td class="eq-activo">CFE</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- =========== PEDREGAL DE SAN AGUSTÍN =========== -->
+    <section class="table-section">
+        <h2>PEDREGAL DE SAN AGUSTÍN</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th colspan="2">EQUIPOS</th>
+                    <th>CFE</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cárcamo Pedregal de San Agustín</td>
+                    <td>07/07<br>14:16</td>
+                    <td>Monitoreo</td>
+                    <td class="na-cell">N/A</td>
+                    <td class="eq-activo">*EQ1*</td>
+                    <td>EQ2</td>
+                    <td class="eq-activo">CFE</td>
+                </tr>
+                <tr>
+                    <td>Tanque Pedregal de San Agustín</td>
+                    <td>07/07<br>14:17</td>
+                    <td>Monitoreo</td>
+                    <td>
+                        285 cm<br>
+                        <span style="color: #0066d6;">◆ Pide Agua ◆</span>
+                    </td>
+                    <td colspan="2" class="na-cell">N/A</td>
+                    <td class="eq-activo">CFE</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+
+    <!-- =========== BOMBEO PEDRERAS SAN MIGUEL =========== -->
+    <section class="table-section">
+        <h2>BOMBEO PEDRERAS SAN MIGUEL</h2>
+        <table class="data-table">
+            <colgroup>
+                <!-- 4 columnas de datos: reparto automático -->
+                <col span="4">
+                <!-- 2 columnas de equipos: ancho fijo de 200px cada una -->
+                <col style="width: 150px">
+                <col style="width: 150px">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th colspan="2">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Bombeo Pedreras San Miguel Tercera</td>
+                    <td>07/07<br>14:42</td>
+                    <td>Automático</td>
+                    <td class="na-cell">N/A</td>
+                    <td class="eq-activo">*EQ1*</td>
+                    <td>EQ2</td>
+                </tr>
+                <tr>
+                    <td>Bombeo Pedreras San Miguel Cuarta</td>
+                    <td>07/07<br>14:50</td>
+                    <td>Automático</td>
+                    <td><span style="color: #0066d6;">◆ Pide Agua ◆</span></td>
+                    <td colspan="3">*EQ1*</td>
+                </tr>
+                <tr>
+                    <td>Bombeo Pedreras San Miguel Quinta</td>
+                    <td>07/07<br>14:35</td>
+                    <td>Automático</td>
+                    <td><span style="color: #0066d6;">◆ Pide Agua ◆</span></td>
+                    <td colspan="3">EQ1</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- =========== NUEVA CASTILLA =========== -->
+    <section class="table-section">
+        <h2>NUEVA CASTILLA</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th>FLUJO</th>
+                    <th colspan="5">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nueva Castilla I</td>
+                    <td>07/07<br>14:41</td>
+                    <td>Monitoreo</td>
+                    <td>0 cm</td>
+                    <td class="na-cell">N/A</td>
+                    <td colspan="5" class="na-cell">N/A</td>
+                </tr>
+                <tr>
+                    <td>Nueva Castilla I Ampliación</td>
+                    <td>07/07<br>14:21</td>
+                    <td>Automático</td>
+                    <td>397 cm</td>
+                    <td class="na-cell">N/A</td>
+                    <td class="eq-activo">*EQ1*</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td class="eq-activo">*EQ4*</td>
+                    <td class="eq-activo">EQ5</td>
+                </tr>
+                <tr>
+                    <td>Nueva Castilla II</td>
+                    <td>07/07<br>14:23</td>
+                    <td>Automático</td>
+                    <td class="highlight-level">661 cm</td>
+                    <td class="na-cell">N/A</td>
+                    <td colspan="5" class="na-cell">N/A</td>
+                </tr>
+                <tr>
+                    <td>Nueva Castilla III Rectangular</td>
+                    <td>07/07<br>14:23</td>
+                    <td>Monitoreo</td>
+                    <td>415 cm</td>
+                    <td>Red Zuazua: <br>267 lps</td>
+                    <td class="eq-activo">EQ1</td>
+                    <td class="eq-activo">EQ2</td>
+                    <td>EQ3</td>
+                    <td class="na-cell">N/A</td>
+                    <td class="na-cell">N/A</td>
+                </tr>
+                <tr>
+                    <td>Nueva Castilla III Circular</td>
+                    <td>07/07<br>14:23</td>
+                    <td>Monitoreo</td>
+                    <td>553 cm</td>
+                    <td>Red Cienega Flores: <br>130 lps</td>
+                    <td class="eq-activo">EQ1</td>
+                    <td class="eq-activo">EQ2</td>
+                    <td>EQ3</td>
+                    <td class="na-cell">N/A</td>
+                    <td class="na-cell">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- =========== ALIANCITA =========== -->
+    <section class="table-section">
+        <h2>ALIANCITA</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th colspan="2">FLUJO</th>
+                    <th>PRESION</th>
+                    <th colspan="4">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Bombeo Aliancita</td>
+                    <td>07/07<br>14:21</td>
+                    <td>Monitoreo</td>
+                    <td>99 lps<br>Acumulado: 613439 x10 m³</td>
+                    <td>0 Kg/cm²</td>
+                    <td class="eq-activo">EQ1</td>
+                    <td class="eq-activo">EQ2</td>
+                    <td>EQ3</td>
+                    <td>EQ4</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- =========== POZOS SOMEROS =========== -->
+    <section class="table-section">
+        <h2>POZOS SOMEROS</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th>FLUJO</th>
+                    <th>EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>California II</td>
+                    <td class="alerta-roja">07/07<br>14:07</td>
+                    <td>Monitoreo</td>
+                    <td class="na-cell">N/A</td>
+                    <td class="eq-activo">EQ1</td>
+                </tr>
+                <tr>
+                    <td>Año de Juárez</td>
+                    <td>07/07<br>14:54</td>
+                    <td>Monitoreo</td>
+                    <td>
+                        0 lps<br>
+                        Acumulado: 13920.9 × 10³ m³
+                    </td>
+                    <td class="eq-activo">EQ1</td>
+                </tr>
+                <tr>
+                    <td>Bombeo Mezquital</td>
+                    <td>07/07<br>14:57</td>
+                    <td>Monitoreo</td>
+                    <td>
+                        0 lps<br>
+                        Acumulado: 0 × 10³ m³
+                    </td>
+                    <td class="eq-activo">EQ1</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- =========== POZOS PROFUNDOS =========== -->
+    <section class="table-section">
+        <h2>POZOS PROFUNDOS</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>FLUJO</th>
+                    <th>PRESION</th>
+                    <th>EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Topo Chico III</td>
+                    <td>07/07<br>15:05</td>
+                    <td>
+                        0 lps<br>
+                        Acumulado: 0 × 10³ m³
+                    </td>
+                    <td class="na-cell">N/A</td>
+                    <td class="eq-activo">EQ1</td>
+                </tr>
+                <tr>
+                    <td>Topo Chico IV</td>
+                    <td>07/07<br>15:08</td>
+                    <td>
+                        0 lps<br>
+                        Acumulado: 0 × 10³ m³
+                    </td>
+                    <td class="na-cell">N/A</td>
+                    <td>EQ1</td>
+                </tr>
+                <tr>
+                    <td>Topo Chico X</td>
+                    <td class="alerta-roja">07/07<br>14:23</td>
+                    <td>
+                        <a href="#">8 lps</a><br>
+                        Acumulado: 65541553.5 × 10³ m³
+                    </td>
+                    <td class="na-cell">N/A</td>
+                    <td class="eq-activo">EQ1</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <!-- =========== MONITOREO ZINC =========== -->
+    <section class="table-section">
+        <h2>MONITOREO ZINC</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th>PRESION</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Zinc Nacional</td>
+                    <td style="background:red; color:white;">00/00<br>00:00</td>
+                    <td>Monitoreo</td>
+                    <td>0 kg</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- =========== EL CARMEN ACUEDUCTOS MINA =========== -->
+    <section class="table-section">
+        <h2>EL CARMEN ACUEDUCTOS MINA</h2>
+        <table class="data-table">
+            <thead>
+                <!-- Fila 2: encabezados primera subsección -->
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>PRESIÓN AGUAS ARRIBA</th>
+                    <th>PRESIÓN AGUAS ABAJO</th>
+                    <th>BATERÍA</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Acueducto Mina I</td>
+                    <td>07/07<br>14:28</td>
+                    <td>8.302 kg/cm²</td>
+                    <td>0 kg/cm²</td>
+                    <td>27 V</td>
+                </tr>
+                <!-- ahora comienzo la segunda subsección -->
+                <tr>
+                    <!-- Fila de encabezado segunda subsección -->
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th colspan="2">PRESIÓN</th>
+                    <th>BATERÍA</th>
+                </tr>
+                <tr>
+                    <!-- Datos de la segunda subsección -->
+                    <td>Acueducto Mina II</td>
+                    <td>07/07<br>14:28</td>
+                    <td colspan="2">0 kg/cm²</td>
+                    <td>27 V</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <!-- =========== PRESION INTERPUERTO =========== -->
+    <section class="table-section">
+        <h2>PRESION INTERPUERTO</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th>PRESION</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Sensor Presion Interpuerto</td>
+                    <td>07/07<br>14:42</td>
+                    <td>Monitoreo</td>
+                    <td>1.47 kg/cm²</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- =========== SALINAS VICTORIA (HOFUSAN) =========== -->
+    <section class="table-section">
+        <h2>SALINAS VICTORIA (HOFUSAN)</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th>FLUJO</th>
+                    <th colspan="3">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cárcamo Hofusan</td>
+                    <td>07/07<br>14:06</td>
+                    <td>Monitoreo</td>
+                    <td>178 cm</td>
+                    <td>0 lps</td>
+                    <td>EQ1</td>
+                    <td class="eq-activo">EQ2</td>
+                    <td>EQ3</td>
+                </tr>
+                <tr>
+                    <td>Tanque Hofusan</td>
+                    <td class="alerta-roja">07/07<br>13:44</td>
+                    <td>Monitoreo</td>
+                    <td>288 cm</td>
+                    <td class="na-cell">N/A</td>
+                    <td colspan="3" class="na-cell">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- =========== PEDRERAS =========== -->
+    <section class="table-section">
+        <h2>PEDRERAS</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tanque Pedreras</td>
+                    <td>07/07<br>14:21</td>
+                    <td>Monitoreo</td>
+                    <td>296 cm</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== BOTÓN SUBIR ==== -->
+    <button id="btnSubir" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });" aria-label="Subir al inicio">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 4l-8 8h5v8h6v-8h5z" fill="white" />
+        </svg>
+    </button>
+
+    <!-- ==== SCRIPT SUBIR ==== -->
+    <script>
+        const btnSubir = document.getElementById("btnSubir");
+        window.addEventListener("scroll", () => {
+            btnSubir.style.display = window.scrollY > 300 ? "flex" : "none";
+        });
+    </script>
+
+</body>
+
+</html>

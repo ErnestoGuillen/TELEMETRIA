@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoreo San Miguel</title>
+    <link rel="stylesheet" href="/Pagina/css/sanmiguel.css" />
+    <style>
+        /* Centrar todo el contenido de FLUJO */
+        .data-table th.flujo-col,
+        .data-table td.flujo-col {
+            text-align: center;
+            vertical-align: middle;
+            white-space: normal;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ==== BARRA SUPERIOR ==== -->
+    <header class="main-header">
+        <a href="/Pagina/html/index.html" class="back-btn" aria-label="Regresar">
+            <img src="/Pagina/imagenes/boton de regreso.png" alt="Regresar al inicio">
+            <span class="texto-inicio">( INICIO )</span>
+        </a>
+        <div class="titulo-centrado">
+            <h1>MONITOREO SAN MIGUEL</h1>
+            <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+        </div>
+        <img src="/Pagina/imagenes/poniente esquina.jpg" alt="Logo Agua y Drenaje" class="logo-agua">
+    </header>
+
+    <!-- SIMBOLOGIA  -->
+    <div class="simbologia-wrapper">
+        <span class="simbologia-title">SIMBOLOGÍA</span>
+        <div class="chips-row">
+            <span class="badge rojo">Sin Comunicación</span>
+            <span class="badge verde">Operando</span>
+            <span class="badge checar">Activado por PLC</span>
+            <span class="badge pide">Pide Agua</span>
+        </div>
+    </div>
+
+    <!-- ==== SECCIÓN SAN MIGUEL ==== -->
+    <section class="table-section" style="margin-top:-1.2rem;">
+        <h2 class="titulo-san-miguel">SAN MIGUEL</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th colspan="5" class="flujo-col">FLUJO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Miguel Alemán</td>
+                    <td>26/06<br>16:03</td>
+                    <td>Monitoreo</td>
+                    <td>349 cm</td>
+                    <td colspan="5" class="na-cell flujo-col">
+                        A Red 48″:<br>0 lps
+                    </td>
+                </tr>
+                <tr>
+                    <td>San Miguel</td>
+                    <td>26/06<br>16:03</td>
+                    <td>Monitoreo</td>
+                    <td>231 cm</td>
+                     <td colspan="3" class="na-cell flujo-col">
+                        Llegada:<br>0 lps
+                    </td>
+                    <td colspan="4" class="na-cell flujo-col">
+                        A Red 30":<br>225 lps
+                    </td>
+                </tr>
+                <tr>
+                    <td>San Miguel salida a red 30″</td>
+                    <td>26/06<br>16:03</td>
+                    <td>Monitoreo</td>
+                    <td>231 cm</td>
+                      <td colspan="3" class="na-cell flujo-col">
+                        Llegada:<br>0 lps
+                    </td>
+                    <td colspan="4" class="na-cell flujo-col">
+                        A Red 30":<br>225 lps
+                    </td>
+                </tr>
+                <tr>
+                    <td>San Miguel II</td>
+                    <td>26/06<br>16:03</td>
+                    <td>Monitoreo</td>
+                    <td>494 cm</td>
+                    <td colspan="5" class="na-cell flujo-col">N/A</td>
+                </tr>
+                <tr>
+                    <td>Santa Rosa I</td>
+                    <td>26/06<br>16:03</td>
+                    <td>Monitoreo</td>
+                    <td>231 cm</td>
+                    <td colspan="5" class="na-cell flujo-col">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== SECCIÓN MONITOREO FLUJOS ==== -->
+    <section class="table-section">
+        <h2>MONITOREO FLUJOS</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>MODO</th>
+                    <th colspan="2" class="flujo-col">FLUJO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Alimentador-Norte<br>San Roque Pte.</td>
+                    <td>27/06<br>14:17</td>
+                    <td>Monitoreo</td>
+                    <td colspan="2" class="na-cell flujo-col">740 lps</td>
+                </tr>
+                <tr>
+                    <td>Tanque La Silla I<br>a Red Pte.</td>
+                    <td>27/06<br>14:17</td>
+                    <td>Monitoreo</td>
+                    <td colspan="2" class="na-cell flujo-col">990 lps</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== SECCIÓN MONITOREO NIVELES ==== -->
+    <section class="table-section">
+        <h2>MONITOREO NIVELES</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th colspan="2" class="flujo-col">FLUJO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tanque Juárez</td>
+                    <td>26/06<br>16:03</td>
+                    <td>Monitoreo</td>
+                    <td>602 cm</td>
+                    <td colspan="2" class="na-cell flujo-col">
+                        Llegada de red 48″:<br>747 lps
+                    </td>
+                </tr>
+                <tr>
+                    <td>Tanque Escobedo</td>
+                    <td>26/06<br>16:03</td>
+                    <td>Monitoreo</td>
+                    <td>796 cm</td>
+                    <td colspan="2" class="na-cell flujo-col">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== BOTÓN SUBIR ==== -->
+    <button id="btnSubir" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });" aria-label="Subir al inicio">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 4l-8 8h5v8h6v-8h5z" fill="white" />
+        </svg>
+    </button>
+
+    <script>
+        const btnSubir = document.getElementById("btnSubir");
+        window.addEventListener("scroll", () => {
+            btnSubir.style.display = window.scrollY > 300 ? "flex" : "none";
+        });
+    </script>
+</body>
+
+</html>

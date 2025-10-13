@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Pozos Buenos Aires</title>
+    <link rel="stylesheet" href="/Pagina/css/buenosaires.css" />
+</head>
+
+<body>
+
+    <!-- ==== BARRA SUPERIOR ==== -->
+    <header class="main-header">
+        <a href="/Pagina/html/index.html" class="back-btn" aria-label="Regresar">
+            <img src="/Pagina/imagenes/boton de regreso.png" alt="( INICIO )">
+            <span class="texto-inicio">( INICIO )</span>
+        </a>
+
+        <div class="titulo-centrado">
+            <h1>SISTEMA DE POZOS BUENOS AIRES</h1>
+            <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+        </div>
+
+        <img src="/Pagina/imagenes/poniente esquina.jpg" class="logo-agua" alt="Logo AyD">
+    </header>
+
+    <!-- ==== SIMBOLOGÍA ==== -->
+    <div class="simbologia-wrapper">
+        <span class="simbologia-title">SIMBOLOGÍA</span>
+        <div class="chips-row">
+            <span class="badge rojo">Sin Comunicación</span>
+            <span class="badge verde">Operando</span>
+            <span class="badge checar">Activado por PLC</span>
+            <span class="badge pide">Pide Agua</span>
+        </div>
+    </div>
+
+    <!-- ==== MACROMEDIDORES ==== -->
+    <section class="table-section">
+        <h2>MACROMEDIDORES</h2>
+        <table id="t0" class="data-table" width="100%">
+            <thead>
+                <tr>
+                    <th width="15%">UBICACION</th>
+                    <th width="15%">ACTUALIZACION</th>
+                    <th width="30%">FLUJO</th>
+                    <th width="30%" colspan="2">EQUIPO</th>
+                    <th width="10%">CFE</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Morteros -->
+                <tr align="center">
+                    <td>Morteros</td>
+                    <td id="t1-r6-c0">
+                        <a href="#">11/08</a><br>
+                        <a href="#">09:28</a>
+                    </td>
+                    <td id="t1-r6-c1">N/A</td>
+                    <td style="background: #25c025; color:#fff;">EQ1</td>
+                    <td id="t1-r6-c3">EQ2</td>
+                    <td style="background: #25c025; color:#fff;">ON</td>
+                </tr>
+
+                <!-- Horcones -->
+                <tr align="center">
+                    <td id="r1">Horcones</td>
+                    <td id="t1-r1-c0">
+                        <a href="#">11/08</a><br>
+                        <a href="#">09:27</a>
+                    </td>
+                    <td id="t1-r1-c1"><a href="#">1465 lps</a></td>
+                    <td id="t1-r1-c2" colspan="2">N/A</td>
+                    <td id="t1-r1-c4">N/A</td>
+                </tr>
+
+                <!-- Las Quintas -->
+                <tr align="center">
+                    <td id="r2">Las Quintas</td>
+                    <td id="t1-r2-c0">
+                        <a href="#">11/08</a><br>
+                        <a href="#">09:27</a>
+                    </td>
+                    <td id="t1-r2-c1"><a href="#">747 lps</a></td>
+                    <td id="t1-r2-c2" colspan="2">N/A</td>
+                    <td id="t1-r2-c4">N/A</td>
+                </tr>
+
+                <!-- Valle Poniente -->
+                <tr align="center">
+                    <td id="r3">Valle Poniente</td>
+                    <td id="t1-r3-c0">
+                        <a href="#">11/08</a><br>
+                        <a href="#">09:28</a>
+                    </td>
+                    <td id="t1-r3-c1"><a href="#">321 lps</a></td>
+                    <td id="t1-r3-c2" colspan="2">N/A</td>
+                    <td id="t1-r3-c4">
+                        <a href="#">0<br>volts</a>
+                    </td>
+                </tr>
+
+                <!-- Daltile -->
+                <tr align="center">
+                    <td id="r4">Daltile</td>
+                    <td id="t1-r4-c0">
+                        <a href="#">11/08</a><br>
+                        <a href="#">09:30</a>
+                    </td>
+                    <td id="t1-r4-c1"><a href="#">1357 lps</a></td>
+                    <td id="t1-r4-c2" colspan="2">N/A</td>
+                    <td id="t1-r4-c4">N/A</td>
+                </tr>
+
+                <!-- Parshall Huasteca -->
+                <tr align="center">
+                    <td>Parshall Huasteca</td>
+                    <td id="t1-r5-c0">
+                        <a href="#">11/08</a><br>
+                        <a href="#">09:29</a>
+                    </td>
+                    <td id="t1-r5-c1">
+                        <a href="#">1866 lps</a><br>
+                        Acumulado: 0 × 10 m³
+                    </td>
+                    <td id="t1-r5-c2" colspan="2">N/A</td>
+                    <td id="t1-r5-c4">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <!-- ==== POZOS ==== -->
+    <section class="table-section">
+        <h2>POZOS</h2>
+        <table id="t1" class="data-table" width="100%">
+            <thead>
+                <tr>
+                    <th width="15%">UBICACION</th>
+                    <th width="15%">ACTUALIZACION</th>
+                    <th width="20%">FLUJO</th>
+                    <th width="10%">EQUIPO</th>
+                    <th width="10%">CFE</th>
+                    <th width="30%" colspan="3">VOLTAJES</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>Pozo 1<br>Fuera</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:33</a></td>
+                    <td>0 lps<br>Acumulado: 691938 m³</td>
+                    <td class="off">OFF</td>
+                    <td class="off">OFF</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 2<br>Operando</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:28</a></td>
+                    <td>125 lps<br>Acumulado: 103619 m³</td>
+                    <td class="on">ON</td>
+                    <td class="off">OFF</td>
+                    <td colspan="3">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 4<br>Fuera</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:33</a></td>
+                    <td>0 lps<br>Acumulado: 424850 m³</td>
+                    <td class="off">OFF</td>
+                    <td class="off">OFF</td>
+                    <td colspan="3">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 5<br>Fuera</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:32</a></td>
+                    <td>0 lps<br>Acumulado: 45005 m³</td>
+                    <td class="off">OFF</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 6<br>Fuera</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:33</a></td>
+                    <td>138 lps<br>Acumulado: 311105 m³</td>
+                    <td class="off">OFF</td>
+                    <td>N/A</td>
+                    <td colspan="3">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 8<br>Operando</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:33</a></td>
+                    <td>210 lps<br>Acumulado: 792034 m³</td>
+                    <td style="background: #25c025; color:#fff;">ON</td>
+                    <td class="off">Off</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 10<br>Fuera</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:33</a></td>
+                    <td>0 lps<br>Acumulado: 0 m³</td>
+                    <td class="off">OFF</td>
+                    <td><a href="#">Batería: 25.32</a></td>
+                    <td colspan="3">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 13<br>Fuera</td>
+                    <td style="background:#ff0000; color:#fff;">00:00</td>
+                    <td>0 lps<br>Acumulado: 0 m³</td>
+                    <td class="off">OFF</td>
+                    <td><a href="#">Batería: 0</a></td>
+                    <td colspan="3">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 14<br>Operando</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:33</a></td>
+                    <td>82 lps<br>Acumulado: 2616439 m³</td>
+                    <td style="background: #25c025; color:#fff;">ON</td>
+                    <td><a href="#">Batería: 12.2</a></td>
+                    <td colspan="3">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 17<br>Fuera</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:32</a></td>
+                    <td>0 lps<br>Acumulado: 784920 m³</td>
+                    <td class="off">OFF</td>
+                    <td>N/A</td>
+                    <td colspan="3">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 18<br>Operando</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:32</a></td>
+                    <td>96 lps<br>Acumulado: 468066 m³</td>
+                    <td style="background: #25c025; color:#fff;">ON</td>
+                    <td>N/A</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 19<br>Fuera</td>
+                    <td style="background:#ff0000; color:#fff;">00:00</td>
+                    <td>0 lps<br>Acumulado: 0 m³</td>
+                    <td class="off">OFF</td>
+                    <td><a href="#">Batería: 0</a></td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 19 BIS<br>Fuera</td>
+                    <td style="background:#ff0000; color:#fff;">00:00</td>
+                    <td>0 lps<br>Acumulado: 0 m³</td>
+                    <td class="off">OFF</td>
+                    <td><a href="#">Batería: 0</a></td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 25<br>Operando</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:25</a></td>
+                    <td>1 lps<br>Acumulado: 229243 m³</td>
+                    <td style="background: #25c025; color:#fff;">ON</td>
+                    <td>N/A</td>
+                    <td colspan="3">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 28<br>Operando</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:26</a></td>
+                    <td>1 lps<br>Acumulado: 438886 m³</td>
+                    <td class="on">ON</td>
+                    <td>N/A</td>
+                    <td colspan="3">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 30<br>Operando</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:31</a></td>
+                    <td>219 lps<br>Acumulado: 1487975 m³</td>
+                    <td class="on">ON</td>
+                    <td class="off">OFF</td>
+                    <td><a href="#">0</a></td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 33<br>Fuera</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:38</a></td>
+                    <td>0 lps<br>Acumulado: 0 m³</td>
+                    <td class="off">OFF</td>
+                    <td>N/A</td>
+                    <td colspan="3">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo 39<br>Operando</td>
+                    <td><a href="#">11/08</a><br><a href="#">09:38</a></td>
+                    <td>1 lps<br>Acumulado: 993520 m³</td>
+                    <td class="on">ON</td>
+                    <td>N/A</td>
+                    <td colspan="3">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pozo Galeria 4<br>Fuera</td>
+                    <td><a href="#">11/08</a><br><a href="#">06:04</a></td>
+                    <td>0 lps<br>Acumulado: 0 m³</td>
+                    <td class="off">OFF</td>
+                    <td>N/A</td>
+                    <td colspan="3">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <!-- ==== BOTÓN SUBIR ==== -->
+    <button id="btnSubir" onclick="window.scrollTo({ top:0, behavior:'smooth' })" aria-label="Subir">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 4l-8 8h5v8h6v-8h5z" fill="white" />
+        </svg>
+    </button>
+
+    <script>
+        const btnSubir = document.getElementById('btnSubir');
+        window.addEventListener('scroll', () => {
+            btnSubir.style.display = window.scrollY > 300 ? 'flex' : 'none';
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoreo San Roque</title>
+    <link rel="stylesheet" href="/Pagina/css/sanroque.css" />
+</head>
+
+<body>
+    <!-- BARRA SUPERIOR (flecha + título + logo) -->
+    <header class="main-header">
+        <a href="/Pagina/html/index.html" class="back-btn" aria-label="Regresar">
+            <img src="/Pagina/imagenes/boton de regreso.png" alt="Regresar al inicio" />
+            <span class="texto-inicio">( INICIO )</span>
+        </a>
+        <div class="titulo-centrado">
+            <h1>MONITOREO SAN ROQUE</h1>
+            <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+        </div>
+        <img src="/Pagina/imagenes/poniente esquina.jpg" alt="Logo Agua y Drenaje" class="logo-agua" />
+    </header>
+
+    <!-- SIMBOLOGÍA -->
+    <div class="simbologia-wrapper">
+        <span class="simbologia-title">SIMBOLOGÍA</span>
+        <div class="chips-row">
+            <span class="badge rojo">Sin Comunicación</span>
+            <span class="badge verde">Operando</span>
+            <span class="badge checar">Activado por PLC</span>
+            <span class="badge pide">Pide Agua</span>
+        </div>
+    </div>
+
+    <!-- SECCIÓN PB5 SAN ROQUE -->
+    <section class="table-section">
+        <h2 class="titulo-anillo">PB5 SAN ROQUE</h2><br><br>
+        <table class="data-table pb5">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>NIVEL</th>
+                    <th>FLUJO</th>
+                    <th colspan="6">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Gasto PB5<br>Medidor Brecha</td>
+                    <td>01/07<br>14:55</td>
+                    <td>N/A</td>
+                    <td>
+                        <p>5307 lps</p>
+                        Acumulado: 38801 x10 m³
+                    </td>
+                    <td colspan="6">N/A</td>
+                </tr>
+                <tr>
+                    <td>Gasto PB5<br>A Monterrey V</td>
+                    <td>01/07<br>14:55</td>
+                    <td>N/A</td>
+                    <td>
+                        <p>3185 lps</p>
+                    </td>
+                    <td colspan="6">N/A</td>
+                </tr>
+                <tr>
+                    <td>Estatus Equipos<br>PB5</td>
+                    <td>01/07<br>14:55</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td class="eq-activo">*EQ1*</td>
+                    <td class="eq-activo">*EQ2*</td>
+                    <td class="eq-activo">*EQ3*</td>
+                    <td class="eq-activo">*EQ4*</td>
+                    <td class="eq-activo">*EQ5*</td>
+                    <td class="eq-activo">*EQ6*</td>
+                </tr>
+                <tr>
+                    <td>Tanque Aguas Claras I</td>
+                    <td>01/07<br>14:54</td>
+                    <td>
+                        <p>306 cm</p>
+                    </td>
+                    <td>N/A</td>
+                    <td colspan="6">N/A</td>
+                </tr>
+                <tr>
+                    <td>Tanque Aguas Claras II</td>
+                    <td>01/07<br>14:54</td>
+                    <td>
+                        <p>267 cm</p>
+                    </td>
+                    <td>N/A</td>
+                    <td colspan="6">N/A</td>
+                </tr>
+                <tr>
+                    <td>Llegada Acueducto Chuchillo I</td>
+                    <td>01/07<br>14:52</td>
+                    <td>N/A</td>
+                    <td>
+                        <p>3563 lps</p>
+                    </td>
+                    <td colspan="6">N/A</td>
+                </tr>
+                <tr>
+                    <td>Llegada Acueducto Linares</td>
+                    <td>01/07<br>14:52</td>
+                    <td>N/A</td>
+                    <td>
+                        <p>1000 lps</p>
+                    </td>
+                    <td colspan="6">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- SECCIÓN CHINA N.L. -->
+    <section class="table-section">
+        <h2 class="titulo-anillo">CHINA N.L.</h2>
+        <table class="data-table china">
+            <thead>
+                <tr>
+                    <th rowspan="2">UBICACIÓN</th>
+                    <th rowspan="2">ACTUALIZACIÓN</th>
+                    <th colspan="3">FLUJO</th>
+                    <th colspan="6">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PB0</td>
+                    <td>
+                        <a href="#">14/07</a><br>
+                        <a href="#">11:14</a>
+                    </td>
+                    <td>Llegada:<br>N/D</td>
+                    <td colspan="2">Salida:<br>4185 lps</td>
+                    <td>EQ1</td>
+                    <td class="eq-activo">EQ2</td>
+                    <td>EQ3</td>
+                    <td class="eq-activo">EQ4</td>
+                    <td>EQ5</td>
+                    <td>EQ6</td>
+                </tr>
+                <tr>
+                    <td>PB1</td>
+                    <td>
+                        <a href="#">14/07</a><br>
+                        <a href="#">11:15</a>
+                    </td>
+                    <td>Llegada:<br>N/D</td>
+                    <td colspan="2">Salida:<br>4139 lps</td>
+                    <td>EQ1</td>
+                    <td class="eq-activo">EQ2</td>
+                    <td class="eq-activo">EQ3</td>
+                    <td class="eq-activo">EQ4</td>
+                    <td>EQ5</td>
+                    <td>EQ6</td>
+                </tr>
+                <tr>
+                    <td>PB2</td>
+                    <td>
+                        <a href="#">14/07</a><br>
+                        <a href="#">11:14</a>
+                    </td>
+                    <td>Llegada:<br>N/D</td>
+                    <td colspan="2">Llegada:<br>3942 lps</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td class="eq-activo">EQ4</td>
+                    <td class="eq-activo">EQ5</td>
+                    <td class="eq-activo">EQ6</td>
+                </tr>
+                <tr>
+                    <td>PB3</td>
+                    <td>
+                        <a href="#">14/07</a><br>
+                        <a href="#">11:13</a>
+                    </td>
+                    <td>Llegada:<br>N/D</td>
+                    <td>Salida:<br>3849 lps</td>
+                    <td>A PEMEX:<br> 284 lps</td>
+                    <td class="eq-activo">EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>EQ4</td>
+                    <td class="eq-activo">EQ5</td>
+                    <td>EQ6</td>
+                </tr>
+                <tr>
+                    <td>PB4</td>
+                    <td>
+                        <a href="#">14/07</a><br>
+                        <a href="#">11:14</a>
+                    </td>
+                    <td>Llegada:<br>0 lps</td>
+                    <td>Salida:<br>3757 lps</a></td>
+                    <td>NIVEL TS 306 cm</td>
+                    <td class="eq-activo">EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td class="eq-activo">EQ4</td>
+                    <td>EQ5</td>
+                    <td class="eq-activo">EQ6</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- === CHINA 2 N.L. ================================================== -->
+    <section class="table-section">
+        <h2>CHINA 2 N.L.</h2>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th colspan="2">FLUJO</th>
+                    <th>EQUIPOS</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>PB0</td>
+                    <td>
+                        <p>01/07</p><br>
+                        <p>15:16</p>
+                    </td>
+                    <td colspan="1">Llegada:<br>N/D</td>
+                    <td colspan="1">Salida:<br>2321 lps</td>
+                    <td>N/A</td>
+                </tr>
+
+                <tr>
+                    <td>PB1</td>
+                    <td>
+                        <p>01/07</p><br>
+                        <p>15:17</p>
+                    </td>
+                    <td colspan="1">Llegada:<br>N/D</td>
+                    <td colspan="1">Salida:<br>2638 lps</td>
+                    <td>N/A</td>
+                </tr>
+
+                <tr>
+                    <td>PB2</td>
+                    <td>
+                        <p>01/07</p><br>
+                        <p>15:02</p>
+                    </td>
+                    <td colspan="1">Llegada:<br>N/D</td>
+                    <td colspan="1">Salida:<br>2145 lps</td>
+                    <td>N/A</td>
+                </tr>
+
+                <tr>
+                    <td>PB3</td>
+                    <td>
+                        <p>01/07</p><br>
+                        <p>15:06</p>
+                    </td>
+                    <td colspan="1">Llegada:<br>N/D</td>
+                    <td colspan="1">Salida:<br>2155 lps</td>
+                    <td>N/A</td>
+                </tr>
+
+                <tr>
+                    <td>PB4</td>
+                    <td>
+                        <p>01/07</p><br>
+                        <p>15:16</p>
+                    </td>
+                    <td colspan="1">Llegada:<br>N/D</td>
+                    <td colspan="1">Salida:<br>2169 lps</td>
+                    <td>N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+    <!-- === EXTRACCIÓN TOTAL SISTEMA CUCHILLO ============================== -->
+    <section class="table-section">
+        <h2>EXTRACCIÓN TOTAL SISTEMA CUCHILLO</h2>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>FLUJO</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>Extracción Total PB0</td>
+                    <td>
+                        <p>01/07</p><br>
+                        <p>15:14</p>
+                    </td>
+                    <td>
+                        <p>5289 lps</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+    <!-- === CADEREYTA ====================================================== -->
+    <section class="table-section">
+        <h2>CADEREYTA</h2>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>NIVEL</th>
+                    <!-- Dos columnas de flujo -->
+                    <th colspan="2">FLUJO</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>Planta<br>Potabilizadora Cadereyta</td>
+                    <td>
+                        <p>01/07</p><br>
+                        <p>14:55</p>
+                    </td>
+                    <td>
+                        <p>355 cm</p>
+                    </td>
+
+                    <td>
+                        Flujo a red:<br>
+                        <p>208 lps</p><br>
+                        Acumulado: 0 x10 m³
+                    </td>
+
+                    <td>
+                        Llegada Norte:<br>
+                        <p>79 lps</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+    <!-- === OBRA TOMA CERRO PRIETO ======================================= -->
+    <!-- === OBRA TOMA CERRO PRIETO ======================================= -->
+    <section class="table-section">
+        <h2>OBRA TOMA CERRO PRIETO</h2>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th colspan="6">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Primera fila: bomba, tiempos y equipos -->
+                <tr>
+                    <!-- estas dos celdas abarcan 2 filas -->
+                    <td rowspan="2">Bombeo Obra de Toma</td>
+                    <td rowspan="2">01/07<br>00:00</td>
+                    <!-- ahora los 6 equipos normales -->
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>EQ4</td>
+                    <td>EQ5</td>
+                    <td>EQ6</td>
+                </tr>
+                <!-- Segunda fila: sólo la celda de nivel, que abarca las 6 columnas de "EQUIPOS" -->
+                <tr>
+                    <thead>
+                        <tr>
+                            <th>UBICACIÓN</th>
+                            <th>ACTUALIZACIÓN</th>
+                            <th colspan="6">NIVEL</th>
+                        </tr>
+                    </thead>
+                <tr>
+                    <!-- estas dos celdas abarcan 2 filas -->
+                    <td rowspan="2">Nivel en dique</td>
+                    <td rowspan="2">01/07<br>00:00</td>
+                    <td colspan="6" class="nivel-completo">
+                        NIVEL: <p>316 cm</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <!-- === PRESA ======================================================== -->
+    <section class="table-section">
+        <h2>PRESA</h2>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ALMACENAJE</th>
+                    <th>PORCENTAJE</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Obra de Toma<br>Cerro Prieto</td>
+                    <td>294.444 Mm³ <span></span>(CNA)</td>
+                    <td>98.15 % (CNA)</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- === PRESA LIBERTAD ======================================================== -->
+    <section class="table-section">
+        <h2>PRESA LIBERTAD</h2>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACION</th>
+                    <th>FLUJO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Extraccion<br>Presa libertad</td>
+                    <td>04/07<br>12:01</td><br>
+                    <td>33458 lps</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!DOCTYPE html>
+    <html lang="es">
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sección LINARES</title>
+        <link rel="stylesheet" href="/Pagina/css/sanroque.css" />
+    </head>
+
+    <body>
+        <!-- SECCIÓN LINARES -->
+        <section class="table-section">
+            <h2 class="titulo-anillo">LINARES</h2>
+            <table class="data-table linares">
+                <colgroup>
+                    <col /> <!-- UBICACIÓN -->
+                    <col /> <!-- ACTUALIZACIÓN -->
+                    <col /> <!-- NIVEL -->
+                    <col span="2" /> <!-- PRESIÓN -->
+                    <col style="width: 150px;" /> <!-- FLUJO 1 -->
+                    <col style="width: 150px;" /> <!-- FLUJO 2 -->
+                    <col style="width: 150px;" /> <!-- FLUJO 3 -->
+                    <col style="width: 150px;" /> <!-- FLUJO 4 -->
+                    <col span="5" /> <!-- EQUIPOS -->
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>UBICACIÓN</th>
+                        <th>ACTUALIZACIÓN</th>
+                        <th>NIVEL</th>
+                        <th colspan="2">PRESIÓN</th>
+                        <th colspan="4">FLUJO</th>
+                        <th colspan="5">EQUIPOS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- PB1 LINARES -->
+                    <tr>
+                        <td>PB1 LINARES</td>
+                        <td><a href="#">15/07<br>15:21</a></td>
+                        <td>N/A</td>
+                        <td colspan="2">N/A</td>
+                        <td colspan="4">Salida:<br><a href="#">4436 lps</a></td>
+                        <td class="eq-activo">EQ1</td>
+                        <td>EQ2</td>
+                        <td class="eq-activo">EQ3</td>
+                        <td>EQ4</td>
+                        <td>N/A</td>
+                    </tr>
+                    <!-- PB2 LINARES -->
+                    <tr>
+                        <td>PB2 LINARES</td>
+                        <td><a href="#">15/07<br>15:28</a></td>
+                        <td>Nivel TS:<br>15 mts</td>
+                        <td>Succión:<br><a href="#">2.379 kg</a></td>
+                        <td>Descarga:<br><a href="#">7.469 kg</a></td>
+                        <td colspan="4">Salida:<br><a href="#">3662 lps</a></td>
+                        <td>EQ1</td>
+                        <td>EQ2</td>
+                        <td>EQ3</td>
+                        <td class="eq-activo">EQ4</td>
+                        <td class="eq-activo">EQ5</td>
+                    </tr>
+                    <!-- PB2A LINARES -->
+                    <tr>
+                        <td>PB2A LINARES</td>
+                        <td><a href="#">15/07<br>15:28</a></td>
+                        <td>Nivel TR:<br>384 cm</td>
+                        <td>N/A</td>
+                        <td>Descarga:<br><a href="#">8.54 kg</a></td>
+                        <td colspan="4">Salida:<br><a href="#">3982 lps</a></td>
+                        <td class="eq-activo">EQ1</td>
+                        <td>EQ2</td>
+                        <td>EQ3</td>
+                        <td>EQ4</td>
+                        <td class="eq-activo">EQ5</td>
+                    </tr>
+                    <!-- PB3 LINARES -->
+                    <tr>
+                        <td>PB3 LINARES</td>
+                        <td><a href="#">15/07<br>15:28</a></td>
+                        <td>Nivel TR:<br>412 cm</td>
+                        <td>N/A</td>
+                        <td>Descarga:<br><a href="#">7.81 kg</a></td>
+                        <td colspan="4">Salida:<br><a href="#">3973 lps</a></td>
+                        <td class="eq-activo">EQ1</td>
+                        <td class="eq-activo">EQ2</td>
+                        <td>EQ3</td>
+                        <td>EQ4</td>
+                        <td>EQ5</td>
+                    </tr>
+                    <!-- TANQUE GARRAPATAS -->
+                    <tr>
+                        <td>TANQUE GARRAPATAS</td>
+                        <td><a href="#">15/07<br>15:48</a></td>
+                        <td>357 cm</td>
+                        <td colspan="2">N/A</td>
+                        <td colspan="4" style="text-align:center">N/A</td>
+                        <td colspan="5">N/A</td>
+                    </tr>
+                    <!-- ROMPEDOR -->
+                    <tr>
+                        <td>ROMPEDOR</td>
+                        <td><a href="#">15/07<br>15:48</a></td>
+                        <td>N/A</td>
+                        <td>ENTRADA:<br><a href="#">6.6 kg</a></td>
+                        <td>SALIDA:<br><a href="#">3.92 kg</a></td>
+                        <td colspan="2">FLUJO DE 30″:<br><a href="#">1465 lps</a></td>
+                        <td colspan="2">FLUJO DE 42″:<br><a href="#">1570 lps</a></td>
+                        <td colspan="5">N/A</td>
+                    </tr>
+                    <!-- RANCHO EL TEXANO -->
+                    <tr>
+                        <td>RANCHO EL TEXANO</td>
+                        <td><a href="#">15/07<br>15:45</a></td>
+                        <td>N/A</td>
+                        <td colspan="2">Presión:<br><a href="#">4.41 kg</a></td>
+                        <td colspan="4" style="text-align:center">N/A</td>
+                        <td colspan="5">Batería:<br><a href="#">13.05 volts</a></td>
+                    </tr>
+                    <!-- PB4 LINARES -->
+                    <tr>
+                        <td>PB4 LINARES</td>
+                        <td><a href="#">15/07<br>15:27</a></td>
+                        <td>N/A</td>
+                        <td colspan="2">N/A</td>
+                        <td>FLUJO A PB5:<br><a href="#">3971 lps</a></td>
+                        <td>ROMPEDOR:<br><a href="#">3098 lps</a></td>
+                        <td>EXTRACCIÓN:<br><a href="#">873 lps</a></td>
+                        <td>APORTACIÓN:<br><a href="#">0 lps</a></td>
+                        <td class="eq-activo">EQ1</td>
+                        <td>EQ2</td>
+                        <td>EQ3</td>
+                        <td>EQ4</td>
+                        <td>EQ5</td>
+                    </tr>
+                    <!-- FILA ADICIONAL -->
+                    <tr>
+                        <td>Equipos<br>Bombeo<br>Chapotal<br><br><br>Flujos<br>Bombeo<br>Chapotal</td>
+                        <td colspan="13">BOMBEO FUERA DE OPERACIÓN</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </body>
+
+    </html>
+
+    <!-- Botón de subir al inicio -->
+    <button id="btnSubir" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });" aria-label="Subir al inicio">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 4l-8 8h5v8h6v-8h5z" />
+        </svg>
+    </button>
+
+    <!-- Script para mostrar/ocultar botón de subir -->
+    <script>
+        const btnSubir = document.getElementById("btnSubir");
+        window.addEventListener("scroll", () => {
+            btnSubir.style.display = window.scrollY > 300 ? "flex" : "none";
+        });
+    </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <!-- Head principal: metadatos, título y enlace al CSS -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anillo TV</title>
+  <link rel="stylesheet" href="/Pagina/css/anillotv.css" />
+</head>
+
+<body>
+  <!-- Cabecera: botón de regreso, título y leyenda de estados -->
+  <header class="main-header">
+    <!-- Botón para volver al inicio -->
+    <a href="/Pagina/html/index.html" class="back-btn" aria-label="Regresar">
+      <img src="/Pagina/imagenes/boton de regreso.png" alt="Botón de regreso">
+      <span class="texto-inicio">( INICIO )</span>
+    </a>
+
+    <!-- Centro: título del sistema y estados -->
+    <div class="header-center">
+      <div class="title-wrap">
+        <h1>ANILLO TV</h1>
+        <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+      </div>
+
+      <!-- Badges de estado -->
+      <div class="legend">
+        <span class="badge rojo" onclick="mostrarModal('modal-falla')">Equipo Falla</span>
+        <span class="badge verde" onclick="mostrarModal('modal-operando')">Equipo Operando</span>
+        <span class="badge pide" onclick="mostrarModal('modal-observacion')">Observación</span>
+      </div>
+    </div>
+
+    <!-- Logo derecho -->
+    <img src="/Pagina/imagenes/logo agua y drenaje" class="logo-agua" alt="Logo AyD">
+  </header>
+
+  <!-- Visor de imágenes con flechas de navegación -->
+  <div class="visor-imagenes">
+    <img id="img-anillo" src="/Pagina/imagenes/anillotv1.jpg" alt="Anillo TV">
+
+    <!-- Flecha arriba -->
+    <button id="btn-arriba" class="btn-bajar arriba" onclick="cambiarImagen('arriba')" title="Subir">
+      <svg class="svg-arrow" viewBox="0 0 40 40">
+        <polyline points="8,25 20,13 32,25" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </button>
+
+    <!-- Flecha abajo -->
+    <button id="btn-abajo" class="btn-bajar" onclick="cambiarImagen('abajo')" title="Bajar">
+      <svg class="svg-arrow" viewBox="0 0 40 40">
+        <polyline points="8,15 20,27 32,15" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </button>
+
+    <!-- Flecha izquierda -->
+    <button id="btn-izq" class="btn-flecha izquierda" onclick="cambiarImagen('izq')" title="Regresar">
+      <svg class="svg-arrow" viewBox="0 0 40 40">
+        <polyline points="25,8 13,20 25,32" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </button>
+
+    <!-- Flecha derecha -->
+    <button id="btn-der" class="btn-flecha derecha" onclick="cambiarImagen('der')" title="Siguiente">
+      <svg class="svg-arrow" viewBox="0 0 40 40">
+        <polyline points="15,8 27,20 15,32" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Modales para mostrar información de cada estado -->
+  <div id="modal-falla" class="modal">
+    <div class="modal-contenido">
+      <button class="cerrar" onclick="cerrarModal('modal-falla')">&times;</button>
+      <h2>Equipo Falla</h2>
+      <p>Este estado indica que el equipo presenta una falla o se encuentra fuera de servicio.</p>
+    </div>
+  </div>
+
+  <div id="modal-operando" class="modal">
+    <div class="modal-contenido">
+      <button class="cerrar" onclick="cerrarModal('modal-operando')">&times;</button>
+      <h2>Equipo Operando</h2>
+      <p>El equipo se encuentra funcionando correctamente y en operación normal.</p>
+    </div>
+  </div>
+
+  <div id="modal-observacion" class="modal">
+    <div class="modal-contenido">
+      <button class="cerrar" onclick="cerrarModal('modal-observacion')">&times;</button>
+      <h2>Observación</h2>
+      <p>Indica que el equipo requiere revisión o presenta condiciones que deben ser monitoreadas con atención.</p>
+    </div>
+  </div>
+
+  <!-- Script para controlar imágenes y modales -->
+  <script>
+    const rutas = [
+      "/Pagina/imagenes/anillotv1.jpg",
+      "/Pagina/imagenes/anillotv2.jpg",
+      "/Pagina/imagenes/anillotv3.jpg",
+      "/Pagina/imagenes/anillotv4.jpg",
+      "/Pagina/imagenes/anillotv5.jpg",
+      "/Pagina/imagenes/anillotv6.jpg"
+    ];
+
+    let actual = 0;
+    const $ = id => document.getElementById(id);
+    const img = $("img-anillo");
+
+    // Oculta todos los botones antes de actualizar
+    function reiniciar() {
+      ["btn-izq", "btn-der", "btn-abajo", "btn-arriba"].forEach(id => $(id).style.display = "none");
+    }
+
+    // Muestra solo los botones necesarios según la imagen actual
+    function actualizarControles() {
+      reiniciar();
+      switch (actual) {
+        case 0:
+          $("btn-der").style.display = "flex";
+          $("btn-abajo").style.display = "flex";
+          break;
+        case 1:
+          $("btn-izq").style.display = "flex";
+          $("btn-abajo").style.display = "flex";
+          break;
+        case 2:
+          $("btn-arriba").style.display = "flex";
+          $("btn-arriba").style.top = "4%";
+          $("btn-arriba").style.left = "50%";
+          $("btn-abajo").style.display = "flex";
+          $("btn-abajo").style.top = "91%";
+          $("btn-abajo").style.left = "50%";
+          $("btn-der").style.display = "flex";
+          $("btn-der").style.top = "45%";
+          $("btn-der").style.left = "96%";
+          break;
+        case 3:
+          $("btn-arriba").style.display = "flex";
+          $("btn-arriba").style.top = "3%";
+          $("btn-arriba").style.left = "50%";
+          $("btn-arriba").style.transform = "translateX(-50%)";
+          $("btn-izq").style.display = "flex";
+          $("btn-abajo").style.display = "flex";
+          break;
+        case 4:
+          $("btn-arriba").style.display = "flex";
+          $("btn-arriba").style.top = "5%";
+          $("btn-arriba").style.left = "38%";
+          $("btn-der").style.display = "flex";
+          break;
+        case 5:
+          $("btn-arriba").style.display = "flex";
+          $("btn-arriba").style.top = "4%";
+          $("btn-arriba").style.left = "56%";
+          $("btn-izq").style.display = "flex";
+          $("btn-izq").style.top = "60%";
+          $("btn-izq").style.left = "10px";
+          break;
+      }
+    }
+
+    // Cambia la imagen según la dirección
+    function cambiarImagen(acc) {
+      if (actual === 0 && acc === "der") actual = 1;
+      else if (actual === 0 && acc === "abajo") actual = 2;
+      else if (actual === 1 && acc === "izq") actual = 0;
+      else if (actual === 1 && acc === "abajo") actual = 3;
+      else if (actual === 2 && acc === "arriba") actual = 0;
+      else if (actual === 2 && acc === "der") actual = 3;
+      else if (actual === 2 && acc === "abajo") actual = 4;
+      else if (actual === 3 && acc === "arriba") actual = 1;
+      else if (actual === 3 && acc === "izq") actual = 2;
+      else if (actual === 3 && acc === "abajo") actual = 5;
+      else if (actual === 4 && acc === "arriba") actual = 2;
+      else if (actual === 4 && acc === "der") actual = 5;
+      else if (actual === 5 && acc === "arriba") actual = 3;
+      else if (actual === 5 && acc === "izq") actual = 4;
+
+      img.style.opacity = 0;
+      setTimeout(() => {
+        img.src = rutas[actual];
+        img.onload = () => {
+          img.style.opacity = 1;
+          actualizarControles();
+        };
+      }, 500);
+    }
+
+    // Inicializa los controles al cargar
+    window.addEventListener("load", () => {
+      actualizarControles();
+      img.style.opacity = 1;
+    });
+
+    // Abre un modal
+    function mostrarModal(id) {
+      document.getElementById(id).classList.add("show");
+    }
+
+    // Cierra un modal
+    function cerrarModal(id) {
+      document.getElementById(id).classList.remove("show");
+    }
+
+    // Cierra si se hace clic fuera del modal
+    window.addEventListener("click", e => {
+      ["modal-falla", "modal-operando", "modal-observacion"].forEach(id => {
+        const modal = document.getElementById(id);
+        if (e.target === modal) cerrarModal(id);
+      });
+    });
+  </script>
+</body>
+
+</html>

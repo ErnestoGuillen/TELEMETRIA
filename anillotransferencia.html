@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema Anillo de Transferencia</title>
+  <link rel="stylesheet" href="/Pagina/css/anillodetransferencia.css" />
+</head>
+
+<body>
+  <!-- Header principal con botón de regreso, títulos y badges -->
+  <header class="mini-header">
+    <!-- Botón para volver al inicio -->
+    <a href="index.html" class="mini-back">
+      <img src="/Pagina/imagenes/boton de regreso.png" alt="←">
+      <span class="texto-inicio">( INICIO )</span>
+    </a>
+
+    <!-- Título principal del sistema -->
+    <div class="mini-center">
+      <div class="title-stack">
+        <span class="mini-title">SISTEMA ANILLO DE TRANSFERENCIA</span>
+        <span class="mini-subtitle">ENLACE E INNOVACIÓN</span>
+      </div>
+
+      <!-- Badges de estados (falla, operando, etc.) -->
+      <div class="mini-badges">
+        <span class="badge rojo" onclick="mostrarModal('modal-falla')">Equipo Falla</span>
+        <span class="badge verde" onclick="mostrarModal('modal-operando')">Equipo Operando</span>
+        <span class="badge funcionado" onclick="mostrarModal('modal-funcionado')">
+          <img src="/Pagina/imagenes/m.png" alt="✓"> Funcionado
+        </span>
+        <span class="badge inactivo" onclick="mostrarModal('modal-inactivo')">
+          <img src="/Pagina/imagenes/m2.png" alt="✕"> Inactivo
+        </span>
+        <span class="badge pide" onclick="mostrarModal('modal-observacion')">Observación</span>
+      </div>
+    </div>
+
+    <!-- Logo del sistema -->
+    <img src="/Pagina/imagenes/logo agua y drenaje" class="mini-logo" alt="Logo AyD">
+  </header>
+
+  <!-- Área principal donde se muestra el diagrama -->
+  <div class="visor">
+    <img src="/Pagina/imagenes/anillotransferencia1.jpg" alt="Diagrama Sistema Monterrey V" />
+  </div>
+
+  <!-- Modales de información (según el estado del equipo) -->
+  <div id="modal-falla" class="modal">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarModal('modal-falla')">&times;</span>
+      <h2>Equipo Falla</h2>
+      <p>El equipo presenta una falla o está fuera de servicio.</p>
+    </div>
+  </div>
+
+  <div id="modal-operando" class="modal">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarModal('modal-operando')">&times;</span>
+      <h2>Equipo Operando</h2>
+      <p>El equipo se encuentra funcionando correctamente y en operación normal.</p>
+    </div>
+  </div>
+
+  <div id="modal-funcionado" class="modal">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarModal('modal-funcionado')">&times;</span>
+      <h2>Funcionado</h2>
+      <p>El equipo ha realizado su función correctamente en un período reciente.</p>
+    </div>
+  </div>
+
+  <div id="modal-inactivo" class="modal">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarModal('modal-inactivo')">&times;</span>
+      <h2>Inactivo</h2>
+      <p>El equipo no está en operación actualmente, pero no presenta fallas.</p>
+    </div>
+  </div>
+
+  <div id="modal-observacion" class="modal">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarModal('modal-observacion')">&times;</span>
+      <h2>Observación</h2>
+      <p>Indica que el equipo requiere revisión o presenta condiciones que deben ser monitoreadas con atención.</p>
+    </div>
+  </div>
+
+  <!-- Script que controla la apertura y cierre de los modales -->
+  <script>
+    function mostrarModal(id) {
+      const modal = document.getElementById(id);
+      const contenido = modal.querySelector(".modal-contenido");
+      modal.classList.add("show");
+      contenido.classList.remove("fadeOut");
+      contenido.style.animation = "fadeInZoom 0.4s ease forwards";
+    }
+
+    function cerrarModal(id) {
+      const modal = document.getElementById(id);
+      const contenido = modal.querySelector(".modal-contenido");
+      contenido.classList.add("fadeOut");
+      contenido.style.animation = "fadeOutZoom 0.3s ease forwards";
+      setTimeout(() => {
+        modal.classList.remove("show");
+        contenido.classList.remove("fadeOut");
+      }, 300);
+    }
+
+    // Cierra el modal si se hace clic fuera del contenido
+    window.addEventListener("click", function (e) {
+      document.querySelectorAll(".modal").forEach(modal => {
+        if (e.target === modal) modal.classList.remove("show");
+      });
+    });
+  </script>
+</body>
+
+</html>

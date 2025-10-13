@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoreo Garcia</title>
+    <link rel="stylesheet" href="/Pagina/css/garcia.css" />
+</head>
+
+<body>
+
+    <!-- ==== BARRA SUPERIOR ==== -->
+    <header class="main-header">
+        <a href="/Pagina/html/index.html" class="back-btn" aria-label="Regresar">
+            <img src="/Pagina/imagenes/boton de regreso.png" alt="Regresar al inicio">
+            <span class="texto-inicio">( INICIO )</span>
+        </a>
+        <div class="titulo-centrado">
+            <h1>MONITOREO GARCIA</h1>
+            <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+        </div>
+        <img src="/Pagina/imagenes/poniente esquina.jpg" alt="Logo Agua y Drenaje" class="logo-agua">
+    </header>
+
+    <!-- ==== SIMBOLOGÍA ==== -->
+    <div class="simbologia-wrapper">
+        <span class="simbologia-title">SIMBOLOGÍA</span>
+        <div class="chips-row">
+            <span class="badge rojo">Sin Comunicación</span>
+            <span class="badge verde">Operando</span>
+            <span class="badge checar">Activado por PLC</span>
+            <span class="badge pide">Pide Agua</span>
+        </div>
+    </div>
+
+    <!-- ==== GARCÍA ==== -->
+    <section class="table-section">
+        <h2>GARCIA</h2>
+        <table id="t1" class="data-table">
+            <thead>
+                <tr>
+                    <th width="15%">UBICACION</th>
+                    <th width="15%">ACTUALIZACION</th>
+                    <th width="10%">MODO</th>
+                    <th width="20%">NIVEL</th>
+                    <th width="20%">FLUJO</th>
+                    <th width="20%" colspan="4">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>Bombeo<br>Garcia</td>
+                    <td id="t1-r1-c0"><a href="#">11/08</a><br><a href="#">09:49</a></td>
+                    <td>Automatico</td>
+                    <td id="t1-r1-c1"><a href="#">669 cm</a></td>
+                    <td id="t1-r1-c6">N/A</td>
+                    <td id="t1-r1-c2" class="activo">*EQ1*</td>
+                    <td id="t1-r1-c3" class="activo">*EQ2*</td>
+                    <td id="t1-r1-c4" class="activo">*EQ3*</td>
+                    <td id="t1-r1-c5">EQ4</td>
+                </tr>
+                <tr align="center">
+                    <td>Garcia II</td>
+                    <td id="t1-r2-c0"><a href="#">11/08</a><br><a href="#">09:48</a></td>
+                    <td>Monitoreo</td>
+                    <td id="t1-r2-c1" class="resaltado"><a href="#">399 cm</a></td>
+                    <td id="t1-r2-c4">
+                        <a href="#">A Red 24"</a><br>
+                        <a href="#">178 lps</a>
+                    </td>
+                    <td colspan="4">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== SOBREVILLA ==== -->
+    <section class="table-section">
+        <h2>SOBREVILLA</h2>
+        <table id="t2" class="data-table">
+            <thead>
+                <tr>
+                    <th width="15%">UBICACION</th>
+                    <th width="15%">ACTUALIZACION</th>
+                    <th width="10%">MODO</th>
+                    <th width="20%">NIVEL</th>
+                    <th width="20%">PRESION</th>
+                    <th width="20%" colspan="3">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>Tanque</td>
+                    <td id="t2-r1-c0"><a href="#">11/08</a><br><a href="#">10:01</a></td>
+                    <td>Automatico</td>
+                    <td id="t2-r1-c1"><a href="#">350 cm</a></td>
+                    <td id="t2-r1-c2">N/A</td>
+                    <td id="t2-r1-c3" class="activo">*EQ1*</td>
+                    <td id="t2-r1-c4" class="activo">*EQ2*</td>
+                    <td id="t2-r1-c5" class="activo">*EQ3*</td>
+                </tr>
+                <tr align="center">
+                    <td>Tanque Capellania</td>
+                    <td id="t2-r2-c0"><a href="#">11/08</a><br><a href="#">10:00</a></td>
+                    <td>Monitoreo</td>
+                    <td id="t2-r2-c1">
+                        <a href="#">400 cm</a><br>
+                        <span class="pide">◆ Pide Agua ◆</span>
+                    </td>
+                    <td id="t2-r2-c2">N/A</td>
+                    <td id="t2-r2-c3" colspan="3">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== SISTEMA HACIENDA ==== -->
+    <section class="table-section">
+        <h2>SISTEMA HACIENDA</h2>
+        <table id="t3" class="data-table">
+            <thead>
+                <tr>
+                    <th width="15%">UBICACION</th>
+                    <th width="15%">ACTUALIZACION</th>
+                    <th width="10%">MODO</th>
+                    <th width="20%">NIVEL</th>
+                    <th width="20%">FLUJO</th>
+                    <th width="20%" colspan="3">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>Carcamo</td>
+                    <td id="CBHCND01-c0"><a href="#">11/08</a><br><a href="#">10:00</a></td>
+                    <td>Monitoreo</td>
+                    <td id="CBHCND01-c1">N/A</td>
+                    <td id="CBHCND01-c2">N/A</td>
+                    <td id="CBHCND01-c3" class="activo">EQ1</td>
+                    <td id="CBHCND01-c4">EQ2</td>
+                    <td id="CBHCND01-c5">EQ3</td>
+                </tr>
+                <tr align="center">
+                    <td>Tanque</td>
+                    <td id="TBHCND01-c0"><a href="#">11/08</a><br><a href="#">10:00</a></td>
+                    <td>Monitoreo</td>
+                    <td id="TBHCND01-c1">
+                        <a href="#">213 cm</a><br>
+                        <span class="no-pide">■ No Pide Agua ■</span>
+                    </td>
+                    <td id="TBHCND01-c2">N/A</td>
+                    <td id="TBHCND01-c3">EQ1</td>
+                    <td id="TBHCND01-c4" class="activo">EQ2</td>
+                    <td id="TBHCND01-c5" class="activo">EQ3</td>
+                </tr>
+                <tr align="center">
+                    <td>Tanque II</td>
+                    <td id="TBHCND02-c0"><a href="#">11/08</a><br><a href="#">10:00</a></td>
+                    <td>Monitoreo</td>
+                    <td id="TBHCND02-c1"><a href="#">109 cm</a></td>
+                    <td id="TBHCND02-c2">N/A</td>
+                    <td id="TBHCND02-c3" colspan="3">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== LA CRUZ ==== -->
+    <section class="table-section">
+        <h2>LA CRUZ</h2>
+        <table id="t4" class="data-table">
+            <thead>
+                <tr>
+                    <th width="15%">UBICACION</th>
+                    <th width="15%">ACTUALIZACION</th>
+                    <th width="10%">MODO</th>
+                    <th width="20%">NIVEL</th>
+                    <th colspan="2">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>Tanque</td>
+                    <td id="t4-r1-c0"><a href="#">11/08</a><br><a href="#">10:00</a></td>
+                    <td>Monitoreo</td>
+                    <td id="t4-r1-c1"><a href="#">183 cm</a></td>
+                    <td>
+                        <table class="data-table" style="width:100%;">
+                            <tbody>
+                                <tr align="center">
+                                    <td>Bombeo a:<br>San Felipe</td>
+                                    <td>Bombeo a:<br>Icamole</td>
+                                </tr>
+                                <tr align="center">
+                                    <td class="activo">EQ1</td>
+                                    <td>EQ2</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+    <!-- ==== PTAR GARCIA ==== -->
+    <section class="table-section">
+        <h2>PTAR GARCIA</h2>
+        <table id="t5" class="data-table">
+            <thead>
+                <tr>
+                    <th width="15%">UBICACION</th>
+                    <th width="15%">ACTUALIZACION</th>
+                    <th width="10%">MODO</th>
+                    <th width="15%">NIVEL</th>
+                    <th width="15%">FLUJO</th>
+                    <th width="15%">PRESION</th>
+                    <th width="15%" colspan="2">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>Bombeo<br>Tanque Pedreras</td>
+                    <td id="PTAR-DATE" rowspan="2"><a href="#">11/08</a><br><a href="#">10:07</a></td>
+                    <td>Automatico</td>
+                    <td id="PTAR-NIV" rowspan="5">N/A</td>
+                    <td id="PTAR-FL1"><a href="#">0 lps</a></td>
+                    <td id="PTAR-PR1"><a href="#">10.43 kg/cm³</a></td>
+                    <td id="PTAR-EQ3">EQ1</td>
+                    <td id="PTAR-EQ2">*EQ2*</td>
+                </tr>
+                <tr align="center">
+                    <td>Bombeo<br>Terra Alta</td>
+                    <td>Automatico</td>
+                    <td id="PTAR-FL2"><a href="#">0 lps</a></td>
+                    <td id="PTAR-PR2"><a href="#">6.3 kg/cm³</a></td>
+                    <td id="PTAR-EQ1">*EQ1*</td>
+                    <td>N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Influente</td>
+                    <td id="PTAR2-DATE" rowspan="3">&nbsp;</td>
+                    <td>Monitoreo</td>
+                    <td id="PTAR2-FL1"><a href="#">90 lps</a></td>
+                    <td rowspan="4">N/A</td>
+                    <td colspan="2">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Efluente</td>
+                    <td>Monitoreo</td>
+                    <td id="PTAR2-FL2"><a href="#">86 lps</a></td>
+                    <td colspan="2">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Retorno<br>Lodos</td>
+                    <td>Monitoreo</td>
+                    <td id="PTAR2-FL3"><a href="#">0 lps</a></td>
+                    <td colspan="2">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Pedreras</td>
+                    <td id="t5-r2-c0"><a href="#">11/08</a><br><a href="#">10:07</a></td>
+                    <td>Monitoreo</td>
+                    <td id="t5-r2-c1"><a href="#">0 cm</a><br>◆ Pide Agua ◆</td>
+                    <td id="t5-r2-c2">N/A</td>
+                    <td id="t5-r2-c3" colspan="2"><a href="#">14.7 volts</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <!-- ==== BOTÓN SUBIR ==== -->
+    <button id="btnSubir" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });" aria-label="Subir al inicio">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 4l-8 8h5v8h6v-8h5z" fill="white" />
+        </svg>
+    </button>
+
+    <!-- ==== SCRIPT SUBIR ==== -->
+    <script>
+        const btnSubir = document.getElementById("btnSubir");
+        window.addEventListener("scroll", () => {
+            btnSubir.style.display = window.scrollY > 300 ? "flex" : "none";
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoreo de Presas</title>
+    <link rel="stylesheet" href="/Pagina/css/presas.css" />
+</head>
+
+<body>
+
+    <!-- ==== BARRA SUPERIOR ==== -->
+    <header class="main-header">
+        <a href="/Pagina/html/index.html" class="back-btn" aria-label="Regresar">
+            <img src="/Pagina/imagenes/boton de regreso.png" alt="Regresar al inicio">
+            <span class="texto-inicio">( INICIO )</span>
+        </a>
+        <div class="titulo-centrado">
+            <h1>MONITOREO DE PRESAS</h1>
+            <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+        </div>
+        <img src="/Pagina/imagenes/poniente esquina.jpg" alt="Logo Agua y Drenaje" class="logo-agua">
+    </header>
+
+    <!-- ==== SIMBOLOGÍA ==== -->
+    <div class="simbologia-wrapper">
+        <span class="simbologia-title">SIMBOLOGÍA</span>
+        <div class="chips-row">
+            <span class="badge rojo">Sin Comunicación</span>
+            <span class="badge verde">Operando</span>
+            <span class="badge checar">Activado por PLC</span>
+            <span class="badge pide">Pide Agua</span>
+        </div>
+    </div>
+
+    <!-- ==== PRESAS / ALIMENTADORES ==== -->
+    <section class="table-section">
+        <h2>ALIMENTADORES</h2>
+        <table id="T1" class="data-table">
+            <thead>
+                <tr>
+                    <th width="20%">UBICACION</th>
+                    <th width="16%">ACTUALIZACION</th>
+                    <th width="16%">ELEVACION (MTS)</th>
+                    <th width="16%">ALMACENAMIENTO (MM³)</th>
+                    <th width="16%">PORCENTAJE (%)</th>
+                    <!-- <th width="16%">BATERIA</th> -->
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>PRESA DE LA BOCA</td>
+                    <td id="T1-r1-c0"><a href="#">11/08</a><br><a href="#">09:31</a></td>
+                    <td id="T1-r1-c1"><a href="#">446.86 m s.n.m.</a></td>
+                    <td id="T1-r1-c2">32.22</td>
+                    <td id="T1-r1-c3">92.06</td>
+                    <!-- <td id="T1-r1-c4">N/D</td> -->
+                </tr>
+                <tr align="center">
+                    <td>PRESA CERRO PRIETO</td>
+                    <td id="T1-r2-c0"><a href="#">11/08</a><br><a href="#">09:51</a></td>
+                    <td id="T1-r2-c1"><a href="#">281.68 m s.n.m.</a></td>
+                    <td id="T1-r2-c2">278.95</td>
+                    <td id="T1-r2-c3">92.98</td>
+                    <!-- <td id="T1-r2-c4">N/D</td> -->
+                </tr>
+                <tr align="center">
+                    <td>PRESA DEL CUCHILLO</td>
+                    <td id="T1-r3-c0"><a href="#">11/08</a><br><a href="#">00:00</a></td>
+                    <td id="T1-r3-c1"><a href="#">0 m s.n.m.</a></td>
+                    <td id="T1-r3-c2">854.069</td>
+                    <td id="T1-r3-c3">76.04</td>
+                    <!-- <td id="T1-r3-c4">N/D</td> -->
+                </tr>
+                <tr align="center">
+                    <td>PRESA LEÓN <br>(LIBERTAD)</td>
+                    <td id="T1-r4-c0"><a href="#">11/08</a><br><a href="#">10:03</a></td>
+                    <td id="T1-r4-c1"><a href="#">334.34 m s.n.m.</a></td>
+                    <td id="T1-r4-c2">58.83</td>
+                    <td id="T1-r4-c3">26.74</td>
+                    <!-- <td id="T1-r4-c4">N/D</td> -->
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <!-- ==== BOTÓN SUBIR ==== -->
+    <button id="btnSubir" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" aria-label="Subir al inicio">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+            <path d="M12 4l-8 8h5v8h6v-8h5z" fill="#fff" />
+        </svg>
+    </button>
+
+    <script>
+        const btnSubir = document.getElementById('btnSubir');
+        window.addEventListener('scroll', () => {
+            btnSubir.style.display = window.scrollY > 300 ? 'flex' : 'none';
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitoreo Poniente</title>
+  <link rel="stylesheet" href="/Pagina/css/poniente.css" />
+</head>
+
+<body>
+  <!-- ╔══ BARRA SUPERIOR (flecha + título + logo) ═══════════════════════╗ -->
+  <header class="main-header">
+    <a href="/Pagina/html/index.html" class="back-btn" aria-label="Regresar">
+      <img src="/Pagina/imagenes/boton de regreso.png" alt="Regresar al inicio" />
+      <span class="texto-inicio">( INICIO )</span>
+    </a>
+
+    <div class="titulo-centrado">
+      <h1>MONITOREO PONIENTE</h1>
+      <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+    </div>
+
+    <img src="/Pagina/imagenes/poniente esquina.jpg" alt="Logo Agua y Drenaje" class="logo-agua" />
+  </header>
+  <!-- SIMBOLOGIA  -->
+  <div class="simbologia-wrapper">
+    <span class="simbologia-title">SIMBOLOGÍA</span>
+    <div class="chips-row">
+      <!-- Fila superior: Rojo + Verde -->
+      <span class="badge rojo">Sin Comunicación</span>
+      <span class="badge verde">Operando</span>
+      <!-- Fila inferior: Checar (negro) + Pide Agua (azul) -->
+      <span class="badge checar">Activado por PLC</span>
+      <span class="badge pide">Pide Agua</span>
+    </div>
+  </div>
+
+  <!-- ========== ANILLO DE TRANSFERENCIA ========== -->
+  <section class="table-section">
+    <h2 class="titulo-anillo">ANILLO DE TRANSFERENCIA</h2>
+
+    <table class="data-table">
+      <!-- iguala el ancho de las tres columnas de flujo -->
+      <colgroup>
+        <col>
+        <col>
+        <col>
+        <col>
+        <col style="width:10%">
+        <col style="width:10%">
+        <col style="width:10%">
+      </colgroup>
+
+      <thead>
+        <tr>
+          <th>UBICACIÓN</th>
+          <th>ACTUALIZACIÓN</th>
+          <th>MODO</th>
+          <th>NIVEL</th>
+          <th colspan="3">FLUJO</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>Obispado</td>
+          <td>26/06<br>16:03</td>
+          <td>Monitoreo</td>
+          <td>349&nbsp;cm</td>
+          <td colspan="3" class="na-cell">N/A</td>
+        </tr>
+
+        <tr>
+          <td>Loma Larga</td>
+          <td>26/06<br>16:03</td>
+          <td>Monitoreo</td>
+          <td>231&nbsp;cm</td>
+          <td>A Red:<br>629&nbsp;LPS</td>
+          <td>A Obispado:<br>663&nbsp;LPS</td>
+          <td>A Valle&nbsp;II:<br>365&nbsp;LPS</td>
+        </tr>
+
+        <tr>
+          <td>Penal</td>
+          <td>26/06<br>16:03</td>
+          <td>Monitoreo</td>
+          <td>444&nbsp;cm</td>
+          <td>De Loma&nbsp;Larga:<br>721&nbsp;LPS</td>
+          <td>A Red:<br>0&nbsp;LPS</td>
+          <td>A San&nbsp;Bernabé:<br>536&nbsp;LPS</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+
+
+
+  <section class="table-section">
+    <h2>SISTEMA VALLE</h2>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>UBICACION</th>
+          <th>ACTUALIZACION</th>
+          <th>MODO</th>
+          <th>NIVEL</th>
+          <th>FLUJO</th>
+          <th colspan="3">EQUIPOS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Valle II</td>
+          <td>27/06<br>14:17</td>
+          <td>Monitoreo</td>
+          <td>389 cm</td>
+          <td>A Red:<br>721 lps</strong></td>
+          <td colspan="3"="na-cell">N/A</td>
+        </tr>
+        <tr>
+          <td>Valle III</td>
+          <td>27/06<br>14:17</td>
+          <td>Monitoreo</td>
+          <td>374 cm</td>
+          <td>N/A</td>
+          <td colspan="3"="na-cell">N/A</td>
+        </tr>
+        <tr>
+          <td>ValleIV</td>
+          <td>27/06<br>14:17</td>
+          <td>Automatico</td>
+          <td>576 cm</td>
+          <td>N/A</td>
+          <td>*EQ1*<br></td>
+          <td>*EQ2*<br></td>
+          <td>*EQ3*<br></td>
+        </tr>
+        <tr>
+          <td>Valle V</td>
+          <td>27/06<br>14:17</td>
+          <td>Automatico</td>
+
+          <!-- APLICAMOS CLASE PIDE-AGUA PARA FONDO AZUL -->
+          <td class="pide-agua">
+            420 cm<br>
+            <span style="color: #0066d6;">◆ Pide Agua ◆</span>
+          </td>
+
+          <td>N/A</td>
+          <td>*EQ1*</td>
+          <td>*EQ2*</td>
+          <td>*EQ3*</td>
+        </tr>
+
+        <tr>
+          <td>Valle VI</td>
+          <td>27/06<br>14:17</td>
+          <td>Monitoreo</td>
+          <td>619 cm</td>
+          <td>N/A</td>
+          <td>EQ1<br></td>
+          <td>EQ2<br></td>
+          <td>EQ3<br></td>
+        </tr>
+        <tr>
+          <td>Valle VII</td>
+          <td>27/06<br>14:17</td>
+          <td>Monitoreo</td>
+          <td>440 cm</td>
+          <td>111 lps<br></td>
+          <td>EQ1<br></td>
+          <td>EQ2<br></td>
+          <td>EQ3<br></td>
+        </tr>
+        <tr>
+          <td>Valle VIII</td>
+          <td>27/06<br>14:17</td>
+          <td>Monitoreo</td>
+          <td>399 cm</td>
+          <td>N/A<br></td>
+          <td>EQ1<br></td>
+          <td>EQ2<br></td>
+          <td>EQ3<br></td>
+        </tr>
+        <tr>
+          <td>Valle&nbsp;VIII</td>
+          <td>27/06<br>14:17</td>
+          <td>Monitoreo</td>
+          <td>399&nbsp;cm</td>
+          <td>N/A</td>
+
+          <!-- mini-tabla alineada y con anchos fijos -->
+          <td colspan="5">
+            <table class="tabla-mini" style="width:100%;table-layout:fixed;text-align:center;border-collapse:collapse;">
+              <!-- cinco columnas iguales -->
+              <colgroup>
+                <col style="width:20%">
+                <col style="width:20%">
+                <col style="width:20%">
+                <col style="width:20%">
+                <col style="width:20%">
+              </colgroup>
+
+              <tbody>
+                <tr>
+                  <td colspan="3">A&nbsp;Valle&nbsp;X</td>
+                  <td colspan="2">A&nbsp;Bombeo&nbsp<br></be>Santuario&nbsp;I</td>
+                </tr>
+                <tr>
+                  <td>EQ1</td>
+                  <td>EQ2</td>
+                  <td>EQ3</td>
+                  <td>EQ4</td>
+                  <td>EQ5</td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Valle XII</td>
+          <td>27/06<br>14:17</td>
+          <td>Monitoreo</td>
+          <td>344 cm</td>
+          <td>N/A<br></td>
+          <td>EQ1<br></td>
+          <td>EQ2<br></td>
+          <td>EQ3<br></td>
+        </tr>
+        <td>Valle XIII</td>
+        <td>27/06<br>14:17</td>
+        <td>Automatico</td>
+        <td>344 cm</td>
+        <td>N/A<br></td>
+        <td>*EQ1*<br></td>
+        <td>*EQ2*<br></td>
+        <td>*EQ3*<br></td>
+        </tr>
+        <td>Valle XIV</td>
+        <td>27/06<br>14:17</td>
+        <td>Monitoreo</td>
+        <!-- APLICAMOS CLASE PIDE-AGUA PARA FONDO AZUL -->
+        <td class="pide-agua">
+          0 cm<br>
+          <span style="color: #0066d6;">◆ Pide Agua ◆</span>
+        </td>
+        <td>N/A<br></td>
+        <td>EQ1<br></td>
+        <td>EQ2<br></td>
+        <td>EQ3<br></td>
+        </tr>
+        <tr>
+          <td>Valle XV</td>
+          <td>27/06<br>14:17</td>
+          <td>Monitoreo</td>
+          <td>0 cm</td>
+          <td>N/A</td>
+          <td colspan="3" class="na-cell">N/A</td>
+        </tr>
+        </tr>
+      </tbody>
+    </table>
+
+    <section class="table-section">
+      <h2>SISTEMA SAN PEDRO</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>UBICACION</th>
+            <th>ACTUALIZACION</th>
+            <th>MODO</th>
+            <th>NIVEL</th>
+            <th colspan="3">EQUIPOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>San Pedro I</td>
+            <td>26/06<br>16:03</td>
+            <td>Monitoreo</td>
+            <td>374 cm</td>
+            <td colspan="1" class="na-cell">EQ1</td>
+            <td colspan="2" class="na-cell">EQ2</td>
+          </tr>
+          <tr>
+            <td>San Pedro II</td>
+            <td>26/06<br>16:03</td>
+            <td>Monitoreo</td>
+            <td>279 cm</td>
+            <td colspan="1" class="na-cell">EQ1</td>
+            <td colspan="2" class="na-cell">EQ2</td>
+          </tr>
+          <tr>
+            <td>San Pedro VI</td>
+            <td>26/06<br>16:03</td>
+            <td>Automatico</td>
+            <td>279 cm</td>
+            <td colspan="1" class="na-cell">EQ1</td>
+            <td colspan="2" class="na-cell">EQ2</td>
+          </tr>
+          <tr>
+            <td>San Pedro VIII</td>
+            <td>26/06<br>16:03</td>
+            <td>Monitoreo</td>
+            <td>279 cm</td>
+            <td colspan="1" class="na-cell">EQ1</td>
+            <td colspan="2" class="na-cell">EQ2</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- NUEVA SECCION SISTEMA OBISPADO -->
+    <section class="table-section">
+      <h2>SISTEMA OBISPADO</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>UBICACION</th>
+            <th>ACTUALIZACION</th>
+            <th>MODO</th>
+            <th>NIVEL</th>
+            <th colspan="4">EQUIPOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Carcamo</td>
+            <td>30/06<br>12:12</td>
+            <td>Automatico</td>
+            <td>N/A</td>
+            <td>*EQ1*</td>
+            <td>EQ2</td>
+            <td>*EQ3*</td>
+          </tr>
+          <tr>
+            <td>Obispo I</td>
+            <td>30/06<br>12:12</td>
+            <td>Automatico</td>
+            <!-- APLICAMOS CLASE PIDE-AGUA PARA FONDO AZUL -->
+            <td class="pide-agua">
+              383 cm<br>
+              <span style="color: #0066d6;;">◆ Pide Agua ◆</span>
+            </td>
+            <td>EQ1</td>
+            <td>*EQ2*</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td>Obispo II</td>
+            <td>30/06<br>12:13</td>
+            <td>Monitoreo</td>
+            <td>331 cm</td>
+            <td colspan="4">N/A</td>
+          </tr>
+
+        </tbody>
+      </table>
+    </section>
+
+
+    <!-- NUEVA SECCIÓN SISTEMA COLINAS -->
+    <section class="table-section">
+      <h2>SISTEMA COLINAS</h2>
+      <table class="data-table">
+        <colgroup>
+          <col> <!-- UBICACIÓN -->
+          <col style="width:12%"> <!-- ACTUALIZACIÓN -->
+          <col style="width:12%"> <!-- MODO -->
+          <col style="width:10%"> <!-- NIVEL -->
+          <col style="width:8%"> <!-- EQ1 -->
+          <col style="width:8%"> <!-- EQ2 -->
+          <col style="width:8%"> <!-- EQ3 -->
+          <col style="width:8%"> <!-- EQ4 -->
+        </colgroup>
+        <thead>
+          <tr>
+            <th>UBICACIÓN</th>
+            <th>ACTUALIZACIÓN</th>
+            <th>MODO</th>
+            <th>NIVEL</th>
+            <th colspan="4">EQUIPOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bombeo Colinas I</td>
+            <td>30/06<br>11:56</td>
+            <td>Automático</td>
+            <td>N/A</td>
+            <td class="eq-activo">*EQ1*</td>
+            <td class="eq-activo">*EQ2*</td>
+            <td class="eq-activo">*EQ3*</td>
+            <td class="eq-activo">*EQ4*</td>
+          </tr>
+          <tr>
+            <td>Tanque Colinas I</td>
+            <td>30/06<br>11:56</td>
+            <td>Monitoreo</td>
+            <td style="background:yellow;font-weight:bold;color:black;">298 cm</td>
+            <td colspan="4">N/A</td>
+          </tr>
+          <tr>
+            <td>Bombeo Colinas II</td>
+            <td>30/06<br>11:56</td>
+            <td>Automático</td>
+            <td>N/A</td>
+            <td class="eq-activo">*EQ1*</td>
+            <td class="eq-activo">*EQ2*</td>
+            <td class="eq-activo">*EQ3*</td>
+            <td>EQ4</td>
+          </tr>
+          <tr>
+            <td>Tanque Colinas II</td>
+            <td>30/06<br>11:56</td>
+            <td>Monitoreo</td>
+            <td style="background:yellow;font-weight:bold;color:black;">334 cm</td>
+            <td colspan="4">N/A</td>
+          </tr>
+          <tr>
+            <td>Bombeo Colinas III</td>
+            <td>30/06<br>11:56</td>
+            <td>Automático</td>
+            <td>N/A</td>
+            <td class="eq-activo">*EQ1*</td>
+            <td>EQ2</td>
+            <td>EQ3</td>
+            <td>EQ4</td>
+          </tr>
+          <tr>
+            <td>Tanque Colinas III</td>
+            <td>30/06<br>11:56</td>
+            <td>Monitoreo</td>
+            <td>260 cm</td>
+            <td>EQ1</td>
+            <td colspan="3" class="eq-activo">*EQ2*</td>
+          </tr>
+          <tr>
+            <td>Tanque Colinas Amp.</td>
+            <td>30/06<br>11:56</td>
+            <td>Automático</td>
+            <td>215 cm</td>
+            <td>EQ1</td>
+            <td colspan="3" class="eq-activo">*EQ2*</td>
+          </tr>
+          <tr>
+            <td>Tanque Colinas IV</td>
+            <td>30/06<br>11:56</td>
+            <td>Monitoreo</td>
+            <td style="background:yellow;font-weight:bold;color:black;">299 cm</td>
+            <td>EQ1</td>
+            <td colspan="3">EQ2</td>
+          </tr>
+          <tr>
+            <td>Tanque Colinas V</td>
+            <td>30/06<br>11:56</td>
+            <td>Monitoreo</td>
+            <td>320 cm</td>
+            <td colspan="4">N/A</td>
+          </tr>
+          <tr>
+            <td>Tanque Las Lajas</td>
+            <td>30/06<br>11:53</td>
+            <td>Monitoreo</td>
+            <td>275 cm</td>
+            <td class="eq-activo">EQ1</td>
+            <td colspan="3">EQ2</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+
+    <!-- NUEVA SECCIÓN SISTEMA COLORINES -->
+    <section class="table-section">
+      <h2>SISTEMA COLORINES</h2>
+      <table class="data-table">
+        <thead style="background-color: orange; color: black;">
+          <tr>
+            <th>UBICACION</th>
+            <th>ACTUALIZACION</th>
+            <th>MODO</th>
+            <th>NIVEL</th>
+            <th>PRESION</th>
+            <th colspan="2">EQUIPOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Carcamo</td>
+            <td>30/06<br>12:20</td>
+            <td>Monitoreo</td>
+            <td>N/A</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+            <td class="eq-activo">EQ2</td>
+          </tr>
+          <tr>
+            <td>Colorines I</td>
+            <td>30/06<br>12:22</td>
+            <td>Monitoreo</td>
+            <td>281 cm</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+            <td>EQ2</td>
+          </tr>
+          <tr>
+            <td>Colorines II</td>
+            <td>30/06<br>12:20</td>
+            <td>Monitoreo</td>
+            <td>345 cm</td>
+            <td>0 Kg/cm²</td>
+            <td colspan="2">N/A</td>
+          </tr>
+          <tr>
+            <td>San Agustin Campestre I</td>
+            <td>30/06<br>12:20</td>
+            <td>Monitoreo</td>
+            <td>232 cm</td>
+            <td>4.1 Kg/cm²</td>
+            <td colspan="2">N/A</td>
+          </tr>
+          <tr>
+            <td>San Agustin Campestre II</td>
+            <td>30/06<br>12:20</td>
+            <td>Monitoreo</td>
+            <td>209 cm</td>
+            <td>0 Kg/cm²</td>
+            <td colspan="2">N/A</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- NUEVA SECCIÓN SISTEMA PALMILLAS -->
+    <section class="table-section">
+      <h2>SISTEMA PALMILLAS</h2>
+      <table class="data-table">
+        <thead style="background-color: orange; color: black;">
+          <tr>
+            <th>UBICACION</th>
+            <th>ACTUALIZACION</th>
+            <th>MODO</th>
+            <th>NIVEL</th>
+            <th>FLUJO</th>
+            <th colspan="2">EQUIPOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Palmillas I</td>
+            <td>30/06<br>12:23</td>
+            <td>Monitoreo</td>
+            <td>312 cm</td>
+            <td>0 lps</td>
+            <td>EQ1</td>
+            <td>EQ2</td>
+          </tr>
+          <tr>
+            <td>Palmillas II</td>
+            <td>30/06<br>12:19</td>
+            <td>Monitoreo</td>
+            <td>277 cm</td>
+            <td>N/A</td>
+            <td colspan="2">N/A</td>
+          </tr>
+          <tr>
+            <td>Palmillas III</td>
+            <td>30/06<br>12:19</td>
+            <td>Monitoreo</td>
+            <td style="background-color: yellow;"><span style="color: black; font-weight: bold;">216 cm</span></td>
+            <td>N/A</td>
+            <td colspan="2">N/A</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- NUEVA SECCIÓN SISTEMA VALLE ORIENTE -->
+    <section class="table-section">
+      <h2>SISTEMA VALLE ORIENTE</h2>
+      <table class="data-table">
+        <thead style="background-color: orange; color: black;">
+          <tr>
+            <th>UBICACION</th>
+            <th>ACTUALIZACION</th>
+            <th>MODO</th>
+            <th colspan="2">NIVEL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Valle Oriente I</td>
+            <td>30/06<br>12:22</td>
+            <td>Monitoreo</td>
+            <td style="background-color: yellow;"><span style="color: black; font-weight: bold;">129 cm</span></td>
+          </tr>
+          <tr>
+            <td>Valle Oriente II</td>
+            <td>30/06<br>12:22</td>
+            <td>Monitoreo</td>
+            <td colspan="2">314 cm</td>
+          </tr>
+          <tr>
+            <td>Valle Oriente III</td>
+            <td>30/06<br>12:22</td>
+            <td>Monitoreo</td>
+            <td colspan="2">164 cm</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <!-- SISTEMA SAN AGUSTÍN -->
+    <section class="table-section">
+      <h2>SISTEMA SAN AGUSTIN</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>UBICACION</th>
+            <th>ACTUALIZACION</th>
+            <th>MODO</th>
+            <th>NIVEL</th>
+            <th>PRESION</th>
+            <th colspan="2">EQUIPOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>San Agustin I</td>
+            <td>30/06<br>12:21</td>
+            <td>Monitoreo</td>
+            <td>509 cm</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+            <td class="eq-activo">EQ1</td>
+          </tr>
+          <tr>
+            <td>San Agustin II</td>
+            <td>30/06<br>12:21</td>
+            <td>Automatico</td>
+            <td>285 cm</td>
+            <td>5.24 kg/cm²</td>
+            <td>EQ1</td>
+            <td class="eq-activo">EQ1</td>
+          </tr>
+          <tr>
+            <td>Tanque 2</td>
+            <td colspan="7">Fuera por Vandalismo</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SISTEMA LOMAS DEL CAMPESTRE -->
+    <section class="table-section">
+      <h2>SISTEMA LOMAS DEL CAMPESTRE</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>UBICACION</th>
+            <th>ACTUALIZACION</th>
+            <th>MODO</th>
+            <th>NIVEL</th>
+            <th colspan="3">EQUIPOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Carcamo</td>
+            <td>30/06<br>12:12</td>
+            <td>Automatico</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+            <td>EQ2</td>
+            <td class="eq-activo">*EQ3*</td>
+          </tr>
+          <tr>
+            <td>Tanque</td>
+            <td>30/06<br>12:22</td>
+            <td>Monitoreo</td>
+            <td style="background-color: yellow;"><span style="color: black; font-weight: bold;">0 cm</span></td>
+            <td>EQ1</td>
+            <td>EQ2</td>
+            <td>EQ3</td>
+          </tr>
+          <tr>
+            <td>Tanque 2</td>
+            <td>30/06<br>12:22</td>
+            <td>Monitoreo</td>
+            <td style="background-color: yellow;"><span style="color: black; font-weight: bold;">0 cm</span></td>
+            <td>*EQ1*</td>
+            <td>EQ2</td>
+            <td>N/A</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SISTEMA JARDINES DE SAN AGUSTÍN -->
+    <section class="table-section">
+      <h2>SISTEMA JARDINES DE SAN AGUSTIN</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>UBICACION</th>
+            <th>ACTUALIZACION</th>
+            <th>MODO</th>
+            <th>NIVEL</th>
+            <th>PRESION</th>
+            <th colspan="2">EQUIPOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Carcamo</td>
+            <td>30/06<br>12:23</td>
+            <td>Monitoreo</td>
+            <td>N/A</td>
+            <td>Descarga: 3.844 Kg/cm²</td>
+            <td>EQ1</td>
+            <td class="eq-activo">*EQ2*</td>
+          </tr>
+          <tr>
+            <td>Jardines de San Agustín I</td>
+            <td>30/06<br>12:23</td>
+            <td>Automatico</td>
+            <td>308 cm</td>
+            <td>N/A</td>
+            <td class="eq-activo">*EQ2*</td>
+            <td>EQ2</td>
+          </tr>
+          <tr>
+            <td>Jardines de San Agustín II</td>
+            <td>30/06<br>12:23</td>
+            <td>Monitoreo</td>
+            <td style="text-align:center; background-color: #002b23; color: white;">
+              <p>0 cm</p>
+              <span style="color:white;">No&nbsp;Pide&nbsp;Agua</span>
+            </td>
+            <td>N/A</td>
+            <td colspan="2">13.47 Volts</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SISTEMA EL CARMEN -->
+    <section class="table-section">
+      <h2>SISTEMA EL CARMEN</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>UBICACION</th>
+            <th>ACTUALIZACION</th>
+            <th>MODO</th>
+            <th>NIVEL</th>
+            <th colspan="3">EQUIPOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>El Carmen</td>
+            <td>30/06<br>12:23</td>
+            <td>Monitoreo</td>
+            <td>176 cm</td>
+            <td>EQ1</td>
+            <td>EQ2</td>
+            <td>EQ3</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="table-section">
+      <h2>SISTEMA BOSQUES DE SAN AGUSTIN</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>UBICACION</th>
+            <th>ACTUALIZACION</th>
+            <th>MODO</th>
+            <th>NIVEL</th>
+            <th>PRESION</th>
+            <th colspan="2">EQUIPOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Carcamo</td>
+            <td>30/06<br>12:26</td>
+            <td>Monitoreo</td>
+            <td>N/A</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+            <td>EQ2</td>
+          </tr>
+          <tr>
+            <td>Tanque Bosques del Campestre</td>
+            <td>30/06<br>12:28</td>
+            <td>Monitoreo</td>
+            <td>255 cm</td>
+            <td>N/A</td>
+            <td>N/A</td>
+            <td>N/A</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="table-section">
+      <h2>SISTEMA VEREDALTA</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>UBICACION</th>
+            <th>ACTUALIZACION</th>
+            <th>MODO</th>
+            <th>NIVEL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tanque Veredalta</td>
+            <td>30/06<br>12:28</td>
+            <td>Monitoreo</td>
+            <td>386 cm</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+
+    <!-- ========== POZOS METROPOLITANOS ========== -->
+    <section class="table-section">
+      <h2>POZOS METROPOLITANOS</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>UBICACIÓN</th>
+            <th>ACTUALIZACIÓN</th>
+            <th>FLUJO</th>
+            <th>PRESIÓN</th>
+            <th>EQUIPOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Monterrey I</td>
+            <td>30/06<br>12:30</td>
+            <td>2 lps<br>Acumulado: 1 257 407.4×10³ m³</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+          </tr>
+          <tr>
+            <td>Monterrey II</td>
+            <td>30/06<br>12:31</td>
+            <td>0 lps<br>Acumulado: 0×10³ m³</td>
+            <td>N/A</td>
+            <td class="eq-activo">EQ1</td>
+          </tr>
+          <tr>
+            <td>Monterrey III</td>
+            <td>30/06<br>12:32</td>
+            <td>83 lps<br>Acumulado: 32×10³ m³</td>
+            <td>N/A</td>
+            <td class="eq-activo">EQ1</td>
+          </tr>
+          <tr>
+            <td>Monterrey IV</td>
+            <td style="background: #d10000;">00/00<br>00:00</td>
+            <td>0 lps<br>Acumulado: 0×10³ m³</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+          </tr>
+          <tr>
+            <td>Monterrey V</td>
+            <td>30/06<br>12:24</td>
+            <td>Acumulado: 13.2×10³ m³</td>
+            <td><a href="#">2.48 kg/cm²</a></td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td>Monterrey VI</td>
+            <td>30/06<br>12:31</td>
+            <td>0 lps<br>Acumulado: 0×10³ m³</td>
+            <td>N/A</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td>Monterrey IX</td>
+            <td colspan="2" style="text-align:center; font-style:italic;">Pozo inhabilitado</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+          </tr>
+          <tr>
+            <td>Monterrey X</td>
+            <td style="background: #d10000;">00/00<br>00:00</td>
+            <td>0 lps<br>Acumulado: 0×10³ m³</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+          </tr>
+          <tr>
+            <td>Hospital Civil</td>
+            <td>30/06<br>12:33</td>
+            <td>N/A</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+          </tr>
+          <tr>
+            <td>Rincón del Valle I</td>
+            <td>30/06<br>12:31</td>
+            <td>0 lps<br>Acumulado: 0×10³ m³</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+          </tr>
+          <tr>
+            <td>Rincón del Valle II</td>
+            <td>30/06<br>12:31</td>
+            <td>0 lps<br>Acumulado: 0×10³ m³</td>
+            <td>N/A</td>
+            <td class="eq-activo">EQ1</td>
+          </tr>
+          <tr>
+            <td>Mitras Sur II</td>
+            <td style="background: #d10000;">00/00<br>00:00</td>
+            <td>0 lps<br>Acumulado: 0×10³ m³</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+          </tr>
+          <tr>
+            <td>Mitras Sur III</td>
+            <td>30/06<br>12:32</td>
+            <td>0 lps<br>Acumulado: 0×10³ m³</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+          </tr>
+          <tr>
+            <td>Agustín Lara</td>
+            <td style="background: #d10000;">30/06<br>11:06</td>
+            <td>Acumulado: 2 970.2×10³ m³</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+          </tr>
+          <tr>
+            <td>Miravalle</td>
+            <td>30/06<br>12:33</td>
+            <td>Acumulado: 65 541 553.5×10³ m³</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+          </tr>
+          <tr>
+            <td>Miravalle II</td>
+            <td>30/06<br>12:34</td>
+            <td>0 lps<br>Acumulado: 0×10³ m³</td>
+            <td>N/A</td>
+            <td>EQ1</td>
+          </tr>
+          <tr>
+            <td>Miravalle III</td>
+            <td>30/06<br>12:34</td>
+            <td>0 lps<br>Acumulado: 0×10³ m³</td>
+            <td>N/A</td>
+            <td class="eq-activo">EQ1</td>
+          </tr>
+          <tr>
+            <td>Suchiate I</td>
+            <td>30/06<br>12:32</td>
+            <td>0 lps<br>Acumulado: 0×10³ m³</td>
+            <td>N/A</td>
+            <td class="eq-activo">EQ1</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Botón de subir al inicio -->
+    <button id="btnSubir" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });" aria-label="Subir al inicio">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 4l-8 8h5v8h6v-8h5z" />
+      </svg>
+    </button>
+
+    <!-- Script para mostrar/ocultar botón de subir -->
+    <script>
+      const btnSubir = document.getElementById("btnSubir");
+      window.addEventListener("scroll", () => {
+        btnSubir.style.display = window.scrollY > 300 ? "flex" : "none";
+      });
+    </script>
+
+</body>
+
+</html>

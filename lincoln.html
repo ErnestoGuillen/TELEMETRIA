@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoreo Lincoln</title>
+    <!-- CSS principal de esta vista -->
+    <link rel="stylesheet" href="/Pagina/css/lincoln.css" />
+</head>
+
+<body>
+    <!-- ==== BARRA SUPERIOR (branding + regreso a inicio) ==== -->
+    <header class="main-header">
+        <!-- Botón de regreso -->
+        <a href="/Pagina/html/index.html" class="back-btn" aria-label="Regresar">
+            <img src="/Pagina/imagenes/boton de regreso.png" alt="Regresar al inicio" />
+            <span class="texto-inicio">( INICIO )</span>
+        </a>
+
+        <!-- Título centrado -->
+        <div class="titulo-centrado">
+            <h1>MONITOREO LINCOLN</h1>
+            <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+        </div>
+
+        <!-- Logo derecho -->
+        <img src="/Pagina/imagenes/poniente esquina.jpg" alt="Logo Agua y Drenaje" class="logo-agua" />
+    </header>
+
+    <!-- ==== SIMBOLOGÍA (chips de estado) ==== -->
+    <div class="simbologia-wrapper">
+        <span class="simbologia-title">SIMBOLOGÍA</span>
+        <div class="chips-row">
+            <span class="badge rojo">Sin Comunicación</span>
+            <span class="badge verde">Operando</span>
+            <span class="badge checar">Activado por PLC</span>
+            <span class="badge pide">Pide Agua</span>
+        </div>
+    </div>
+
+    <!-- ========== SISTEMA CUMBRES ========== -->
+    <!-- Tabla con una fila que contiene una mini-tabla interna para listar equipos -->
+    <section class="table-section">
+        <h2>SISTEMA CUMBRES</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th>FLUJO</th>
+                    <!-- Columna ancha para la mini-tabla de equipos -->
+                    <th colspan="4">EQUIPOS</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <!-- Cárcamo Cumbres: ejemplo de uso de tabla anidada para dos renglones de equipos -->
+                <tr align="center">
+                    <td>Carcamo<br>Cumbres</td>
+                    <td><a>12/08</a><br><a>11:56</a></td>
+                    <td>Automatico</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td colspan="4">
+                        <!-- Mini-tabla de equipos (2 filas x 4 columnas) -->
+                        <table border="1" cellspacing="0" cellpadding="1" width="100%">
+                            <tr align="center">
+                                <td>*EQ1*</td>
+                                <td>*EQ2*</td>
+                                <td>*EQ3*</td>
+                                <td>EQ4</td>
+                            </tr>
+                            <tr align="center">
+                                <td>EQ5</td>
+                                <td>EQ6</td>
+                                <td>EQ7</td>
+                                <td>ALR</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Cumbres I -->
+                <tr align="center">
+                    <td>Cumbres I</td>
+                    <td><a>12/08</a><br><a>11:57</a></td>
+                    <td>Automatico</td>
+                    <!-- NOTA: color azul indica “Pide Agua” (estilo inline) -->
+                    <td style="background:#0066d6;color:#fff;">463 cm<br>◆ Pide Agua ◆</td>
+                    <td>N/A</td>
+                    <td>*EQ1*</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>ALR</td>
+                </tr>
+
+                <!-- Cumbres II -->
+                <tr align="center">
+                    <td>Cumbres II</td>
+                    <td><a>12/08</a><br><a>11:57</a></td>
+                    <td>Automatico</td>
+                    <td style="background:#0066d6;color:#fff;">463 cm<br>◆ Pide Agua ◆</td>
+                    <td>N/A</td>
+                    <td>*EQ1*</td>
+                    <td>EQ2</td>
+                    <td>*EQ3*</td>
+                    <td>N/A</td>
+                </tr>
+
+                <!-- Cumbres III -->
+                <tr align="center">
+                    <td>Cumbres III</td>
+                    <td><a>12/08</a><br><a>11:57</a></td>
+                    <td>Automatico</td>
+                    <td style="background:#0066d6;color:#fff;">463 cm<br>◆ Pide Agua ◆</td>
+                    <td>N/A</td>
+                    <!-- Un solo equipo destacado ocupa 3 celdas -->
+                    <td colspan="3">*EQ1*</td>
+                    <td>EQ2</td>
+                </tr>
+
+                <!-- Cumbres IV -->
+                <tr align="center">
+                    <td>Cumbres IV</td>
+                    <td><a>12/08</a><br><a>11:57</a></td>
+                    <td>Automatico</td>
+                    <td style="background:#0066d6;color:#fff;">463 cm<br>◆ Pide Agua ◆</td>
+                    <td>N/A</td>
+                    <!-- Todos los equipos fusionados en una sola celda -->
+                    <td colspan="4">EQ1</td>
+                </tr>
+
+                <!-- Cumbres V -->
+                <tr align="center">
+                    <td>Cumbres V</td>
+                    <td><a>12/08</a><br><a>11:57</a></td>
+                    <td>Monitoreo</td>
+                    <td style="background:#0066d6;color:#fff;">463 cm<br>◆ Pide Agua ◆</td>
+                    <td>N/A</td>
+                    <td>EQ1</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>EQ2</td>
+                </tr>
+
+                <!-- Cumbres VI -->
+                <tr align="center">
+                    <td>Cumbres VI</td>
+                    <td><a>12/08</a><br><a>11:57</a></td>
+                    <td>Monitoreo</td>
+                    <td><a>523 cm</a></td>
+                    <td>N/A</td>
+                    <td colspan="4">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ========== SISTEMA VALLE VERDE ========== -->
+    <section class="table-section">
+        <h2>SISTEMA VALLE VERDE</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th rowspan="2">UBICACIÓN</th>
+                    <th rowspan="2">ACTUALIZACIÓN</th>
+                    <th rowspan="2">MODO</th>
+                    <th rowspan="2">NIVEL</th>
+                    <th rowspan="2">FLUJO</th>
+                    <th colspan="4">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cárcamo Valle Verde</td>
+                    <td>08/07<br>16:04</td>
+                    <td>Automático</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>EQ4</td>
+                </tr>
+                <tr>
+                    <td>Valle Verde I</td>
+                    <td>08/07<br>16:04</td>
+                    <td>Automático</td>
+                    <td>379 cm</td>
+                    <td>N/A</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>Valle Verde II</td>
+                    <td>08/07<br>16:04</td>
+                    <td>Automático</td>
+                    <td>259 cm</td>
+                    <td>N/A</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>EQ4</td>
+                </tr>
+                <tr>
+                    <td>Valle Verde III</td>
+                    <td>08/07<br>16:04</td>
+                    <td>Monitoreo</td>
+                    <td>388 cm</td>
+                    <td>N/A</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>Valle Verde IV</td>
+                    <td>08/07<br>16:04</td>
+                    <td>Monitoreo</td>
+                    <td>402 cm</td>
+                    <td>N/A</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>Valle Verde V</td>
+                    <td>08/07<br>16:02</td>
+                    <td>Monitoreo</td>
+                    <td>466 cm</td>
+                    <td>N/A</td>
+                    <td>EQ1</td>
+                    <!-- OJO: hay una “S” suelta después del comentario en el HTML original -->
+                    <!-- EQ2 -->S
+                    <td>EQ2</td>
+                    <!-- N/A ocupa EQ3 y EQ4 -->
+                    <td colspan="2">N/A</td>
+                </tr>
+                <tr>
+                    <td>Valle Verde VI</td>
+                    <td>08/07<br>16:02</td>
+                    <td>Monitoreo</td>
+                    <td>348 cm</td>
+                    <td>N/A</td>
+                    <td colspan="4">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ========== SISTEMA SAN MARTÍN ========== -->
+    <section class="table-section">
+        <h2>SISTEMA SAN MARTÍN</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th rowspan="2">UBICACIÓN</th>
+                    <th rowspan="2">ACTUALIZACIÓN</th>
+                    <th rowspan="2">MODO</th>
+                    <th rowspan="2">NIVEL</th>
+                    <th colspan="2">FLUJO</th>
+                    <th colspan="5">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>San Martín I</td>
+                    <td>08/07<br>16:03</td>
+                    <td>Automático</td>
+                    <td>593 cm</td>
+                    <!-- Se usan dos subcolumnas de flujo para 2 destinos -->
+                    <td>S. Martín II 0 lps<br>Acum: 1 143 926 ×10 m³</td>
+                    <td>A Red 0 lps<br>Acum: 53 144 ×10 m³</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>EQ4</td>
+                    <td>EQ5</td>
+                </tr>
+                <tr>
+                    <td>Macromedidor Penal–San Martín I</td>
+                    <td>08/07<br>16:04</td>
+                    <td>Monitoreo</td>
+                    <td>N/A</td>
+                    <td colspan="2">N/A</td>
+                    <td colspan="5">N/A</td>
+                </tr>
+                <tr>
+                    <td>San Martín II</td>
+                    <td>08/07<br>16:03</td>
+                    <td>Automático</td>
+                    <td>343 cm</td>
+                    <td colspan="2">N/A</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <!-- ALARMA ocupa las 3 subceldas restantes de EQUIPOS -->
+                    <td colspan="3" style="text-align:center;">ALARMA</td>
+                </tr>
+                <tr>
+                    <td>San Martín III</td>
+                    <td>08/07<br>16:03</td>
+                    <td>Monitoreo</td>
+                    <td>449 cm</td>
+                    <td colspan="2">N/A</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td colspan="3">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ========== SISTEMA MITRAS PONIENTE ========== -->
+    <section class="table-section">
+        <h2>SISTEMA MITRAS PONIENTE</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th colspan="4">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cárcamo Mitras Poniente</td>
+                    <td>08/07<br>16:05</td>
+                    <td>Automático</td>
+                    <td>N/A</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>CFE</td>
+                </tr>
+                <tr>
+                    <td>Mitras Poniente I</td>
+                    <td>08/07<br>16:05</td>
+                    <td>Monitoreo</td>
+                    <td>67 cm</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>0<br>volts</td>
+                </tr>
+                <tr>
+                    <td>Mitras Poniente II</td>
+                    <td>08/07<br>16:06</td>
+                    <td>Monitoreo</td>
+                    <td style="background:#0066d6;color:#fff;">463 cm<br>◆ Pide Agua ◆</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>Mitras Poniente III</td>
+                    <td>08/07<br>16:06</td>
+                    <td>Monitoreo</td>
+                    <td>494 cm</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>CFE</td>
+                </tr>
+                <tr>
+                    <td>Mitras Poniente IV</td>
+                    <td>08/07<br>16:06</td>
+                    <td>Monitoreo</td>
+                    <td>579 cm</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                    <td>CFE</td>
+                </tr>
+                <tr>
+                    <td>Mitras Poniente V</td>
+                    <td>08/07<br>16:06</td>
+                    <td>Monitoreo</td>
+                    <td>312 cm</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>Mitras Poniente VI</td>
+                    <td>08/07<br>16:06</td>
+                    <td>Monitoreo</td>
+                    <td>519 cm</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ========== MONTERREY V ========== -->
+    <section class="table-section">
+        <h2>MONTERREY V</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th>FLUJO</th>
+                    <th colspan="5">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Alianza Real</td>
+                    <td>08/07<br>16:02</td>
+                    <td>Automático</td>
+                    <td>528 cm</td>
+                    <td>N/A</td>
+                    <!-- Columna EQUIPOS como mini-tabla (Fraile I + Mitras Poniente) -->
+                    <td colspan="7" style="padding:0;">
+                        <table class="tabla-mini" width="100%">
+                            <thead>
+                                <tr>
+                                    <td colspan="4">Fraile I</td>
+                                    <td colspan="3">Mitras Poniente</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>*EQ1*</td>
+                                    <td>*EQ2*</td>
+                                    <td>*EQ3*</td>
+                                    <td>*EQ4*</td>
+                                    <td>EQ5</td>
+                                    <td>EQ6</td>
+                                    <td>EQ7</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Fraile I</td>
+                    <td>08/07<br>16:10</td>
+                    <td>Automático</td>
+                    <td>516 cm</td>
+                    <td>N/A</td>
+                    <td>*EQ1*</td>
+                    <td>EQ2</td>
+                    <td>*EQ3*</td>
+                    <td>*EQ4*</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>Fraile II</td>
+                    <td>08/07<br>16:12</td>
+                    <td>Automático</td>
+                    <td>661 cm</td>
+                    <td>N/A</td>
+                    <td>*EQ1*</td>
+                    <td>EQ2</td>
+                    <td>*EQ3*</td>
+                    <td>*EQ4*</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>Fraile III</td>
+                    <td>08/07<br>16:08</td>
+                    <td>Automático</td>
+                    <td>0 cm</td>
+                    <td>N/A</td>
+                    <td>*EQ1*</td>
+                    <td>EQ2</td>
+                    <td>*EQ3*</td>
+                    <td>N/A</td>
+                    <td>ALR</td>
+                </tr>
+                <tr>
+                    <td>Fraile IV</td>
+                    <td>08/07<br>15:43</td>
+                    <td>Monitoreo</td>
+                    <td>290 cm</td>
+                    <td>N/A</td>
+                    <td>*EQ1*</td>
+                    <td>EQ2</td>
+                    <td>*EQ3*</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>Fraile V</td>
+                    <td>08/07<br>16:22</td>
+                    <td>Monitoreo</td>
+                    <td>247 cm</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>García I</td>
+                    <td>08/07<br>16:04</td>
+                    <td>Automático</td>
+                    <td>676 cm</td>
+                    <td>A Red 0 lps</td>
+                    <td>*EQ1*</td>
+                    <td>EQ2</td>
+                    <td>*EQ3*</td>
+                    <td>*EQ4*</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>García II</td>
+                    <td>08/07<br>16:06</td>
+                    <td>Monitoreo</td>
+                    <td>486 cm</td>
+                    <td>A Red 168 lps</td>
+                    <td colspan="5">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ========== SISTEMA REAL DE MINAS ========== -->
+    <section class="table-section">
+        <h2>SISTEMA REAL DE MINAS</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th>PRESIÓN</th>
+                    <th style="text-align:center">FLUJO</th>
+                    <th colspan="3">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Real de Minas I</td>
+                    <td>08/07<br>16:03</td>
+                    <td>Automático</td>
+                    <td>317 cm</td>
+                    <td>1.11 kg/cm²</td>
+                    <td style="text-align:center">0 lps</td>
+                    <td>EQ1</td>
+                    <td>EQ2</td>
+                    <td>EQ3</td>
+                </tr>
+                <tr>
+                    <td>Real de Minas II</td>
+                    <td>00/00<br>00:00</td>
+                    <td>Monitoreo</td>
+                    <td>0 cm</td>
+                    <td>N/A</td>
+                    <td style="text-align:center">N/A</td>
+                    <td colspan="3">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ========== SISTEMA SAN BERNABÉ ========== -->
+    <section class="table-section">
+        <h2>SISTEMA SAN BERNABÉ</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>MODO</th>
+                    <th>NIVEL</th>
+                    <th style="text-align:center">FLUJO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>San Bernabé I Circular</td>
+                    <td>11/07<br>15:38</td>
+                    <!-- celdas fusionadas para mostrar el mismo MODO/NIVEL/FLUJO en dos filas -->
+                    <td rowspan="2">Monitoreo</td>
+                    <td rowspan="2">250 cm</td>
+                    <td rowspan="2" style="text-align:center">a Red 18″:<br>37 lps</td>
+                </tr>
+                <tr>
+                    <td>San Bernabé Salida a Red 18″</td>
+                    <td>11/07<br>15:38</td>
+                </tr>
+                <tr>
+                    <td>San Bernabé I<br>Rectangular</td>
+                    <td>11/07<br>15:38</td>
+                    <td rowspan="2">Monitoreo</td>
+                    <td rowspan="2">339 cm</td>
+                    <td rowspan="2" style="text-align:center">
+                        a Red 24″:<br>0 lps<br>Acumulando: 0 ×10 m³
+                    </td>
+                </tr>
+                <tr>
+                    <td>San Bernabé Salida a Red 24″</td>
+                    <td>11/07<br>15:38</td>
+                </tr>
+                <tr>
+                    <td>San Bernabé II</td>
+                    <td>11/07<br>15:41</td>
+                    <td>Monitoreo</td>
+                    <td>543 cm</td>
+                    <td style="text-align:center">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ========== POZOS METROPOLITANOS ========== -->
+    <section class="table-section">
+        <h2>POZOS METROPOLITANOS</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACIÓN</th>
+                    <th>ACTUALIZACIÓN</th>
+                    <th>FLUJO</th>
+                    <th>PRESIÓN</th>
+                    <th>EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Topo Chico III</td>
+                    <td>08/07<br>16:07</td>
+                    <td>0 lps<br>Acumulado: 0 ×10 m³</td>
+                    <td>N/A</td>
+                    <td>EQ1</td>
+                </tr>
+                <tr>
+                    <td>Central Lincoln</td>
+                    <td>08/07<br>16:08</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>EQ1</td>
+                </tr>
+                <tr>
+                    <td>Ciudad Mitras</td>
+                    <td>08/07<br>16:04</td>
+                    <td>4 lps<br>Acumulado: 406.9 ×10 m³</td>
+                    <td>N/A</td>
+                    <td>EQ1</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== BOTÓN SUBIR (aparece al hacer scroll) ==== -->
+    <button id="btnSubir" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });" aria-label="Subir al inicio">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 4l-8 8h5v8h6v-8h5z" fill="white" />
+        </svg>
+    </button>
+
+    <!-- ==== SCRIPT SUBIR ==== -->
+    <script>
+        const btnSubir = document.getElementById("btnSubir");
+        // Muestra/oculta el botón según el desplazamiento
+        window.addEventListener("scroll", () => {
+            btnSubir.style.display = window.scrollY > 300 ? "flex" : "none";
+        });
+    </script>
+</body>
+
+</html>

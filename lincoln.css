@@ -1,0 +1,323 @@
+/* ==== BASE ==== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4edd4;
+  color: #333;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overflow-y: scroll;
+}
+
+body::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+/* ==== CABECERA ==== */
+.main-header {
+  background: #db7d13;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .8rem 1.4rem;
+  position: relative;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #fff;
+  z-index: 2;
+}
+
+.back-btn img {
+  height: 46px;
+  width: auto;
+  transition: transform .2s, opacity .2s;
+}
+
+.back-btn:hover img {
+  transform: translateX(-4px);
+  opacity: .85;
+}
+
+.logo-agua {
+  height: 60px;
+  width: auto;
+}
+
+.titulo-centrado {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 1;
+  padding: .4rem 0;
+}
+
+.titulo-centrado h1 {
+  font-size: 2.3rem;
+  color: #fff;
+}
+
+.subtitulo {
+  font-size: 1rem;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.texto-inicio {
+  font-size: 1rem;
+  color: #fff;
+  margin-left: 8px;
+  white-space: nowrap;
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  transition: color .3s;
+}
+
+.back-btn:hover .texto-inicio {
+  text-shadow: 0 0 6px #66ccff;
+  transform: scale(1.05);
+}
+
+.back-btn:active .texto-inicio {
+  color: #000000;
+  transform: scale(0.97);
+}
+
+.texto-inicio::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background: #fff;
+  transition: width .3s;
+}
+
+.back-btn:hover .texto-inicio::after {
+  width: 100%;
+}
+
+/* ==== TABLAS ==== */
+h2 {
+  text-align: center;
+  color: #000000;
+  margin: 1.5rem 0 .5rem;
+  font-size: 1.4rem;
+}
+
+.table-section {
+  padding: .5rem 1.5rem;
+  margin-bottom: .5rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.data-table th,
+.data-table td {
+  border: 1px solid #000000;
+  padding: .4rem .5rem;
+  text-align: center;
+  vertical-align: middle;
+  font-size: .9rem;
+}
+
+.data-table th {
+  background: #db7d13;
+  color: #fff;
+  font-weight: 700;
+}
+
+.data-table td a {
+  color: purple;
+  text-decoration: none;
+}
+
+.na-cell {
+  background: #e6f0fa;
+  color: #666;
+}
+
+.eq-activo {
+  background: #25c025;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ==== ICONOS ==== */
+.icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+
+.icon.checar {
+  background: url('/Pagina/imagenes/asterisco.jpg') center/contain no-repeat;
+}
+
+.icon.verde {
+  background: #25c025;
+}
+
+.icon.amarillo {
+  background: #ffcd00;
+}
+
+.icon.rojo {
+  background: #d10000;
+}
+
+.icon.alerta {
+  background: url('/Pagina/imagenes/ALERTA.png') center/contain no-repeat;
+}
+
+/* ==== SIMBOLOGÍA — NUEVO BLOQUE ==== */
+.simbologia-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: fit-content;
+  margin: 1rem 1.5rem 0 auto;
+  text-align: right;
+  gap: 0.4rem;
+}
+
+.simbologia-title {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  color: #000000;
+  margin: 0;
+}
+
+.chips-row {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 0.6rem 1rem;
+  justify-content: end;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.badge.rojo {
+  background: #d32f2f;
+}
+
+.badge.verde {
+  background: #25c025;
+}
+
+.badge.checar {
+  background: #002b23;
+}
+
+.badge.pide {
+  background: #0066d6;
+}
+
+/* Eleva el título “ANILLO DE TRANSFERENCIA” igual que .titulo-anillo */
+.table-section:first-of-type h2 {
+  position: relative;
+  top: -1.8rem;
+  /* Ajusta este valor hasta que quede a la altura que quieras */
+  margin: 0 auto 1rem;
+  width: fit-content;
+  text-align: center;
+  color: #000000;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* ==== BOTÓN SUBIR ==== */
+#btnSubir {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  background: #000000;
+  color: #fff;
+  font-size: 26px;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, .3);
+  transition: background .3s, transform .3s;
+  z-index: 998;
+}
+
+#btnSubir:hover {
+  background: #000000;
+  transform: scale(1.1);
+}
+
+#btnSubir svg {
+  width: 24px;
+  height: 24px;
+  fill: #fff;
+}
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .main-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .logo-agua {
+    height: 48px;
+  }
+
+  .back-btn img {
+    height: 40px;
+  }
+}
+
+/* ==== AJUSTE COLUMNA EQUIPOS ==== */
+.data-table td:nth-child(6),
+.data-table th:nth-child(6) {
+  max-width: 180px;
+  /* Ajusta según tu necesidad */
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  font-size: 0.85rem;
+  text-align: center;
+  vertical-align: middle;
+  padding: 6px 8px;
+}

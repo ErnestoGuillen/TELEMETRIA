@@ -1,0 +1,191 @@
+/* ==== BASE ==== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4edd4;
+  color: #333;
+  overflow-y: auto;
+}
+body::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+/* ==== CABECERA ==== */
+.main-header {
+  background: #db7d13;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.4rem;
+}
+.back-btn {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #fff;
+}
+.back-btn img {
+  height: 46px;
+  transition: transform 0.2s;
+}
+.back-btn:hover img {
+  transform: translateX(-4px);
+  opacity: 0.85;
+}
+.texto-inicio {
+  margin-left: 0.5rem;
+  white-space: nowrap;
+}
+.header-center {
+  flex: 1;
+  text-align: center;
+}
+.header-center h1 {
+  font-size: 1.8rem;
+}
+.subtitulo {
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+.logo-agua {
+  height: 50px;
+}
+
+/* ==== CONTENIDO PRINCIPAL CENTRADO ==== */
+.main-content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2rem;
+  margin: 2rem auto;
+  max-width: 1200px;
+  padding: 0 1rem;
+}
+
+/* ==== MENÚ TELEMETRÍA ==== */
+.menu-wrapper {
+  margin-top: 3rem;
+}
+.menu-table {
+  width: 250px;
+  border-collapse: collapse;
+  background: #fff;
+  border: 3px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+.menu-table th {
+  background: #db7d13;
+  color: #fff;
+  padding: 1.2rem;
+  text-align: center;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+/* ==== EFECTO “PADRE” EN CADA CUADRO ==== */
+.menu-item {
+  background: #fff;
+  color: #333;
+  text-align: center;
+  padding: 1rem;
+  border-top: 1px solid #ccc;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    background-color 0.2s ease;
+}
+.menu-item:hover,
+.menu-item:focus {
+  background-color: #f0f0f0;
+  transform: scale(1.05) rotate(-1deg);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+}
+.menu-item:active {
+  background-color: #e0e0e0;
+  transform: scale(0.98) rotate(0deg);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* ==== MAPA CENTRAL ==== */
+.map-wrapper {
+  flex: 1 1 auto;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.map-wrapper img {
+  max-width: 55%;
+  height: auto;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.map-label {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  background: rgba(255,255,255,0.8);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* ==== BOTÓN SUBIR ==== */
+#btnSubir {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: #000;
+  color: #fff;
+  font-size: 1.2rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+}
+#btnSubir:hover {
+  transform: scale(1.1);
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .main-header h1 {
+    font-size: 1.6rem;
+  }
+  .logo-agua {
+    height: 48px;
+  }
+  .back-btn img {
+    height: 40px;
+  }
+  .menu-table {
+    width: 180px;
+  }
+  .menu-table th {
+    font-size: 1.1rem;
+    padding: 1rem;
+  }
+  .menu-item {
+    font-size: 1rem;
+    padding: 0.8rem;
+  }
+  .map-wrapper img {
+    max-width: 80%;
+  }
+}

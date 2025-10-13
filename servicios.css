@@ -1,0 +1,164 @@
+/* ==== RESET ===================================================== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root{
+  --gap: 1.2rem;
+  --card-w: clamp(140px, 18vw, 180px);
+  --card-h: clamp(140px, 18vw, 180px);
+  --logo-h: clamp(64px, 9vw, 110px);
+}
+
+/* ==== FONDO / TIPOGRAFÍA ======================================= */
+body{
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #fff;
+  min-height: 100vh;
+  background: url('/Pagina/imagenes/tubos_fondo.png') no-repeat center center fixed;
+  background-size: cover;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ==== LOGOS ===================================================== */
+.logo-esquina{
+  position: absolute;
+  top: 10px;
+  height: var(--logo-h);
+  width: auto;
+  z-index: 10;
+}
+
+.logo-izq{ left: 10px; }
+.logo-der{ right: 30px; }
+
+/* ==== BOTÓN VOLVER ============================================= */
+.back-btn{
+  position: absolute;
+  /* debajo del logo izquierdo en desktop */
+  top: calc(10px + var(--logo-h) + 10px);
+  left: 100px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #fff;
+  color: #000;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: clamp(12px, 1.8vw, 14px);
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  z-index: 20;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.back-btn::before{
+  content: "";
+  width: 18px; height: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='black' viewBox='0 0 24 24'%3E%3Cpath d='M20 11H7.83l5.59-5.59L12 4 4 12l8 8 1.41-1.41L7.83 13H20v-2z'/%3E%3C/svg%3E") no-repeat center/contain;
+}
+
+.back-btn:hover{ transform: scale(1.05); box-shadow: 0 6px 16px rgba(0,0,0,.25); }
+
+/* ==== CONTENEDOR =============================================== */
+.container{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ==== TÍTULO ==================================================== */
+.titulo{
+  text-align: center;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.25;
+  margin-top: 1rem;
+  font-size: clamp(1.4rem, 2.6vw, 1.8rem);
+}
+
+/* ==== TARJETA TELEMETRÍA ======================================= */
+.telemetria-card{
+  border: 2px solid #1e6d8d;
+  border-radius: 14px;
+  width: var(--card-w);
+  height: var(--card-h);
+  display: flex; align-items: center; justify-content: center;
+  background: #fff;
+  overflow: hidden;
+  margin: 2rem auto 1.5rem;
+  transition: transform .2s ease, box-shadow .2s;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
+.telemetria-card img{ width: 100%; height: 100%; object-fit: contain; }
+
+/* ==== GRID OPCIONES ============================================ */
+.card-grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(var(--card-w), 1fr));
+  gap: var(--gap);
+  justify-items: center;
+}
+
+/* Tarjetas */
+.card{
+  border: 2px solid #fff;
+  border-radius: 14px;
+  width: var(--card-w);
+  height: var(--card-h);
+  display: flex; align-items: center; justify-content: center;
+  background: #fff;
+  overflow: hidden;
+  transition: transform .2s ease, box-shadow .2s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
+.card img{ width: 100%; height: 100%; object-fit: contain; }
+
+.card:hover{
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0,0,0,.25);
+}
+
+/* ==== RESPONSIVE ================================================= */
+/* Tablet */
+@media (max-width: 1024px){
+  .card-grid{
+    grid-template-columns: repeat(2, minmax(var(--card-w), 1fr));
+    gap: 1rem 1.2rem;
+  }
+  .back-btn{ left: 20px; }
+}
+
+/* Móvil */
+@media (max-width: 640px){
+  :root{
+    --gap: 1rem;
+    --card-w: clamp(132px, 42vw, 170px);
+    --card-h: clamp(132px, 42vw, 170px);
+    --logo-h: clamp(56px, 14vw, 84px);
+  }
+
+  .logo-der{ right: 10px; }
+
+  .back-btn{
+    top: calc(10px + var(--logo-h) + 6px);
+    left: 14px;
+    padding: 8px 12px;
+    border-radius: 9px;
+  }
+  .back-btn::before{ width: 16px; height: 16px; }
+
+  .card-grid{
+    grid-template-columns: 1fr;
+    gap: .9rem;
+  }
+}
+
+/* Menos movimiento (accesibilidad) */
+@media (prefers-reduced-motion: reduce){
+  .card, .telemetria-card, .back-btn{ transition: none !important; }
+}

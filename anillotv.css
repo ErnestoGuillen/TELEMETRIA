@@ -1,0 +1,393 @@
+/* Reinicio de estilos básicos */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Configuración general del cuerpo */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: #d4e5f4;
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+  overflow: hidden;
+  scroll-behavior: smooth;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Cabecera principal */
+.main-header {
+  background: #df953f;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .72rem 1.3rem;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+/* Botón de regreso al inicio */
+.back-btn {
+  display: flex;
+  align-items: center;
+  color: #fff;
+  text-decoration: none;
+  z-index: 2;
+}
+
+.back-btn img {
+  height: 38px;
+  width: auto;
+  transition: transform .2s, opacity .2s;
+}
+
+/* Efecto al pasar el cursor */
+.back-btn:hover img {
+  transform: translateX(-4px);
+  opacity: .85;
+}
+
+/* Texto del botón de inicio */
+.texto-inicio {
+  font-size: .95rem;
+  color: #fff;
+  margin-left: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .3s, transform .3s;
+  position: relative;
+}
+
+/* Efectos visuales del texto */
+.back-btn:hover .texto-inicio {
+  text-shadow: 0 0 6px #66ccff;
+  transform: scale(1.02);
+}
+
+.texto-inicio::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background: #fff;
+  transition: width .3s;
+}
+
+.back-btn:hover .texto-inicio::after {
+  width: 100%;
+}
+
+/* Contenedor central del header */
+.header-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .9rem;
+  min-width: 0;
+}
+
+/* Título y subtítulo */
+.title-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 1.06;
+}
+
+.title-wrap h1 {
+  font-size: 2.05rem;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.subtitulo {
+  margin-top: .12rem;
+  font-size: .9rem;
+  font-weight: 500;
+  letter-spacing: .06em;
+  color: #fff;
+}
+
+/* Contenedor de simbología */
+.legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .65rem;
+}
+
+/* Estilo general de las píldoras */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .4rem 1.1rem;
+  border-radius: 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .12);
+  gap: .4em;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s, background-color .3s;
+}
+
+/* Efectos al pasar o presionar */
+.badge:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 8px rgba(0, 0, 0, .3);
+}
+
+.badge:active {
+  transform: scale(.94);
+}
+
+/* Colores por estado */
+.badge.rojo {
+  background: #d32f2f;
+}
+
+.badge.verde {
+  background: #25c025;
+}
+
+.badge.funcionado {
+  background: #002b23;
+}
+
+.badge.inactivo {
+  background: #555;
+}
+
+.badge.pide {
+  background: #fff200;
+  color: #000;
+}
+
+/* Íconos dentro de los badges */
+.badge img {
+  height: 1.6em;
+  width: auto;
+  vertical-align: middle;
+}
+
+/* Logo del lado derecho */
+.logo-agua {
+  height: 52px;
+  width: auto;
+}
+
+/* Contenedor del visor principal */
+.visor-imagenes {
+  flex: 1 1 auto;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Imagen del visor */
+.visor-imagenes img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity .5s ease-in-out;
+}
+
+/* Botones de navegación */
+.btn-flecha,
+.btn-bajar {
+  position: absolute;
+  background: #1e3d58bb;
+  border: none;
+  border-radius: 50%;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 11;
+  transition: background .18s;
+  box-shadow: 0 2px 10px #0002;
+}
+
+/* Posiciones de las flechas */
+.btn-flecha.izquierda {
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.btn-flecha.derecha {
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Botones verticales */
+.btn-bajar {
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+}
+
+.btn-bajar.arriba {
+  left: 50%;
+  top: 38px;
+  bottom: auto;
+  transform: translateX(-50%);
+}
+
+/* Tamaño de las flechas SVG */
+.svg-arrow {
+  width: 30px;
+  height: 30px;
+}
+
+/* Ventanas modales */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 99;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .6);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+/* Contenido interno del modal */
+.modal-contenido {
+  background: #fff;
+  padding: 25px 32px 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 480px;
+  color: #333;
+  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .25);
+  animation: fadeInZoom .4s ease forwards;
+  position: relative;
+  text-align: left;
+}
+
+.modal-contenido h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.modal-contenido p {
+  font-size: .95rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Animación al cerrar */
+.modal-contenido.fadeOut {
+  animation: fadeOutZoom .3s ease forwards;
+}
+
+/* Animaciones */
+@keyframes fadeInZoom {
+  0% {
+    opacity: 0;
+    transform: scale(.7);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOutZoom {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(.7);
+  }
+}
+
+/* Botón de cierre del modal */
+.cerrar {
+  position: absolute;
+  top: 14px;
+  right: 20px;
+  font-size: 24px;
+  color: #d32f2f;
+  font-weight: bold;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color .3s;
+}
+
+.cerrar:hover {
+  color: #9a0007;
+}
+
+/* Ajustes responsivos */
+@media (max-width:1100px) {
+  .header-center {
+    flex-direction: column;
+    gap: .4rem;
+  }
+
+  .legend {
+    justify-content: center;
+  }
+}
+
+@media (max-width:600px) {
+  .main-header {
+    padding: .58rem 1rem;
+  }
+
+  .title-wrap h1 {
+    font-size: 1.8rem;
+  }
+
+  .subtitulo {
+    font-size: .85rem;
+  }
+
+  .badge {
+    font-size: .9rem;
+    padding: .3rem .8rem;
+    border-radius: 15px;
+  }
+
+  .logo-agua {
+    height: 48px;
+  }
+}

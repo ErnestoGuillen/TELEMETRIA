@@ -1,0 +1,331 @@
+/* ==== BASE ==== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #d4e5f4;
+    /* puedes dejarlo así o cambiarlo a #f4edd4 si prefieres beige */
+    color: #333;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overflow-y: scroll;
+}
+
+body::-webkit-scrollbar {
+    width: 0;
+    background: transparent
+}
+
+/* ==== CABECERA ==== */
+.main-header {
+    background: #db7d13;
+    /* NARANJA */
+    color: #fff;
+    /* LETRAS BLANCAS */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .8rem 1.4rem;
+    position: relative;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #fff;
+    z-index: 2
+}
+
+.back-btn img {
+    height: 46px;
+    width: auto;
+    transition: transform .2s, opacity .2s
+}
+
+.back-btn:hover img {
+    transform: translateX(-4px);
+    opacity: .85
+}
+
+.logo-agua {
+    height: 60px;
+    width: auto
+}
+
+.titulo-centrado {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 1;
+    padding: .4rem 0
+}
+
+.titulo-centrado h1 {
+    font-size: 2.3rem;
+    color: #fff
+}
+
+.subtitulo {
+    font-size: 1rem;
+    color: #fff;
+    letter-spacing: 1px
+}
+
+.texto-inicio {
+    font-size: 1rem;
+    color: #fff;
+    margin-left: 8px;
+    white-space: nowrap;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    transition: color .3s
+}
+
+.back-btn:hover .texto-inicio {
+    text-shadow: 0 0 6px #fff8;
+    transform: scale(1.05)
+}
+
+.back-btn:active .texto-inicio {
+    color: #fff;
+    opacity: .85
+}
+
+.texto-inicio::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 0;
+    height: 2px;
+    background: #fff;
+    transition: width .3s
+}
+
+.back-btn:hover .texto-inicio::after {
+    width: 100%
+}
+
+/* ==== TABLAS ==== */
+h2 {
+    text-align: center;
+    color: #db7d13;
+    /* título en naranja para coherencia */
+    margin: 1.5rem 0 .5rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.table-section {
+    padding: .5rem 1.5rem;
+    margin-bottom: .5rem
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    margin-bottom: 1rem;
+}
+
+.data-table th,
+.data-table td {
+    border: 1px solid #222;
+    /* borde oscuro */
+    padding: .5rem .6rem;
+    text-align: center;
+    vertical-align: middle;
+    font-size: .95rem;
+    font-weight: 500;
+}
+
+/* Encabezados de tabla: NARANJA + BLANCO */
+.data-table th {
+    background: #db7d13;
+    color: #fff;
+    font-weight: 700;
+}
+
+.data-table td a {
+    color: purple;
+    text-decoration: none
+}
+
+/* Estados */
+.na-cell {
+    background: #f6f7f9;
+    color: #666
+}
+
+.eq-activo {
+    background: #25c025;
+    color: #fff;
+    font-weight: 700
+}
+
+/* Sub-encabezado intermedio en “El Carmen Acueductos Mina” */
+.mid-header .subhead {
+    background: #f7d0a1;
+    /* naranja claro para diferenciar */
+    color: #4a3a22;
+    font-weight: 700;
+    border: 1px solid #222;
+}
+
+/* ==== BOTÓN SUBIR ==== */
+#btnSubir {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    background: #db7d13;
+    color: #fff;
+    font-size: 26px;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, .3);
+    transition: background .3s, transform .3s;
+    z-index: 998
+}
+
+#btnSubir:hover {
+    background: #c4680b;
+    transform: scale(1.1)
+}
+
+#btnSubir svg {
+    width: 24px;
+    height: 24px;
+    fill: #fff
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width:768px) {
+    .main-header h1 {
+        font-size: 1.6rem
+    }
+
+    .logo-agua {
+        height: 48px
+    }
+
+    .back-btn img {
+        height: 40px
+    }
+}
+
+/* ==== ICONOS / SIMBOLOGÍA ==== */
+.icon {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+    vertical-align: middle;
+    border-radius: 2px
+}
+
+.icon.checar {
+    background: url('/Pagina/imagenes/asterisco.jpg') center/contain no-repeat
+}
+
+.icon.verde {
+    background: #25c025
+}
+
+.icon.amarillo {
+    background: #ffcd00
+}
+
+.icon.rojo {
+    background: #d10000
+}
+
+.icon.alerta {
+    background: url('/Pagina/imagenes/ALERTA.png') center/contain no-repeat
+}
+
+/* SIMBOLOGÍA */
+.simbologia-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: fit-content;
+    margin: 1rem 1.5rem 0 auto;
+    text-align: right;
+    gap: .4rem;
+}
+
+.simbologia-title {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+    color: #db7d13;
+    margin: 0;
+}
+
+.chips-row {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: .6rem 1rem;
+    justify-content: end
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .35rem .9rem;
+    border-radius: 999px;
+    font-size: .85rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap
+}
+
+.badge.rojo {
+    background: #d32f2f
+}
+
+.badge.verde {
+    background: #25c025
+}
+
+.badge.checar {
+    background: #002b23
+}
+
+.badge.pide {
+    background: #0066d6
+}
+
+/* Sub‑encabezado intermedio dentro de las tablas (fila en el tbody) */
+.data-table tr.mid-header > th,
+.data-table tr.mid-header > td {
+  background-color: #db7d13 !important;  /* naranja */
+  color: #ffffff !important;              /* texto blanco */
+  font-weight: 700;
+  text-align: center;
+  border: 1px solid #333;
+  padding: .55rem .6rem;
+}
+
+/* Enlaces dentro del sub‑encabezado */
+.data-table tr.mid-header a{
+  color: #ffffff !important;
+  text-decoration: none;
+}

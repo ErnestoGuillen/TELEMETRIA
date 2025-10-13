@@ -1,0 +1,410 @@
+/* ==== BASE / RESET ==== */
+/* Elimina márgenes y paddings por defecto, y aplica box-sizing para incluir bordes en el tamaño */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Configuración global de body: tipografía, fondo suave y scrollbar oculto */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4edd4;
+  /* Color de fondo general */
+  color: #333;
+  /* Color de texto principal */
+  scrollbar-width: none;
+  /* Firefox: sin scrollbar */
+  -ms-overflow-style: none;
+  /* IE10+: sin scrollbar */
+  overflow-y: scroll;
+  /* Scroll vertical siempre visible */
+}
+
+body::-webkit-scrollbar {
+  width: 0;
+  /* WebKit: scrollbar sin ancho */
+  background: transparent;
+}
+
+
+/* ==== CABECERA ==== */
+/* Barra superior con botón, título centrado y logo */
+.main-header {
+  background: #db7d13;
+  /* Naranja institucional */
+  color: #fff;
+  /* Texto blanco */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.4rem 2.5rem;
+  /* Más espacio arriba y abajo para no cortar el título */
+  position: relative;
+  /* Para centrar el título con absolute */
+  z-index: 1000;
+  /* Encima de cualquier otro contenido */
+}
+
+/* Botón de regreso: icono y texto interactivos */
+.back-btn {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #fff;
+  z-index: 2;
+  /* Por encima del título centrado */
+}
+
+.back-btn img {
+  height: 46px;
+  /* Tamaño del icono */
+  transition: transform .2s, opacity .2s;
+}
+
+.back-btn:hover img {
+  transform: translateX(-4px);
+  /* Desplazamiento al pasar el ratón */
+  opacity: .85;
+  /* Ligera transparencia */
+}
+
+/* Logo institucional en la esquina derecha */
+.logo-agua {
+  height: 60px;
+}
+
+/* Contenedor del título posicionado en el centro */
+.titulo-centrado {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 1;
+  padding: .4rem 0;
+}
+
+.titulo-centrado h1 {
+  font-size: 2.3rem;
+  /* Tamaño grande para destacar */
+  color: #fff;
+}
+
+.subtitulo {
+  font-size: 1rem;
+  color: #fff;
+  letter-spacing: 1px;
+  /* Espacio entre letras */
+}
+
+/* Texto “( INICIO )”: subrayado animado al hover */
+.texto-inicio {
+  font-size: 1rem;
+  color: #fff;
+  margin-left: 8px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .3s;
+}
+
+.back-btn:hover .texto-inicio {
+  text-shadow: 0 0 6px #66ccff;
+  /* Resplandor azul */
+  transform: scale(1.05);
+}
+
+.back-btn:active .texto-inicio {
+  color: #000;
+  transform: scale(0.97);
+}
+
+.texto-inicio::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background: #fff;
+  /* Línea blanca */
+  transition: width .3s;
+}
+
+.back-btn:hover .texto-inicio::after {
+  width: 100%;
+  /* Línea se extiende */
+}
+
+
+/* ==== SECCIONES DE TABLAS ==== */
+/* Encabezados de cada sección centrados */
+h2 {
+  text-align: center;
+  color: #000;
+  /* Negro para resaltar título */
+  margin: 1.5rem 0 .5rem;
+  font-size: 1.4rem;
+}
+
+/* Espaciado general entre secciones */
+.table-section {
+  padding: .5rem 1.5rem;
+  margin-bottom: 2rem;
+  /* Más separación entre secciones */
+}
+
+/* Para data-section, eliminar padding superior innecesario */
+.data-section {
+  margin-top: 0;
+  padding: 0 1rem;
+}
+
+/* ==== ESTILOS GENERALES DE TABLAS ==== */
+/* Contenedor de tabla con fondo blanco y separación adicional */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  margin: 2rem 0;
+  /* Espacio arriba y abajo */
+}
+
+.data-table th,
+.data-table td {
+  border: 1px solid #000;
+  /* Bordes negros */
+  padding: .4rem .5rem;
+  text-align: center;
+  vertical-align: middle;
+  font-size: .9rem;
+}
+
+.data-table th {
+  background: #db7d13;
+  /* Mismo naranja de header */
+  color: #fff;
+  font-weight: 700;
+}
+
+.data-table td {
+  background: #fff;
+  color: #333;
+}
+
+.data-table td a {
+  color: purple;
+  /* Enlaces en púrpura */
+  text-decoration: none;
+}
+
+/* Celdas especiales */
+.na-cell {
+  background: #e6f0fa;
+  /* Azul muy claro */
+  color: #666;
+}
+
+.eq-activo {
+  background: #25c025;
+  /* Verde para activo */
+  color: #fff;
+  font-weight: 700;
+}
+
+
+/* ==== SECCIÓN SAN RAFAEL (pemex-finsa) ==== */
+/* Ajustes para la sección con id pemex-finsa */
+#pemex-finsa .data-table {
+  margin-left: auto;
+  /* Alinea la tabla a la derecha */
+  margin-right: 0;
+}
+
+/* Cabecera de fila de equipos: fondo blanco y texto normal */
+#pemex-finsa thead tr.equipos th {
+  background: #fff;
+  color: #000;
+  font-weight: normal;
+}
+
+/* Alinea texto de filas lps-line al centro */
+#pemex-finsa .lps-line td {
+  text-align: center;
+}
+
+/* Fila de acumulados: gris y peso normal */
+#pemex-finsa .acum-line td.acum {
+  background: #fff;
+  font-weight: normal;
+  color: #666;
+  text-align: center;
+}
+
+/* Oculta bordes y relleno de celdas vacías en acumulados */
+#pemex-finsa .acum-line td.vacio {
+  padding: 0;
+  height: 0;
+  line-height: 0;
+  font-size: 0;
+  background: #fff;
+  border-top: 0 !important;
+}
+
+/* Elimina borde inferior de dos primeras columnas en lps-line */
+#pemex-finsa .lps-line td:nth-child(1),
+#pemex-finsa .lps-line td:nth-child(2) {
+  border-bottom: 0 !important;
+  background: #fff;
+}
+
+/* ==== ANCHO DE COLUMNAS ESPECÍFICAS ==== */
+/* Fuerza ancho de las dos primeras columnas en colgroup */
+#pemex-finsa colgroup col:nth-child(1),
+#pemex-finsa colgroup col:nth-child(2) {
+  width: 12% !important;
+}
+
+
+/* ==== BOTÓN SUBIR ==== */
+/* Botón flotante: aparece al hacer scroll */
+#btnSubir {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  background: #000;
+  color: #fff;
+  font-size: 26px;
+  display: none;
+  /* Oculto por defecto */
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, .3);
+  transition: transform .3s;
+  z-index: 998;
+}
+
+#btnSubir:hover {
+  transform: scale(1.1);
+}
+
+#btnSubir svg {
+  width: 24px;
+  height: 24px;
+  fill: #fff;
+}
+
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+
+  /* Ajusta tamaño del título en móviles */
+  .main-header h1 {
+    font-size: 1.6rem;
+  }
+
+  /* Reduce tamaño del logo */
+  .logo-agua {
+    height: 48px;
+  }
+
+  /* Icono de regreso más pequeño */
+  .back-btn img {
+    height: 40px;
+  }
+}
+
+
+/* ==== ICONOS ==== */
+/* Pequeños indicadores de estado */
+.icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+
+.icon.checar {
+  background: url('/Pagina/imagenes/asterisco.jpg') center/contain no-repeat;
+}
+
+.icon.verde {
+  background: #25c025;
+}
+
+.icon.amarillo {
+  background: #ffcd00;
+}
+
+.icon.rojo {
+  background: #d10000;
+}
+
+.icon.alerta {
+  background: url('/Pagina/imagenes/ALERTA.png') center/contain no-repeat;
+}
+
+
+/* ==== SIMBOLOGÍA – BLOQUE ==== */
+/* Contenedor de leyenda de badges */
+.simbologia-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: fit-content;
+  margin: 1rem 1.5rem 0 auto;
+  text-align: right;
+  gap: .4rem;
+}
+
+.simbologia-title {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  color: #000;
+}
+
+.chips-row {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: .6rem 1rem;
+  justify-content: end;
+}
+
+/* Estilo genérico para cada badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .35rem .9rem;
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.badge.rojo {
+  background: #d32f2f;
+}
+
+.badge.verde {
+  background: #25c025;
+}
+
+.badge.checar {
+  background: #002b23;
+}
+
+.badge.pide {
+  background: #0066d6;
+}

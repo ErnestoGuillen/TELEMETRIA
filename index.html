@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <title>TELEMETRÍA</title>
+  <link rel="stylesheet" href="/Pagina/css/estilos.css" />
+</head>
+
+<body>
+  <!-- LOADER DE CARGA -->
+  <div id="loader" style="display:none;">
+    <img src="/Pagina/imagenes/logo agua y drenaje" alt="Cargando...">
+  </div>
+
+  <!-- LOGIN -->
+  <div id="login-container" class="login-container">
+    <div class="login-card">
+      <div class="logos">
+        <img src="/Pagina/imagenes/fondo.png" alt="Agua y Drenaje">
+        <img src="/Pagina/imagenes/Logo nuevo leon.png" alt="Nuevo León">
+      </div>
+      <h2>TELEMETRÍA</h2>
+      <form id="loginForm">
+        <div class="input-group">
+          <input type="text" id="usuario" placeholder="Usuario" required>
+        </div>
+        <div class="input-group">
+          <input type="password" id="password" placeholder="Contraseña" required>
+        </div>
+        <button type="submit">Iniciar Sesión</button>
+        <p id="mensaje"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- BOTÓN LOGOUT -->
+  <button id="btn-logout" class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+
+  <!-- POP-UP DE ACTUALIZACIÓN -->
+  <div id="popup-actualizacion" class="popup-actualizacion" style="display:none;">
+    <div class="popup-contenido">
+      <button class="cerrar" onclick="cerrarPopupActualizacion()">×</button>
+      <img src="/Pagina/imagenes/Módulos de Adquisición de Datos.jpg" alt="Módulo de adquisición"
+        class="imagen-principal" />
+      <h2>📢 <span>Nueva Actualización en Telemetría</span></h2>
+      <p>Ya está disponible el módulo de adquisición de datos con acceso remoto. ¡Conócelo!</p>
+      <br>
+      <div class="popup-botones">
+        <a href="/Pagina/html/novedades.html" class="btn-interesa">Me interesa saber más</a>
+        <button class="btn-no" onclick="cerrarPopupActualizacion()">No me interesa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL PRINCIPAL -->
+  <main class="container" id="main-content" style="display:none;">
+    <div class="contenido-contenedor">
+      <!-- ENCABEZADO -->
+      <header class="panel-header">
+        <img class="logo-izq" src="/Pagina/imagenes/logo agua y drenaje" alt="Logo Agua y Drenaje">
+        <h1>TELEMETRÍA</h1>
+        <img class="logo-der" src="/Pagina/imagenes/Logo nuevo leon.png" alt="Logo Gobierno">
+      </header>
+      <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+
+      <!-- MENÚ PRINCIPAL -->
+      <nav class="nav-panel">
+        <a href="#"><span class="icon">📊</span> Datos Históricos</a>
+        <a href="#"><span class="icon">📍</span> Zonas</a>
+        <a href="#"><span class="icon">🔧</span> Servicios</a>
+      </nav>
+
+      <!-- NOVEDADES -->
+      <section class="novedades">
+        <a href="/Pagina/html/novedades.html" style="text-decoration:none;">
+          <h2>¿Qué hay de nuevo en telemetría?</h2>
+        </a>
+      </section>
+
+      <!-- CARRUSEL + MEDIDORES -->
+      <section class="contenido">
+        <div class="carousel">
+          <div class="slides">
+            <div class="slide"><img src="/Pagina/imagenes/imagen 1.jpg" alt="Imagen 1"></div>
+            <div class="slide"><img src="/Pagina/imagenes/imagen 2.jpg" alt="Imagen 2"></div>
+            <div class="slide"><img src="/Pagina/imagenes/imagen 3.jpg" alt="Imagen 3"></div>
+            <div class="slide"><img src="/Pagina/imagenes/imagen 4.jpg" alt="Imagen 4"></div>
+          </div>
+        </div>
+        <aside class="medidores-sidebar">
+          <h2>Ubicación de Medidores</h2>
+          <ul class="medidores-lista">
+            <li><button data-section="centrales">Centrales</button></li>
+            <li><button data-section="sistemas">Sistemas Principales</button></li>
+            <li><button data-section="anillos">Anillos Principales</button></li>
+            <li><button data-section="mas">Más Servicios</button></li>
+          </ul>
+        </aside>
+      </section>
+    </div>
+  </main>
+
+  <!-- MODAL DE MEDIDORES -->
+  <div id="medidor-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <img src="/Pagina/imagenes/fondo.png" alt="Logo Agua y Drenaje">
+        <h2 id="modal-title"></h2>
+        <button class="modal-close">×</button>
+      </div>
+      <ul id="modal-list"></ul>
+    </div>
+  </div>
+
+  <!-- SCRIPT FUNCIONAL -->
+  <script>
+    // Revisar si ya hay sesión activa
+    if (localStorage.getItem("sesionActiva") === "true") {
+      document.getElementById("login-container").style.display = "none";
+      document.getElementById("loader").style.display = "none";
+      document.getElementById("main-content").style.display = "block";
+      document.getElementById("btn-logout").style.display = "block";
+    }
+
+    // LOGIN
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const usuario = document.getElementById("usuario").value;
+      const password = document.getElementById("password").value;
+
+      if (usuario === "admin" && password === "1234") {
+        document.getElementById("login-container").style.display = "none";
+        const loader = document.getElementById("loader");
+        loader.style.display = "flex";
+
+        setTimeout(() => {
+          loader.style.display = "none";
+          document.getElementById("main-content").style.display = "block";
+          document.getElementById("btn-logout").style.display = "block";
+
+          // Guardar estado de sesión
+          localStorage.setItem("sesionActiva", "true");
+
+          // Mostrar popup solo después del login
+          document.getElementById("popup-actualizacion").style.display = "flex";
+        }, 2000);
+      } else {
+        document.getElementById("mensaje").textContent = "Usuario o contraseña incorrectos";
+      }
+    });
+
+    // CERRAR SESIÓN
+    function cerrarSesion() {
+      localStorage.removeItem("sesionActiva");
+      document.getElementById("main-content").style.display = "none";
+      document.getElementById("btn-logout").style.display = "none";
+      document.getElementById("login-container").style.display = "flex";
+    }
+
+    // CERRAR POPUP
+    function cerrarPopupActualizacion() {
+      document.getElementById("popup-actualizacion").style.display = "none";
+    }
+
+    // IR A INICIO (desde páginas internas)
+    function irInicio() {
+      localStorage.setItem("sesionActiva", "true");
+      window.location.href = "/Pagina/html/index.html#home";
+    }
+
+    // MODAL DE MEDIDORES
+    const data = {
+      centrales: ["Apodaca", "Fama", "Guadalupe", "Lincoln", "San Nicolás", "San Miguel", "Sur", "San Roque", "Poniente"],
+      sistemas: ["Bombeos y Medidores A.R.T", "Mina"],
+      anillos: ["Anillo de Transferencia", "Anillo Monterrey V", "Anillo TV"],
+      mas: ["Pozos Metropolitanos", "Municipios no Metropolitanos", "Servicios Alternos", "Buenos Aires", "García", "Fuentes de abasto superficiales (Presas)", "PTAR"]
+    };
+
+    const enlaces = {
+      "Apodaca": "/Pagina/html/apodaca.html",
+      "Fama": "/Pagina/html/fama.html",
+      "Guadalupe": "/Pagina/html/guadalupe.html",
+      "Lincoln": "/Pagina/html/lincoln.html",
+      "San Nicolás": "/Pagina/html/sannicolas.html",
+      "San Miguel": "/Pagina/html/sanmiguel.html",
+      "Sur": "/Pagina/html/sur.html",
+      "San Roque": "/Pagina/html/sanroque.html",
+      "Poniente": "/Pagina/html/poniente.html",
+      "Bombeos y Medidores A.R.T": "/Pagina/html/bombeosymedidoresart.html",
+      "Mina": "/Pagina/html/mina.html",
+      "Anillo de Transferencia": "/Pagina/html/anillotransferencia.html",
+      "Anillo Monterrey V": "/Pagina/html/monterreyv.html",
+      "Anillo TV": "/Pagina/html/anillotv.html",
+      "Pozos Metropolitanos": "/Pagina/html/pozosmetropolitanos.html",
+      "Municipios no Metropolitanos": "/Pagina/html/municipiosnometropolitanos.html",
+      "Servicios Alternos": "/Pagina/html/servicios.html",
+      "Buenos Aires": "/Pagina/html/buenosaires.html",
+      "García": "/Pagina/html/garcia.html",
+      "Fuentes de abasto superficiales (Presas)": "/Pagina/html/presas.html",
+      "PTAR": "/Pagina/html/ptr.html"
+    };
+
+    const modal = document.getElementById("medidor-modal");
+    const titleEl = document.getElementById("modal-title");
+    const listEl = document.getElementById("modal-list");
+    const closeBtn = modal.querySelector(".modal-close");
+
+    document.querySelectorAll(".medidores-sidebar button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.section;
+        titleEl.textContent = btn.textContent;
+        listEl.innerHTML = data[key]
+          .map(item => {
+            const url = enlaces[item];
+            return url ? `<li><a href="${url}">${item}</a></li>` : `<li>${item}</li>`;
+          })
+          .join("");
+        modal.classList.add("open");
+      });
+    });
+
+    closeBtn.addEventListener("click", () => {
+      modal.classList.remove("open");
+    });
+
+    modal.addEventListener("click", e => {
+      if (e.target === modal) modal.classList.remove("open");
+    });
+  </script>
+</body>
+
+</html>

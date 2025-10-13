@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monterrey V</title>
+  <link rel="stylesheet" href="/Pagina/css/monterreyv.css" />
+</head>
+
+<body>
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar">
+    <div class="logo">
+      <img src="/Pagina/imagenes/fondo.png" alt="Logo AyD" />
+    </div>
+    <nav>
+      <a href="/Pagina/html/index.html" class="back-btn">Regresar</a>
+    </nav>
+  </aside>
+
+  <!-- ========== MAIN ========== -->
+  <main class="main-content">
+    <!-- ========== HEADER ========== -->
+    <header class="header">
+      <div class="card">
+        <div class="card-header">
+          <span class="emoji">💧</span>
+          <span>Total Consumo</span>
+        </div>
+        <h2>10,250 L/S</h2>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="emoji">🟢</span>
+          <span>Equipos OPERANDO</span>
+        </div>
+        <h2>4</h2>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="emoji">⚠️</span>
+          <span>Equipos INESTABLES</span>
+        </div>
+        <h2>5</h2>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="emoji">🟡</span>
+          <span>Observaciones</span>
+        </div>
+        <h2>2</h2>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <img src="/Pagina/imagenes/bomba.png" alt="Bombas" class="icono-card">
+          <span>Bombas INESTABLES</span>
+          <span class="emoji">⚠️</span>
+        </div>
+        <h2>8</h2>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <img src="/Pagina/imagenes/boma2.png" alt="Bombas" class="icono-card">
+          <span>Bombas OPERANDO</span>
+          <span class="emoji">🟢</span>
+        </div>
+        <h2>26</h2>
+      </div>
+    </header>
+
+    <!-- ========== CONTENT ========== -->
+    <section class="dashboard">
+      <div class="visor">
+        <h2 class="visor-title">SISTEMA MONTERREY V</h2>
+        <img src="/Pagina/imagenes/MONTERREY V.jpg" alt="Diagrama Monterrey V" />
+      </div>
+
+      <!-- SIDE PANEL -->
+      <aside class="side-panel">
+        <div class="panel-card">
+          <div class="panel-title">Tanques</div>
+          <h2>
+            <a href="#">Santa Rosa 2</a>
+            <a href="#">Nueva Castilla 3<br>Rectangular</a>
+            <a href="#">Nueva Catilla 3<br>Circular</a>
+            <a href="#">Nueva Castilla 1 AMP</a>
+            <a href="#">Alianza Real</a>
+            <a href="/Pagina/html/fraile1.html">Fraile 1</a>
+            <a href="#">Fraile 2</a>
+            <a href="#">Garcia 1</a>
+            <a href="#">Garcia 2</a>
+          </h2>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-title">Salidas</div>
+          <h2>
+            <a href="#">Salida a Red</a>
+            <a href="#">Salida P.P San Roque</a>
+          </h2>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-title">Bombas</div>
+          <h2>
+            <a href="#">Bomb. Real de Minas</a>
+            <a href="#">Bomb. Mitras Poniente</a>
+          </h2>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-title">Red</div>
+          <h2>
+            <a href="#">Red a Zuaza</a>
+            <a href="#">Red a Ciénega de Flores</a>
+          </h2>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <!-- ✅ AJUSTE AUTOMÁTICO DE ESCALA (CORREGIDO) -->
+  <script>
+    function ajustarZoom() {
+      const content = document.querySelector('.main-content');
+      const scaleX = window.innerWidth / content.scrollWidth;
+      const scaleY = window.innerHeight / content.scrollHeight;
+      const scale = Math.min(scaleX, scaleY, 1);
+      content.style.transform = `scale(${scale})`; /* ✅ corregido con comillas invertidas */
+      content.style.transformOrigin = "top center";
+    }
+
+    window.addEventListener('resize', ajustarZoom);
+    window.addEventListener('load', ajustarZoom);
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitoreo Apodaca</title>
+  <link rel="stylesheet" href="/Pagina/css/apodaca.css" />
+</head>
+
+<body>
+
+  <!-- ==== CABECERA ==== -->
+  <header class="main-header">
+    <a href="/Pagina/html/index.html" class="back-btn" aria-label="Regresar">
+      <img src="/Pagina/imagenes/boton de regreso.png" alt="Regresar al inicio">
+      <span class="texto-inicio">( INICIO )</span>
+    </a>
+    <div class="titulo-centrado">
+      <h1>MONITOREO APODACA</h1>
+      <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+    </div>
+    <img src="/Pagina/imagenes/poniente esquina.jpg" alt="Logo Agua y Drenaje" class="logo-agua">
+  </header>
+
+  <!-- ==== LAYOUT PRINCIPAL ==== -->
+  <div class="main-layout">
+
+    <!-- ==== CONTENIDO PRINCIPAL ==== -->
+    <div class="main-content">
+
+      <!-- APODACA / PESQUERÍA / POZOS -->
+      <section class="table-section">
+        <div class="zonas-grid">
+
+          <!-- APODACA -->
+          <div class="zona">
+            <h2>APODACA</h2>
+            <div class="card open-apodaca">
+              <h3>Tanque Apodaca</h3>
+              <p><strong>Nivel:</strong> 330 cm</p>
+              <p><strong>Flujo:</strong> 219 lps</p>
+              <span class="badge verde">Operando</span>
+            </div>
+          </div>
+
+          <!-- PESQUERÍA -->
+          <div class="zona">
+            <h2>PESQUERÍA</h2>
+            <div class="card open-pesqueria">
+              <h3>Pesquería</h3>
+              <p><strong>Estado:</strong> Monitoreo fuera por robo</p>
+              <span class="badge rojo">Sin Comunicación</span>
+            </div>
+          </div>
+
+          <!-- POZOS -->
+          <div class="zona">
+            <h2>POZOS METROPOLITANOS</h2>
+            <div class="card open-pozos">
+              <h3>Nueva Castilla 3</h3>
+              <p><strong>Actualización:</strong> 29/09 11:06</p>
+              <p><strong>Flujo:</strong> 0 lps</p>
+              <span class="badge pide">Pide Agua</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- MONTERREY V -->
+      <section class="table-section">
+        <h2>MONTERREY V</h2>
+        <div class="card-grid tres-filas">
+          <div class="card open-santarosa">
+            <h3>Santa Rosa II</h3>
+            <p><strong>Nivel:</strong> 411 cm</p>
+            <p><strong>Flujo:</strong> Entrada 2245 lps | Salida 2003 lps</p><span class="badge verde">Operando</span>
+          </div>
+          <div class="card open-rectangular">
+            <h3>Nueva Castilla III Rectangular</h3>
+            <p><strong>Nivel:</strong> 386 cm</p>
+            <p><strong>Flujo:</strong> Red Zuazua 235 lps</p><span class="badge pide">Pide Agua</span>
+          </div>
+          <div class="card open-circular">
+            <h3>Nueva Castilla III Circular</h3>
+            <p><strong>Nivel:</strong> 525 cm</p>
+            <p><strong>Flujo:</strong> Red Ciénega Flores 129 lps</p><span class="badge verde">Operando</span>
+          </div>
+          <div class="card open-ampliacion">
+            <h3>Nueva Castilla I (Ampliación)</h3>
+            <p><strong>Nivel:</strong> 619 cm</p>
+            <p><strong>Flujo:</strong> 752 lps</p><span class="badge verde">Operando</span>
+          </div>
+          <div class="card open-alianza">
+            <h3>Alianza Real</h3>
+            <p><strong>Nivel:</strong> 549 cm</p>
+            <p><strong>Flujo:</strong> 509 lps</p><span class="badge verde">Operando</span>
+          </div>
+          <div class="card open-fraile1">
+            <h3>Fraile I</h3>
+            <p><strong>Nivel:</strong> 563 cm</p>
+            <p><strong>Flujo:</strong> 0 lps</p><span class="badge pide">Pide Agua</span>
+          </div>
+          <div class="card open-fraile2">
+            <h3>Fraile II</h3>
+            <p><strong>Nivel:</strong> 638 cm</p>
+            <p><strong>Flujo:</strong> N/D</p><span class="badge rojo">Sin Comunicación</span>
+          </div>
+          <div class="card open-garcia1">
+            <h3>García I</h3>
+            <p><strong>Nivel:</strong> 269 cm</p>
+            <p><strong>Flujo:</strong> A Red 169 lps</p><span class="badge verde">Operando</span>
+          </div>
+          <div class="card open-garcia2">
+            <h3>García II</h3>
+            <p><strong>Nivel:</strong> 156 cm</p>
+            <p><strong>Flujo:</strong> A Red 144 lps</p>
+            <span class="badge observacion">Observación</span>
+          </div>
+
+        </div>
+      </section>
+    </div>
+
+    <!-- ==== SIDEBAR ==== -->
+    <aside class="sidebar-panel">
+      <div class="simbologia-wrapper">
+        <span class="simbologia-title">SIMBOLOGÍA</span>
+        <div class="chips-row">
+          <span class="badge rojo simbologia" data-text="Sin Comunicación: No transmite datos">Sin Comunicación</span>
+          <span class="badge verde simbologia" data-text="Operando: Funcionando normalmente">Operando</span>
+          <span class="badge observacion simbologia" data-text="Observación: Requiere supervisión">Observación</span>
+          <span class="badge pide simbologia" data-text="Pide Agua: Nivel bajo">Pide Agua</span>
+        </div>
+      </div>
+      <section class="kpis">
+        <div class="kpi-card">
+          <p>Flujo Total</p>
+          <h3>7,850 lps</h3>
+        </div>
+        <div class="kpi-card">
+          <p>OPERANDO🟢</p>
+          <h3>6</h3>
+        </div>
+        <div class="kpi-card">
+          <p>PIDE AGUA 💧</p>
+          <h3>3</h3>
+        </div>
+        <div class="kpi-card">
+          <p>SIN COMUNICACIÓN⚠️</p>
+          <h3>2</h3>
+        </div>
+        <div class="kpi-card">
+          <p>SIN DATOS N/D ⚠️</p>
+          <h3>0</h3>
+        </div>
+        <div class="kpi-card">
+          <p>CFE 🟡</p>
+          <h3>3</h3>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- ==== MODALES ==== -->
+
+  <!-- APODACA -->
+  <div id="modal-apodaca" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <h2>APODACA</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Ubicación</th>
+            <th>Actualización</th>
+            <th>Modo</th>
+            <th>Nivel</th>
+            <th>Flujo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Cierre Apodaca</td>
+            <td>29/09 10:58</td>
+            <td>Monitoreo</td>
+            <td>308 cm</td>
+            <td>En Red: 200 lps</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PESQUERÍA -->
+  <div id="modal-pesqueria" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <h2>PESQUERÍA</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Actualización</th>
+            <th>Modo</th>
+            <th>Nivel Circular</th>
+            <th>Nivel Rectangular</th>
+            <th>Flujo Llegada</th>
+            <th>Flujo Salida</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="6" style="text-align:center; font-weight:bold; color:#c00;">Monitoreo fuera por robo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- POZOS -->
+  <div id="modal-pozos" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <h2>POZOS METROPOLITANOS</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Ubicación</th>
+            <th>Actualización</th>
+            <th>Flujo</th>
+            <th>Equipos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Nueva Castilla 3</td>
+            <td>29/09 11:06</td>
+            <td>0 lps<br><small>Acumulado: 16764.1 x10 m³</small></td>
+            <td>N/A</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MONTERREY V -->
+
+  <!-- Santa Rosa II -->
+  <div id="modal-santarosa" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <h2>Santa Rosa II - Monterrey V</h2>
+      <table class="data-table equipos-table">
+        <thead>
+          <tr>
+            <th>Ubicación</th>
+            <th>Actualización</th>
+            <th>Modo</th>
+            <th>Nivel</th>
+            <th>Flujo</th>
+            <th colspan="7">Equipos</th>
+            <th>CFE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Santa Rosa II</td>
+            <td>29/09 11:09</td>
+            <td>Monitoreo</td>
+            <td>342 cm</td>
+            <td>Llegada 2222 lps / Salida 2270 lps</td>
+            <td class="activo">EQ1</td>
+            <td class="activo">EQ2</td>
+            <td class="activo">EQ3</td>
+            <td class="activo">EQ4</td>
+            <td class="activo">EQ5</td>
+            <td class="activo">EQ6</td>
+            <td class="inactivo">EQ7</td>
+            <td>N/D</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Rectangular -->
+  <div id="modal-rectangular" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <h2>Nueva Castilla III Rectangular - Monterrey V</h2>
+      <table class="data-table equipos-table">
+        <thead>
+          <tr>
+            <th>Ubicación</th>
+            <th>Actualización</th>
+            <th>Modo</th>
+            <th>Nivel</th>
+            <th>Flujo</th>
+            <th colspan="5">Equipos</th>
+            <th>CFE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>NC III Rectangular</td>
+            <td>29/09 11:09</td>
+            <td>Monitoreo</td>
+            <td>291 cm</td>
+            <td>Red Zuazua 250 lps</td>
+            <td class="activo">EQ1</td>
+            <td class="activo">EQ2</td>
+            <td class="activo">EQ3</td>
+            <td class="activo">EQ4</td>
+            <td class="activo">EQ5</td>
+            <td>N/D</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Circular -->
+  <div id="modal-circular" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <h2>Nueva Castilla III Circular - Monterrey V</h2>
+      <table class="data-table equipos-table">
+        <thead>
+          <tr>
+            <th>Ubicación</th>
+            <th>Actualización</th>
+            <th>Modo</th>
+            <th>Nivel</th>
+            <th>Flujo</th>
+            <th colspan="5">Equipos</th>
+            <th>CFE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>NC III Circular</td>
+            <td>29/09 11:09</td>
+            <td>Monitoreo</td>
+            <td>438 cm</td>
+            <td>Red Ciénega Flores 135 lps</td>
+            <td class="activo">EQ1</td>
+            <td class="activo">EQ2</td>
+            <td class="activo">EQ3</td>
+            <td class="activo">EQ4</td>
+            <td class="activo">EQ5</td>
+            <td>N/D</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Ampliación -->
+  <div id="modal-ampliacion" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <h2>Nueva Castilla I Ampliación - Monterrey V</h2>
+      <table class="data-table equipos-table">
+        <thead>
+          <tr>
+            <th>Ubicación</th>
+            <th>Actualización</th>
+            <th>Modo</th>
+            <th>Nivel</th>
+            <th>Flujo</th>
+            <th colspan="5">Equipos</th>
+            <th>CFE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>NC I (Ampliación)</td>
+            <td>29/09 10:55</td>
+            <td>Automático</td>
+            <td>648 cm</td>
+            <td>1005 lps</td>
+            <td class="activo">EQ1</td>
+            <td class="activo">EQ2</td>
+            <td class="activo">EQ3</td>
+            <td class="activo">EQ4</td>
+            <td class="activo">EQ5</td>
+            <td>N/D</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Alianza -->
+  <div id="modal-alianza" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <h2>Alianza Real - Monterrey V</h2>
+      <table class="data-table equipos-table">
+        <thead>
+          <tr>
+            <th>Ubicación</th>
+            <th>Actualización</th>
+            <th>Modo</th>
+            <th>Nivel</th>
+            <th>Flujo</th>
+            <th colspan="7">Equipos</th>
+            <th>CFE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Alianza Real</td>
+            <td>29/09 11:04</td>
+            <td>Automático</td>
+            <td>418 cm</td>
+            <td>568 lps</td>
+            <td class="activo">EQ1</td>
+            <td class="activo">EQ2</td>
+            <td class="activo">EQ3</td>
+            <td class="activo">EQ4</td>
+            <td class="activo">EQ5</td>
+            <td class="activo">EQ6</td>
+            <td class="activo">EQ7</td>
+            <td>N/D</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Fraile I -->
+  <div id="modal-fraile1" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <h2>Fraile I - Monterrey V</h2>
+      <table class="data-table equipos-table">
+        <thead>
+          <tr>
+            <th>Ubicación</th>
+            <th>Actualización</th>
+            <th>Modo</th>
+            <th>Nivel</th>
+            <th>Flujo</th>
+            <th colspan="7">Equipos</th>
+            <th>CFE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fraile I</td>
+            <td>29/09 11:08</td>
+            <td>Automático</td>
+            <td>288 cm</td>
+            <td>0 lps</td>
+            <td class="activo">EQ1</td>
+            <td class="activo">EQ2</td>
+            <td class="activo">EQ3</td>
+            <td class="activo">EQ4</td>
+            <td class="inactivo">EQ5</td>
+            <td class="inactivo">EQ6</td>
+            <td class="inactivo">EQ7</td>
+            <td>N/D</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Fraile II -->
+  <div id="modal-fraile2" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <h2>Fraile II - Monterrey V</h2>
+      <table class="data-table equipos-table">
+        <thead>
+          <tr>
+            <th>Ubicación</th>
+            <th>Actualización</th>
+            <th>Modo</th>
+            <th>Nivel</th>
+            <th>Flujo</th>
+            <th colspan="5">Equipos</th>
+            <th>CFE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fraile II</td>
+            <td>29/09 11:09</td>
+            <td>Automático</td>
+            <td>289 cm</td>
+            <td>N/D</td>
+            <td class="activo">EQ1</td>
+            <td class="activo">EQ2</td>
+            <td class="activo">EQ3</td>
+            <td class="activo">EQ4</td>
+            <td class="inactivo">EQ5</td>
+            <td>CFE</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- García I -->
+  <div id="modal-garcia1" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <h2>García I - Monterrey V</h2>
+      <table class="data-table equipos-table">
+        <thead>
+          <tr>
+            <th>Ubicación</th>
+            <th>Actualización</th>
+            <th>Modo</th>
+            <th>Nivel</th>
+            <th>Flujo</th>
+            <th colspan="4">Equipos</th>
+            <th>CFE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>García I</td>
+            <td>29/09 11:03</td>
+            <td>Automático</td>
+            <td>243 cm</td>
+            <td>En Red 0 lps</td>
+            <td class="activo">EQ1</td>
+            <td class="activo">EQ2</td>
+            <td class="activo">EQ3</td>
+            <td class="inactivo">EQ4</td>
+            <td>CFE</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- García II -->
+  <div id="modal-garcia2" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <h2>García II - Monterrey V</h2>
+      <table class="data-table equipos-table">
+        <thead>
+          <tr>
+            <th>Ubicación</th>
+            <th>Actualización</th>
+            <th>Modo</th>
+            <th>Nivel</th>
+            <th>Flujo</th>
+            <th colspan="4">Equipos</th>
+            <th>CFE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>García II</td>
+            <td>29/09 11:08</td>
+            <td>Monitoreo</td>
+            <td>127 cm</td>
+            <td>En Red 166 lps</td>
+            <td class="inactivo">EQ1</td>
+            <td class="inactivo">EQ2</td>
+            <td class="inactivo">EQ3</td>
+            <td class="inactivo">EQ4</td>
+            <td>N/D</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==== BOTÓN SUBIR ==== -->
+  <button id="btnSubir" onclick="document.querySelector('.main-content').scrollTo({ top: 0, behavior: 'smooth' });">
+    <svg viewBox="0 0 24 24">
+      <path d="M12 4l-8 8h5v8h6v-8h5z" fill="white" />
+    </svg>
+  </button>
+
+  <!-- ==== MODAL SIMBOLOGÍA PROFESIONAL ==== -->
+  <div id="modal-simbologia" class="modal-simbologia">
+    <div class="simbologia-content">
+      <span class="close-simbologia">&times;</span>
+      <div class="simbologia-header">
+        <i id="simbologia-icon"></i>
+        <h2 id="simbologia-title">Título</h2>
+      </div>
+      <p id="simbologia-desc">Aquí va la descripción...</p>
+    </div>
+  </div>
+
+
+  <!-- ==== JS ==== -->
+  <script>
+    function abrirModal(id) { document.getElementById(id).style.display = "flex"; }
+    function cerrarModal(m) { m.style.display = "none"; }
+    document.querySelectorAll(".card").forEach(card => {
+      card.addEventListener("click", () => {
+        const target = card.className.split("open-")[1];
+        if (target) abrirModal("modal-" + target);
+      });
+    });
+    document.querySelectorAll(".modal .close").forEach(btn => {
+      btn.addEventListener("click", e => cerrarModal(e.target.closest(".modal")));
+    });
+    window.addEventListener("click", e => {
+      if (e.target.classList.contains("modal")) cerrarModal(e.target);
+    });
+
+    // ==== MODAL SIMBOLOGÍA PROFESIONAL ====
+    const modalSimbologia = document.getElementById("modal-simbologia");
+    const title = document.getElementById("simbologia-title");
+    const desc = document.getElementById("simbologia-desc");
+    const icon = document.getElementById("simbologia-icon");
+    const contentBox = modalSimbologia.querySelector(".simbologia-content");
+
+    const textos = {
+      "rojo": {
+        titulo: "Sin Comunicación",
+        descripcion: "El tanque o estación no está transmitiendo datos.",
+        icon: "🔴"
+      },
+      "verde": {
+        titulo: "Operando",
+        descripcion: "El tanque o estación está funcionando normalmente.",
+        icon: "✅"
+      },
+      "observacion": {
+        titulo: "Observación",
+        descripcion: "El tanque o estación requiere supervisión o verificación.",
+        icon: "⚠️"
+      },
+      "pide": {
+        titulo: "Pide Agua",
+        descripcion: "El tanque necesita llenarse, ya que su nivel es bajo.",
+        icon: "💧"
+      }
+    };
+
+    document.querySelectorAll(".simbologia").forEach(el => {
+      el.addEventListener("click", () => {
+        const tipo = [...el.classList].find(c => textos[c]);
+        if (tipo) {
+          title.textContent = textos[tipo].titulo;
+          desc.textContent = textos[tipo].descripcion;
+          icon.textContent = textos[tipo].icon;
+          contentBox.className = `simbologia-content ${tipo}`;
+          modalSimbologia.style.display = "flex";
+        }
+      });
+    });
+
+    document.querySelector(".close-simbologia").addEventListener("click", () => {
+      modalSimbologia.style.display = "none";
+    });
+
+    window.addEventListener("click", e => {
+      if (e.target.id === "modal-simbologia") modalSimbologia.style.display = "none";
+    });
+
+
+
+  </script>
+
+
+</body>
+
+</html>

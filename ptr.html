@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoreo de Presas</title>
+    <link rel="stylesheet" href="/Pagina/css/ptr.css" />
+</head>
+
+<body>
+
+    <!-- ==== BARRA SUPERIOR ==== -->
+    <header class="main-header">
+        <a href="/Pagina/html/index.html" class="back-btn" aria-label="Regresar">
+            <img src="/Pagina/imagenes/boton de regreso.png" alt="Regresar al inicio">
+            <span class="texto-inicio">( INICIO )</span>
+        </a>
+        <div class="titulo-centrado">
+            <h1>MONITOREO DE PLANTAS TRATADORAS DE AGUA RESIDUAL</h1>
+            <p class="subtitulo">ENLACE E INNOVACIÓN</p>
+        </div>
+        <img src="/Pagina/imagenes/poniente esquina.jpg" alt="Logo Agua y Drenaje" class="logo-agua">
+    </header>
+
+    <!-- ==== SIMBOLOGÍA ==== -->
+    <div class="simbologia-wrapper">
+        <span class="simbologia-title">SIMBOLOGÍA</span>
+        <div class="chips-row">
+            <span class="badge rojo">Sin Comunicación</span>
+            <span class="badge verde">Operando</span>
+            <span class="badge checar">Activado por PLC</span>
+            <span class="badge pide">Pide Agua</span>
+        </div>
+    </div>
+
+    <!-- ==== PTAR SANTIAGO N.L. ==== -->
+    <section class="table-section">
+        <h2>PTAR SANTIAGO N.L.</h2>
+        <table id="t3" class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>PRESION</th>
+                    <th>EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>PTAR</td>
+                    <td id="t3-r1-c0">11/08<br>09:43</td>
+                    <td id="t3-r1-c1">834 Kg/cm²</td>
+                    <td>
+                        <table class="data-table" style="width:100%;">
+                            <tbody>
+                                <tr align="center">
+                                    <td id="t3-r1-c4">EQ1</td>
+                                    <td id="t3-r1-c5" style="background: #00ff00;">EQ2</td>
+                                    <td id="t3-r1-c6">EQ3</td>
+                                    <td id="t3-r1-c7">EQ4</td>
+                                </tr>
+                                <tr align="center">
+                                    <td id="t3-r1-c8">EQ5</td>
+                                    <td id="t3-r1-c9">EQ6</td>
+                                    <td id="t3-r1-c10">EQ7</td>
+                                    <td id="t3-r1-c11">CFE</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== PTAR NORTE ==== -->
+    <section class="table-section">
+        <h2>PTAR NORTE</h2>
+        <table id="t4" class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th colspan="6"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td rowspan="2">Influente</td>
+                    <td id="t4-r1-c0" rowspan="2">11/08<br>10:30</td>
+                    <td colspan="6">Canales Parshall</td>
+                </tr>
+                <tr align="center">
+                    <td id="t4-r1-c1">0 lps<br>acum: 0</td>
+                    <td id="t4-r1-c2">0 lps<br>acum: 0</td>
+                    <td id="t4-r1-c3">0 lps<br>acum: 0</td>
+                    <td id="t4-r1-c4">0 lps<br>acum: 0</td>
+                    <td id="t4-r1-c5">0 lps<br>acum: 0</td>
+                    <td id="t4-r1-c6">N/A</td>
+                </tr>
+                <tr align="center">
+                    <td>Efluente</td>
+                    <td id="t4-r2-c0">11/08<br>10:30</td>
+                    <td id="t4-r2-c1" colspan="6">0 lps</td>
+                </tr>
+                <tr align="center">
+                    <td>CON-MET</td>
+                    <td id="t4-r9-c0">11/08<br>09:57</td>
+                    <td id="t4-r9-c1" colspan="6">1.78 Kg/cm²</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== PTAR GARCIA ==== -->
+    <section class="table-section">
+        <h2>PTAR GARCIA</h2>
+        <table id="t5" class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>FLUJO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>PTAR Garcia<br>Influente</td>
+                    <td id="ptar_gcia2_fecha" rowspan="3">11/08<br>10:19</td>
+                    <td id="ptar_gcia2_influente">91 lps</td>
+                </tr>
+                <tr align="center">
+                    <td>PTAR Garcia<br>Efluente</td>
+                    <td id="ptar_gcia2_efluente">86.4 lps</td>
+                </tr>
+                <tr align="center">
+                    <td>PTAR Garcia<br>Retorno Lodos</td>
+                    <td id="ptar_gcia2_relodo">0 lps</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <!-- ==== PTAR DULCES NOMBRES ==== -->
+    <section class="table-section">
+        <h2>PTAR DULCES NOMBRES</a></h2>
+        <table id="t8" class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>FLUJO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>Efluente<br>Dulces Nombres</td>
+                    <td colspan="2">MEDICION SIN TELEMETRIA</td>
+                </tr>
+                <tr align="center">
+                    <td>Efluente<br>Canal de Riego</td>
+                    <td id="t8-r4-c0">No se encontro registro en base de datos</td>
+                    <td id="t8-r4-c1">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== CADEREYTA ==== -->
+    <section class="table-section">
+        <h2>CADEREYTA</h2>
+
+        <!-- Cadereyta I -->
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th rowspan="2">UBICACION</th>
+                    <th rowspan="2">ACTUALIZACION</th>
+                    <th colspan="3">INFLUENTE (Equipos)</th>
+                    <th colspan="2">SOPLADORES (Equipos)</th>
+                    <th colspan="2">CLARIFICADORES (Equipos)</th>
+                    <th colspan="6">EFLUENTE</th>
+                </tr>
+                <tr>
+                    <th colspan="3">Equipos</th>
+                    <th colspan="2">Equipos</th>
+                    <th colspan="2">Equipos</th>
+                    <th>Nivel</th>
+                    <th>Presion</th>
+                    <th>Flujo</th>
+                    <th colspan="3">Equipos</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>Ptar Cadereyta</td>
+                    <td id="Cadereyta_I_fecha">11/08<br>00:00</td>
+
+                    <td id="Cadereyta_I_eq1">EQ1</td>
+                    <td id="Cadereyta_I_eq2">EQ2</td>
+                    <td id="Cadereyta_I_eq3">EQ2</td>
+
+                    <td id="Cadereyta_I_eq4">EQ2</td>
+                    <td id="Cadereyta_I_eq5">EQ2</td>
+
+                    <td id="Cadereyta_I_eq6">EQ2</td>
+                    <td id="Cadereyta_I_eq7">EQ2</td>
+
+                    <td id="Cadereyta_I_NE_1"><a href="#">0 cm</a></td>
+                    <td id="Cadereyta_I_PE_1"><a href="#">0 Kg/cm²</a></td>
+                    <td id="Cadereyta_I_FE_1"><a href="#">0 lps</a></td>
+                    <td id="Cadereyta_I_eq8">EQ1</td>
+                    <td id="Cadereyta_I_eq9">EQ2</td>
+                    <td id="Cadereyta_I_eq10">EQ3</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Cadereyta II -->
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>NIVEL</th>
+                    <th>FLUJO</th>
+                    <th colspan="2">EQUIPOS</th>
+                    <th>VOLTAJE<br>PROMEDIO</th>
+                    <th>CORRIENTE<br>PROMEDIO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>Ptar Cadereyta II</td>
+                    <td id="Cadereyta_II_fecha">11/08<br>09:51</td>
+                    <td id="Cadereyta_II_nivel"><a href="#">730 cm</a></td>
+                    <td id="Cadereyta_II_flujo"><a href="#">0 lps</a><br>Acum: 49805 m³</td>
+                    <td id="Cadereyta_II_eq1" style="background-color:lightgreen;">ON</td>
+                    <td id="Cadereyta_II_eq2" style="background-color:#f88;">OFF</td>
+                    <td id="Cadereyta_II_PV"><a href="#">4,001.33 V</a></td>
+                    <td id="Cadereyta_II_PC"><a href="#">544.00 A</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== PTAR SALINAS VICTORIA ==== -->
+    <section class="table-section">
+        <h2>PTAR SALINAS VICTORIA</h2>
+        <table id="tsalinas" class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th>FLUJO</th>
+                    <th colspan="3">EQUIPOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>PTAR Salinas Victoria<br>Influente</td>
+                    <td id="salinas_fecha" rowspan="2">11/08<br>11:07</td>
+                    <td id="salinas_f2"><a href="#">25 lps</a></td>
+                    <td id="salinas_influente_eq_1">EQ1</td>
+                    <td id="salinas_influente_eq_2">EQ2</td>
+                    <td id="salinas_influente_eq_3">EQ3</td>
+                </tr>
+                <tr align="center">
+                    <td>PTAR Salinas Victoria<br>Efluente</td>
+                    <td id="salinas_f1"><a href="#">25 lps</a></td>
+                    <td id="salinas_efluente_eq_3" colspan="3">N/A</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ==== PTAR INTERPUERTO ==== -->
+    <section class="table-section">
+        <h2>PTAR INTERPUERTO</h2>
+        <table id="Interpuerto" class="data-table">
+            <thead>
+                <tr>
+                    <th>UBICACION</th>
+                    <th>ACTUALIZACION</th>
+                    <th colspan="3">NIVEL</th>
+                    <th colspan="2">FLUJO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <td>PTAR</td>
+                    <td id="inter_fecha" style="background-color:red;color:white;">11/08<br>00:00</td>
+                    <td id="inter_nivel1"><a href="#"><a>Carcamo Influente</a><br>0 cm</a></td>
+                    <td id="inter_nivel2"><a href="#"><a>Lodos</a><br>0 cm</a></td>
+                    <td id="inter_nivel3"><a href="#"><a>Rebombeo</a><br>0 cm</a></td>
+                    <td id="inter_flujo1"><a href="#">
+                            <p>Influente</p><br>0 lps
+                        </a></td>
+                    <td id="inter_flujo2"><a href="#"><a>Enfluente</a><br>0 lps</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <section class="table-section">
+        <h2>PTAR PESQUERIA</h2>
+        <table id="Pesqueria" class="data-table" width="100%" border="1" cellspacing="0" cellpadding="3"
+            bgcolor="#FFFFCC" bordercolor="#000080">
+            <thead>
+                <tr bgcolor="#FF9900" align="center">
+                    <th width="12%">UBICACION</th>
+                    <th width="12%">ACTUALIZACION</th>
+                    <th width="12%">FLUJO</th>
+                    <th width="12%" colspan="3">EQUIPOS INFLUENTE</th>
+                    <th width="18%" colspan="5">TORNILLO RASTRA REJILLA BANDA COMPACTADOR</th>
+                    <th width="10%" colspan="2">SOPLADOR 1 Y 2</th>
+                    <th width="10%" colspan="2">CLARIFICADOR 1 Y 2</th>
+                    <th width="10%" colspan="2">RETORNO 1 Y 2</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr align="center">
+                    <!-- Columna UBICACION -->
+                    <td style="border-bottom:1px solid #000080;">Influente</td>
+                    <!-- Columna ACTUALIZACION -->
+                    <td style="background:#e60000;color:#001dbb;border-bottom:1px solid #000080;">
+                        <a href="#" style="color:#001dbb;">11/08</a><br>
+                        <a href="#" style="color:#001dbb;">00:00</a>
+                    </td>
+                    <!-- Columna FLUJO -->
+                    <td style="border-bottom:1px solid #000080;">
+                        <a href="#" style="color:#001dbb;">0 lps</a>
+                    </td>
+                    <!-- Equipos -->
+                    <td id="pesqueria_eq1" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq2" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq3" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq4" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq5" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq6" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq7" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq8" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq9" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq10" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq11" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq12" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq13" rowspan="2">OFF</td>
+                    <td id="pesqueria_eq14" rowspan="2">OFF</td>
+                </tr>
+                <tr align="center">
+                    <!-- Columna UBICACION fila 2 -->
+                    <td>Efluente</td>
+                    <!-- Columna ACTUALIZACION fila 2 -->
+                    <td style="background:#e60000;color:#001dbb;">
+                        <a href="#" style="color:#001dbb;">11/08</a><br>
+                        <a href="#" style="color:#001dbb;">00:05</a>
+                    </td>
+                    <!-- Columna FLUJO fila 2 -->
+                    <td>
+                        <a href="#" style="color:#001dbb;">0 lps</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <!-- ==== BOTÓN SUBIR ==== -->
+    <button id="btnSubir" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });" aria-label="Subir al inicio">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 4l-8 8h5v8h6v-8h5z" fill="white" />
+        </svg>
+    </button>
+
+    <!-- ==== SCRIPT SUBIR ==== -->
+    <script>
+        const btnSubir = document.getElementById("btnSubir");
+        window.addEventListener("scroll", () => {
+            btnSubir.style.display = window.scrollY > 300 ? "flex" : "none";
+        });
+    </script>
+
+</body>
+
+</html>
