@@ -1,6 +1,14 @@
 'use strict';
 (function () {
   const canvas = document.getElementById('scene');
+  /* MV PRO: ?cielo=foto usa la imagen anterior; por defecto cielo procedural realista */
+  const mvSkyPhoto = /[?&]cielo=foto/i.test(location.search);
+  let mvMotionScale = 1, mvMotionTimer = 0, mvMotionResize = null;
+  function mvMotionStart() {
+    clearTimeout(mvMotionTimer);
+    if (mvMotionScale !== .68) { mvMotionScale = .68; if (mvMotionResize) mvMotionResize(); }
+    mvMotionTimer = setTimeout(() => { mvMotionScale = 1; if (mvMotionResize) mvMotionResize(); }, 260);
+  }
   /* MV PRO: ?calidad=ultra (o ?4k) fuerza máxima resolución para videowall / pantallas 4K */
   const mvUltra = /[?&](calidad=ultra|4k)(&|$|=)/i.test(location.search) || (window.screen && window.screen.width * (window.devicePixelRatio || 1) >= 3800);
   const returnToAnillo = document.createElement('a');
@@ -92,15 +100,13 @@ float mvShadow(vec3 N, vec3 L){
   if(s.x<=.001||s.x>=.999||s.y<=.001||s.y>=.999||s.z>=1.0) return 1.0;
   float ndl=clamp(dot(N,L),0.0,1.0);
   float bias=.00045+.0016*(1.0-ndl);
-  float sum=0.0;
-  for(int x=0;x<4;x++){
-    for(int y=0;y<4;y++){
-      vec2 o=(vec2(float(x),float(y))-1.5)*uShadowTexel*1.15;
-      sum+=step(s.z-bias,texture2D(uShadowMap,s.xy+o).r);
-    }
-  }
+  vec2 t=uShadowTexel*1.35;
+  float sum=step(s.z-bias,texture2D(uShadowMap,s.xy+vec2(-.5,-1.5)*t).r)
+           +step(s.z-bias,texture2D(uShadowMap,s.xy+vec2(1.5,-.5)*t).r)
+           +step(s.z-bias,texture2D(uShadowMap,s.xy+vec2(.5,1.5)*t).r)
+           +step(s.z-bias,texture2D(uShadowMap,s.xy+vec2(-1.5,.5)*t).r);
   float edge=smoothstep(.0,.04,min(min(s.x,1.0-s.x),min(s.y,1.0-s.y)));
-  return mix(1.0,sum/16.0,edge);
+  return mix(1.0,sum*.25,edge);
 }
 float mvContactAO(){
   float ao=1.0;
@@ -116,9 +122,8 @@ vec3 mvSky(vec3 dir){
   dir=normalize(vec3(dir.x,max(dir.y,.03),dir.z));
   float az=atan(dir.z,dir.x);
   float el=asin(clamp(dir.y,-1.0,1.0));
-  vec2 uv=vec2(fract(az*.1591549431),clamp(.27+el*.68,.008,.992));
-  vec3 clearSky=mix(vec3(.76,.88,.95),vec3(.27,.56,.79),smoothstep(-.24,.82,dir.y));
-  vec3 sky=mix(clearSky,texture2D(uSkyRefl,uv).rgb,uSkyReflReady);
+  vec3 sky=mix(vec3(.78,.86,.93),vec3(.24,.48,.82),pow(clamp(dir.y,0.0,1.0),.55));
+  sky+=vec3(.25,.22,.16)*pow(max(dot(dir,normalize(vec3(-.42,.95,.56))),0.0),12.0);
   return sky*mix(vec3(1.0),vec3(.45,.52,.66),uEvening);
 }
 vec3 mvGrade(vec3 c){
@@ -596,7 +601,7 @@ gl_FragColor=vec4(c,outAlpha);
     const depthExt = isGL2 ? null : gl.getExtension('WEBGL_depth_texture');
     if (!isGL2 && !depthExt) return null;
     const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-    const size = Math.min(maxTex, mvUltra ? 8192 : 4096);
+    const size = Math.min(maxTex, mvUltra ? 4096 : 2048);
     try {
       const depth = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, depth);
@@ -638,35 +643,15 @@ gl_FragColor=vec4(c,outAlpha);
       return null;
     }
   })();
-  /* MV PRO: profundidad de tuberías y agua para que tapen las placas/tarjetas que quedan detrás */
-  const mvOccluder = (() => {
-    if (!enhancedWaterShader || /[?&]oclusion=0/i.test(location.search)) return null;
-    try {
-      const op = gl.createProgram();
-      gl.attachShader(op, shader(gl.VERTEX_SHADER, vert));
-      gl.attachShader(op, shader(gl.FRAGMENT_SHADER, 'precision mediump float;varying vec4 vData;varying float vTankFill;void main(){float k=vData.z;bool flow=k>.5&&k<1.5;bool water=(k>1.5&&k<2.5)||(k>4.5&&k<6.5);bool glow=(k>2.5&&k<3.5)||(k>8.5&&k<10.5)||k>11.5;if(water&&vTankFill<.018)discard;if(glow||!(flow||water||vData.w>.6))discard;gl_FragColor=vec4(1.0);}'));
-      for (const [name, index] of [['aPos', loc.pos], ['aNormal', loc.normal], ['aColor', loc.color], ['aData', loc.data]]) if (index >= 0) gl.bindAttribLocation(op, index, name);
-      gl.linkProgram(op);
-      if (!gl.getProgramParameter(op, gl.LINK_STATUS)) return null;
-      return { program: op, vp: gl.getUniformLocation(op, 'uVP'), time: gl.getUniformLocation(op, 'uTime'), levels: gl.getUniformLocation(op, 'uLevels[0]'), anim: gl.getUniformLocation(op, 'uAnimate') };
-    } catch (error) { console.warn('MTYV 3D: oclusión de placas no disponible:', error && error.message); return null; }
-  })();
-  function mvOccluderDepthPass() {
-    if (!mvOccluder) return;
-    gl.useProgram(mvOccluder.program);
-    gl.uniformMatrix4fv(mvOccluder.vp, false, vp); gl.uniform1f(mvOccluder.time, elapsed); gl.uniform1fv(mvOccluder.levels, levelsUniform); gl.uniform1f(mvOccluder.anim, 1);
-    gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.disable(gl.BLEND); gl.depthMask(true); gl.colorMask(false, false, false, false);
-    bindBuffer(pipeBuffers[1]); gl.drawArrays(gl.TRIANGLES, 0, pipeBuffers[1].count);
-    bindBuffer(buffers[1]); gl.drawArrays(gl.TRIANGLES, 0, buffers[1].count);
-    gl.colorMask(true, true, true, true);
-  }
   function mvRenderShadowMap(now, drawShadowCasters) {
     if (!mvShadow) return;
     if (!mvShadow.lightVP) mvShadow.lightVP = mvShadow.makeLightVP();
     const top = isTopViewMode();
     if (top !== mvShadowTopView) { mvShadowTopView = top; mvShadowDirty = true; }
-    if (!mvShadowDirty && now < mvShadowNext) return;
-    mvShadowDirty = false; mvShadowNext = now + 5000;
+    let levelKey = 0; for (let i = 0; i < levelsUniform.length; i++) levelKey += levelsUniform[i] * (i + 1);
+    if (Math.abs(levelKey - mvShadowNext) > .0005) { mvShadowNext = levelKey; mvShadowDirty = true; }
+    if (!mvShadowDirty) return;
+    mvShadowDirty = false;
     gl.bindFramebuffer(gl.FRAMEBUFFER, mvShadow.fbo);
     gl.viewport(0, 0, mvShadow.size, mvShadow.size);
     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.depthMask(true); gl.disable(gl.BLEND);
@@ -717,8 +702,40 @@ uniform float uSkyAspect;
 uniform float uSkySeconds;
 uniform float uSkyReady;
 uniform float uEvening;
+uniform float uSkyProcedural;
+float mvH(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float mvN(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(mvH(i),mvH(i+vec2(1,0)),f.x),mix(mvH(i+vec2(0,1)),mvH(i+vec2(1,1)),f.x),f.y);}
+float mvFbm(vec2 p){float a=.5,s=0.0;for(int i=0;i<5;i++){s+=a*mvN(p);p=p*2.03+vec2(17.3,-9.1);a*=.5;}return s;}
+vec3 mvProceduralSky(vec3 d,float t,float ev){
+  vec3 sunDir=normalize(vec3(-.42,.95,.56));
+  vec3 sunEve=normalize(vec3(-.80,.10,.58));
+  vec3 S=normalize(mix(sunDir,sunEve,ev));
+  float y=max(d.y,0.0);
+  float mu=max(dot(d,S),0.0);
+  vec3 zen=mix(vec3(.16,.40,.80),vec3(.10,.14,.30),ev);
+  vec3 hor=mix(vec3(.72,.83,.93),vec3(.95,.58,.36),ev);
+  vec3 sky=mix(hor,zen,pow(y,.48));
+  sky=mix(sky,hor*1.05,exp(-y*14.0)*.55);
+  sky+=mix(vec3(1.0,.93,.80),vec3(1.0,.55,.25),ev)*(pow(mu,6.0)*.22+pow(mu,48.0)*.35);
+  sky+=vec3(1.0,.96,.88)*smoothstep(.9994,.9998,mu)*3.0;
+  vec2 uv=d.xz/(y+.085)*.55+vec2(t*.010,t*.004);
+  float base=mvFbm(uv*1.15);
+  float detail=mvFbm(uv*3.4+vec2(base*1.6,-t*.006));
+  float cov=smoothstep(.50,.80,base*.78+detail*.32);
+  float shade=mvFbm(uv*1.15+S.xz*.18)-base;
+  vec3 lit=mix(vec3(1.0,.99,.97),vec3(1.0,.72,.50),ev);
+  vec3 dark=mix(vec3(.58,.64,.74),vec3(.36,.30,.40),ev);
+  vec3 cloud=mix(lit,dark,clamp(.45+shade*2.4+(1.0-detail)*.35,0.0,1.0));
+  cloud+=lit*pow(mu,10.0)*.25;
+  float fade=smoothstep(.0,.16,d.y);
+  sky=mix(sky,cloud,cov*fade*.92);
+  sky=mix(sky,hor*vec3(.94,.96,.98),exp(-max(d.y,0.0)*22.0)*.45);
+  if(d.y<0.0) sky=mix(hor*.86,vec3(.36,.42,.40),clamp(-d.y*6.0,0.0,1.0));
+  return sky;
+}
 void main(){
   vec3 direction=normalize(uSkyForward+uSkyRight*(vSkyNdc.x*uSkyAspect*.404026)+uSkyUp*(vSkyNdc.y*.404026));
+  if(uSkyProcedural>.5){gl_FragColor=vec4(mvProceduralSky(direction,uSkySeconds,uEvening),1.0);return;}
   float azimuth=atan(direction.z,direction.x);
   float elevation=asin(clamp(direction.y,-1.0,1.0));
   vec2 uv=vec2(fract(azimuth*.1591549431+uSkySeconds*.00120),clamp(.27+elevation*.68,.008,.992));
@@ -741,7 +758,8 @@ void main(){
       aspect: gl.getUniformLocation(skyProgram, 'uSkyAspect'),
       seconds: gl.getUniformLocation(skyProgram, 'uSkySeconds'),
       ready: gl.getUniformLocation(skyProgram, 'uSkyReady'),
-      evening: gl.getUniformLocation(skyProgram, 'uEvening')
+      evening: gl.getUniformLocation(skyProgram, 'uEvening'),
+      procedural: gl.getUniformLocation(skyProgram, 'uSkyProcedural')
     };
     skyBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, skyBuffer);
@@ -810,6 +828,7 @@ void main(){
     gl.uniform1f(skyLoc.seconds, seconds);
     gl.uniform1f(skyLoc.ready, skyReady ? 1 : 0);
     gl.uniform1f(skyLoc.evening, eveningBlend);
+    gl.uniform1f(skyLoc.procedural, mvSkyPhoto ? 0 : 1);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.depthMask(true);
     gl.enable(gl.DEPTH_TEST);
@@ -3800,7 +3819,9 @@ void main(){vec4 c=texture2D(uAtlas,vUV);float alpha=smoothstep(.035,.82,c.a)*uO
       for (const card of mvFlowPlates) {
         if (card.opacity < .012) continue;
         const vertices = [];
-        addCameraPlate(vertices, tankSpecs.length * 2 + card.index, card.x, .80, card.z, card.width, card.height, .015);
+        const mvCardDist = Math.max(.001, Math.hypot(camera[0] - card.x, camera[1] - .80, camera[2] - card.z));
+        const mvCardPull = Math.min(1.6, mvCardDist * .35), mvCardScale = (mvCardDist - mvCardPull) / mvCardDist;
+        addCameraPlate(vertices, tankSpecs.length * 2 + card.index, card.x, .80, card.z, card.width * mvCardScale, card.height * mvCardScale, mvCardPull);
         drawWorldText(vertices, texture, true, card.opacity);
       }
     } else {
@@ -4382,7 +4403,7 @@ void main(){vec4 c=texture2D(uAtlas,vUV);float alpha=smoothstep(.035,.82,c.a)*uO
     const pixels = width * height;
     const maximumDensity = Math.min(3, Math.sqrt(36000000 / pixels), maximumViewportDimensions[0] / width, maximumViewportDimensions[1] / height, maximumRenderbufferDimension / width, maximumRenderbufferDimension / height);
     const preferred = Math.max(nativeDensity, pixels >= 7000000 ? 1.5 : pixels >= 3000000 ? 1.8 : 2.0);
-    const dpr = Math.max(.75, Math.min(maximumDensity, preferred * Math.max(.82, dynamicQuality)));
+    const dpr = Math.max(.6, Math.max(.75, Math.min(maximumDensity, preferred * Math.max(.82, dynamicQuality))) * mvMotionScale);
     const w = Math.max(1, Math.round(width * dpr)), h = Math.max(1, Math.round(height * dpr));
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
     lastDisplayDensity = window.devicePixelRatio || 1; vw = width; vh = height;
@@ -4443,7 +4464,7 @@ void main(){vec4 c=texture2D(uAtlas,vUV);float alpha=smoothstep(.035,.82,c.a)*uO
     );
     const preferredDensity = mobile ? nativeDensity : Math.max(nativeDensity, pixels >= 5500000 ? 1.17 : pixels >= 3000000 ? 1.44 : 1.76);
     const minimumDensity = mobile ? .65 : Math.min(maximumDensity, Math.max(.78, nativeDensity * .76));
-    const dpr = Math.min(maximumDensity, Math.max(minimumDensity, preferredDensity * dynamicQuality));
+    const dpr = Math.max(.6, Math.min(maximumDensity, Math.max(minimumDensity, preferredDensity * dynamicQuality)) * mvMotionScale);
     const w = Math.max(1, Math.round(width * dpr));
     const h = Math.max(1, Math.round(height * dpr));
     if (canvas.width !== w || canvas.height !== h) {
@@ -4551,7 +4572,6 @@ void main(){vec4 c=texture2D(uAtlas,vUV);float alpha=smoothstep(.035,.82,c.a)*uO
 
     renderExternalWalls();
 
-    mvOccluderDepthPass();
     renderWorldLabels(now);
     mvPositionMarkers();
     if (!document.documentElement.classList.contains('mv-scene-ready') && initialTelemetryResolved && (skyAssetSettled || !skyProgram)) {
@@ -4585,6 +4605,10 @@ void main(){vec4 c=texture2D(uAtlas,vUV);float alpha=smoothstep(.035,.82,c.a)*uO
     const alternative = e.button === 2 || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey;
     return (freeNavigationMode === 'rotate') !== alternative ? 'orbit' : 'free-pan';
   }
+  mvMotionResize = resize;
+  canvas.addEventListener('pointermove', e => { if (e.buttons) mvMotionStart(); }, { passive: true });
+  canvas.addEventListener('wheel', mvMotionStart, { passive: true });
+  canvas.addEventListener('touchmove', mvMotionStart, { passive: true });
   canvas.addEventListener('pointerdown', e => {
     if (presentation.active) stopPresentation();
     if (guidedTour.active) stopGuidedTour(true);
