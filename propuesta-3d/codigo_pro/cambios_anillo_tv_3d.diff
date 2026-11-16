@@ -290,7 +290,45 @@
      gl.drawArrays(gl.TRIANGLES, 0, 3);
      gl.depthMask(true);
      gl.enable(gl.DEPTH_TEST);
-@@ -1592,6 +1796,7 @@
+@@ -756,7 +960,37 @@
+     const spec = tankSpecs.find(s => s.name === name);
+     return spec ? Math.max(0, Math.min(1, Number(spec.fraction) || 0)) : .45;
+   }
++  /* MV PRO: si un tubo termina cerca de un tanque, se prolonga hasta la pared y se le pone brida */
++  function mvSnapPipeToTanks(path, r) {
++    if (!Array.isArray(path) || path.length < 2 || !tankLabels.length) return path;
++    const out = path.map(p => [p[0], p[1], p[2]]);
++    const snap = (endIndex, prevIndex) => {
++      const e = out[endIndex];
++      let best = null, bestD = Infinity;
++      for (const t of tankLabels) { const d = Math.hypot(e[0] - t.x, e[2] - t.z); if (d < bestD) { bestD = d; best = t; } }
++      if (!best) return null;
++      const R = best.radius || 1.3;
++      if (bestD <= R * .97 || bestD > R * 2.15) return null;
++      const ux = (e[0] - best.x) / bestD, uz = (e[2] - best.z) / bestD;
++      const wall = [best.x + ux * R * .955, e[1], best.z + uz * R * .955];
++      return { wall, ux, uz, R };
++    };
++    const collars = [];
++    const tail = snap(out.length - 1, out.length - 2);
++    if (tail) { out.push(tail.wall); collars.push(tail); }
++    const head = snap(0, 1);
++    if (head) { out.unshift(head.wall); collars.push(head); }
++    for (const c of collars) {
++      const a = [c.wall[0] + c.ux * c.R * .02, c.wall[1], c.wall[2] + c.uz * c.R * .02];
++      const b = [c.wall[0] + c.ux * (c.R * .02 + .20), c.wall[1], c.wall[2] + c.uz * (c.R * .02 + .20)];
++      orientedCylinder(a, b, r + .17, '#7c8f99', { seg: 18, em: .05 });
++      const b2 = [b[0] + c.ux * .05, b[1], b[2] + c.uz * .05];
++      orientedCylinder(b, b2, r + .21, '#5f707a', { seg: 18, em: .03 });
++    }
++    return out;
++  }
+   function pipe(path, r = .30, meta = {}) {
++    path = mvSnapPipeToTanks(path, r);
+     const pts = roundPath(path, .85);
+     const src = tankFractionByName(meta.source);
+     const dst = meta.target ? tankFractionByName(meta.target) : src;
+@@ -1592,6 +1826,7 @@
    const superiorPumpBuffers = [0, 1, 2].map(() => ({ buf: gl.createBuffer(), count: 0 }));
  
    function rebuildPumpBatches() {
@@ -298,7 +336,7 @@
      for (let g = 0; g < 3; g++) {
        let total = 0;
        for (const p of pumpMeshes) total += (p.active === true ? p.on : p.off)[g].length;
-@@ -1612,6 +1817,7 @@
+@@ -1612,6 +1847,7 @@
    rebuildPumpBatches();
    const pipeBuffers = [0, 1, 2].map(() => ({ buf: gl.createBuffer(), count: 0 }));
    function rebuildPipeBuffers() {
@@ -306,7 +344,7 @@
      const saved = A; A = [[], [], []];
      for (const def of pipeDefs) pipe(def.nodes, def.r, def);
      for (let group = 0; group < 3; group++) {
-@@ -2309,14 +2515,14 @@
+@@ -2309,14 +2545,14 @@
      #presentationPanel .mv-dh-value small{color:#111111;font-size:10px;font-weight:500;letter-spacing:0}
      #presentationPanel .mv-dh-flow-choice{display:block;width:100%;margin:3px 0 6px;min-height:26px;padding:3px 7px;border:1px solid #c6d4dc;border-radius:2px;background:#f8fafb;color:#314c5d;font:500 11px 'Segoe UI',Tahoma,Arial,sans-serif}
      #presentationPanel .mv-dh-flow-choice[hidden]{display:none}
@@ -323,7 +361,7 @@
      #presentationPanel .mv-dh-tooltip[hidden]{display:none}
      #presentationPanel .mv-dh-cursor{pointer-events:none}
      #presentationPanel .mv-dh-message{margin:0 11px 10px;padding:7px 0;border:0;border-top:1px solid #e0e7ed;border-radius:0;background:#fff;color:#667b88;font-size:10px;line-height:1.45}
-@@ -2688,43 +2894,48 @@
+@@ -2688,43 +2924,48 @@
    }
  
    function mvHistoryChart(plot, samples, unit, hue) {
@@ -394,7 +432,7 @@
        segment = [];
      };
      for (let i = 0; i < coords.length; i++) {
-@@ -2733,7 +2944,14 @@
+@@ -2733,7 +2974,14 @@
      }
      flush();
      const last = coords[coords.length - 1];
@@ -410,7 +448,7 @@
      plot.dataset.mvChartSize = W + 'x' + H;
      const svg = plot.querySelector('svg');
      const cursor = svg.querySelector('.mv-dh-cursor');
-@@ -2761,7 +2979,7 @@
+@@ -2761,7 +3009,7 @@
        guide.setAttribute('x2', point[0].toFixed(2));
        circle.setAttribute('cx', point[0].toFixed(2));
        circle.setAttribute('cy', point[1].toFixed(2));
@@ -419,7 +457,7 @@
        const px = point[0] / W * bounds.width;
        tooltip.style.left = Math.min(bounds.width - 40, Math.max(40, px)) + 'px';
        tooltip.style.top = Math.max(28, point[1] / H * bounds.height) + 'px';
-@@ -4431,7 +4649,9 @@
+@@ -4431,7 +4679,9 @@
      for (const card of flowPlateStates) {
        if (card.opacity < .045) continue;
        const bucket = Math.max(0, Math.min(7, Math.floor(card.opacity * 7.999)));
@@ -430,7 +468,7 @@
      }
      for (let bucket = 0; bucket < groups.length; bucket++) {
        if (groups[bucket].length) drawWorldText(groups[bucket], texture, true, null, 0, false, false, (bucket + 1) / 8);
-@@ -5123,6 +5343,17 @@
+@@ -5123,6 +5373,17 @@
    const levelsUniform = new Float32Array(tankSpecs.length);
    const cameraUniform = new Float32Array(3);
    let dynamicQuality = 1, qualityElapsed = 0, qualityFrames = 0, qualityRecovery = 0, currentMeanFrame = 16.7;
@@ -448,7 +486,7 @@
    function adaptQuality(frameMs) {
      if (frameMs <= 0 || frameMs > 1000) return;
      qualityElapsed += Math.min(frameMs, 200);
-@@ -5160,6 +5391,7 @@
+@@ -5160,6 +5421,7 @@
    const maximumViewportDimensions = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
    const maximumRenderbufferDimension = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE);
    function resize() {
@@ -456,7 +494,7 @@
      const width = Math.max(1, canvas.clientWidth);
      const height = Math.max(1, canvas.clientHeight);
      const mobile = Math.min(width, height) <= 600 && (window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 600);
-@@ -5178,7 +5410,7 @@
+@@ -5178,7 +5440,7 @@
      );
      const preferredDensity = mobile ? nativeDensity : Math.max(nativeDensity, pixels >= 5500000 ? 1.21 : pixels >= 3000000 ? 1.48 : 1.80);
      const minimumDensity = mobile ? .65 : Math.min(maximumDensity, Math.max(.76, nativeDensity * .74));
@@ -465,7 +503,7 @@
      const w = Math.max(1, Math.round(width * dpr));
      const h = Math.max(1, Math.round(height * dpr));
      if (canvas.width !== w || canvas.height !== h) {
-@@ -5262,12 +5494,19 @@
+@@ -5262,12 +5524,19 @@
        viewTarget = [...guidedTour.look];
      }
      vp.set(matMul(perspective(44 * Math.PI / 180, vw / vh, .15, 4000), lookAt(camera, viewTarget, [0, 1, 0])));
@@ -486,7 +524,7 @@
      function drawPumps(part) {
  
        const mesh = isTopViewMode() ? superiorPumpBuffers[part] : livePumpBuffers[part];
-@@ -5313,6 +5552,10 @@
+@@ -5313,6 +5582,10 @@
      const alternative = e.button === 2 || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey;
      return (freeNavigationMode === 'rotate') !== alternative ? 'orbit' : 'free-pan';
    }
