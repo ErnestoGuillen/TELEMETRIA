@@ -1929,7 +1929,7 @@ void main(){
     #presentationPanel .mv-dh-foot span:first-child{display:none!important}
     #presentationPanel .mv-dh-foot span:last-child{font-weight:500;text-align:right}
     #presentationPanel .mv-dh-empty{display:flex;align-items:center;justify-content:center;min-height:100px;height:100%;padding:9px;text-align:center;color:#6b7c86;font-size:11px;line-height:1.5}
-    #presentationPanel .mv-dh-tooltip{position:absolute;z-index:5;pointer-events:none;background:#274455;color:#fff;padding:5px 9px;border-radius:999px;font-weight:600;font-size:10.5px;line-height:1.35;box-shadow:0 2px 7px rgba(0,0,0,.15);white-space:nowrap;transform:translate(-50%,-105%)}
+    #presentationPanel .mv-dh-tooltip{position:absolute;z-index:5;pointer-events:none;background:#274455;color:#fff;padding:4px 7px;border-radius:2px;font-weight:600;font-size:10.5px;line-height:1.35;box-shadow:0 2px 7px rgba(0,0,0,.15);white-space:nowrap;transform:translate(-50%,-105%)}
     #presentationPanel .mv-dh-tooltip[hidden]{display:none}
     #presentationPanel .mv-dh-cursor{pointer-events:none}
     #presentationPanel .mv-dh-message{margin:0 11px 10px;padding:7px 0;border:0;border-top:1px solid #e0e7ed;border-radius:0;background:#fff;color:#667b88;font-size:10px;line-height:1.45}
@@ -2230,7 +2230,7 @@ void main(){
   }
 
   function mvHistoryChart(plot, samples, unit, hue) {
-    /* MV PRO: gráfica rediseñada (curva suave, degradado, máximo/mínimo y valor actual) */
+    /* MV PRO: gráfica estilo tendencia SCADA (línea por lectura, rejilla técnica, valor actual en el eje) */
     const endTime = Date.now();
     const startTime = endTime - MV_HISTORY_WINDOW_MS;
     const recent = samples.filter(item => Array.isArray(item) && Number.isFinite(item[0]) && Number.isFinite(item[1]) && item[0] >= startTime && item[0] <= endTime + 60000).sort((a, b) => a[0] - b[0]);
@@ -2239,57 +2239,39 @@ void main(){
     const fmt = v => unit === 'm' ? v.toFixed(2) : mvHistoryNumber.format(v);
     const values = recent.map(point => point[1]);
     const minValue = Math.min(...values), maxValue = Math.max(...values);
-    const spread = Math.max(unit === 'm' ? .11 : 2, (maxValue - minValue) * .28);
+    const spread = Math.max(unit === 'm' ? .11 : 2, (maxValue - minValue) * .20);
     const low = Math.max(0, minValue - spread), high = Math.max(maxValue + spread, low + (unit === 'm' ? .2 : 3));
-    const W = Math.max(200, Math.round(plot.clientWidth || 380)), H = Math.max(128, Math.round(plot.clientHeight || 145)), L = 42, R = 14, T = 14, B = 24;
+    const W = Math.max(200, Math.round(plot.clientWidth || 380)), H = Math.max(128, Math.round(plot.clientHeight || 145)), L = 42, R = 48, T = 10, B = 22;
     const pw = W - L - R, ph = H - T - B, base = T + ph;
     const xAt = t => L + (t - startTime) / (endTime - startTime) * pw;
     const yAt = v => T + (high - v) / (high - low) * ph;
     const coords = recent.map(point => [xAt(point[0]), yAt(point[1])]);
-    const color = isFlow ? '#0f8b8d' : '#1668dc';
-    const colorSoft = isFlow ? '#5cc8c2' : '#5aa2ff';
-    const gid = 'mvg' + Math.random().toString(36).slice(2, 9);
-    const font = 'font-family="Segoe UI,Inter,Arial" font-size="10"';
-    let grid = `<defs>
-      <linearGradient id="${gid}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${colorSoft}" stop-opacity=".42"/><stop offset=".65" stop-color="${colorSoft}" stop-opacity=".10"/><stop offset="1" stop-color="${colorSoft}" stop-opacity="0"/></linearGradient>
-      <linearGradient id="${gid}l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${colorSoft}"/><stop offset="1" stop-color="${color}"/></linearGradient>
-    </defs>`;
-    grid += `<rect x="${L}" y="${T}" width="${pw}" height="${ph}" rx="6" fill="${isFlow ? '#f3fbfb' : '#f3f8ff'}"/>`;
-    for (let i = 0; i <= 3; i++) {
-      const y = T + ph * i / 3;
-      const value = high - (high - low) * i / 3;
-      if (i > 0 && i < 3) grid += `<line x1="${L + 4}" x2="${W - R - 4}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}" stroke="#c9d6e2" stroke-width=".8" stroke-dasharray="2 4"/>`;
-      grid += `<text x="${L - 7}" y="${(y + 3.5).toFixed(2)}" text-anchor="end" fill="#6b7a89" ${font}>${fmt(value)}</text>`;
+    const color = isFlow ? '#4f5b66' : '#0058b7';
+    const font = 'font-family="Segoe UI,Arial" font-size="10" style="font-variant-numeric:tabular-nums"';
+    let grid = `<rect x="${L}" y="${T}" width="${pw}" height="${ph}" fill="#ffffff" stroke="#c3ccd4" stroke-width="1"/>`;
+    for (let i = 0; i <= 4; i++) {
+      const y = T + ph * i / 4;
+      const value = high - (high - low) * i / 4;
+      if (i > 0 && i < 4) grid += `<line x1="${L}" x2="${L + pw}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}" stroke="#e9eef2" stroke-width="1"/>`;
+      grid += `<line x1="${L - 4}" x2="${L}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}" stroke="#8a98a5" stroke-width="1"/>`;
+      grid += `<text x="${L - 7}" y="${(y + 3.5).toFixed(2)}" text-anchor="end" fill="#3d4852" ${font}>${unit === 'm' ? value.toFixed(2) : mvHistoryNumber.format(Math.round(value))}</text>`;
     }
-    for (let i = 0; i <= 3; i++) {
-      const x = L + pw * i / 3;
-      const when = startTime + (endTime - startTime) * i / 3;
-      grid += `<line x1="${x.toFixed(2)}" x2="${x.toFixed(2)}" y1="${base}" y2="${base + 3}" stroke="#9fb0bf" stroke-width="1"/>`;
-      grid += `<text x="${x.toFixed(2)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : i === 3 ? 'end' : 'middle'}" fill="#6b7a89" ${font}>${mvHistoryFormatTime(when)}</text>`;
+    for (let i = 0; i <= 6; i++) {
+      const x = L + pw * i / 6;
+      const when = startTime + (endTime - startTime) * i / 6;
+      if (i > 0 && i < 6) grid += `<line x1="${x.toFixed(2)}" x2="${x.toFixed(2)}" y1="${T}" y2="${base}" stroke="#f0f3f6" stroke-width="1"/>`;
+      grid += `<line x1="${x.toFixed(2)}" x2="${x.toFixed(2)}" y1="${base}" y2="${base + 4}" stroke="#8a98a5" stroke-width="1"/>`;
+      if (i % 2 === 0) grid += `<text x="${x.toFixed(2)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : i === 6 ? 'end' : 'middle'}" fill="#3d4852" ${font}>${mvHistoryFormatTime(when)}</text>`;
     }
-    // curva monótona suave (sin picos falsos)
-    const smoothPath = pts => {
-      if (pts.length < 3) return pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' ');
-      const n = pts.length, dx = [], m = [], t = [];
-      for (let i = 0; i < n - 1; i++) { dx[i] = pts[i + 1][0] - pts[i][0]; m[i] = (pts[i + 1][1] - pts[i][1]) / Math.max(.0001, dx[i]); }
-      t[0] = m[0]; t[n - 1] = m[n - 2];
-      for (let i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : 3 * (dx[i - 1] + dx[i]) / ((2 * dx[i] + dx[i - 1]) / m[i - 1] + (dx[i] + 2 * dx[i - 1]) / m[i]);
-      let d = 'M' + pts[0][0].toFixed(2) + ',' + pts[0][1].toFixed(2);
-      for (let i = 0; i < n - 1; i++) {
-        const h = dx[i] / 3;
-        d += ` C${(pts[i][0] + h).toFixed(2)},${(pts[i][1] + t[i] * h).toFixed(2)} ${(pts[i + 1][0] - h).toFixed(2)},${(pts[i + 1][1] - t[i + 1] * h).toFixed(2)} ${pts[i + 1][0].toFixed(2)},${pts[i + 1][1].toFixed(2)}`;
-      }
-      return d;
-    };
-    let strokes = '', segment = [];
+    let strokes = '', dots = '', segment = [];
     const flush = () => {
       if (!segment.length) return;
+      const path = segment.map((pt, index) => (index ? 'L' : 'M') + pt[0].toFixed(2) + ',' + pt[1].toFixed(2)).join(' ');
       if (segment.length > 1) {
-        const path = smoothPath(segment);
-        strokes += `<path d="${path} L${segment[segment.length - 1][0].toFixed(2)},${base} L${segment[0][0].toFixed(2)},${base} Z" fill="url(#${gid}a)"/>`;
-        strokes += `<path d="${path}" fill="none" stroke="${color}" stroke-opacity=".16" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`;
-        strokes += `<path d="${path}" fill="none" stroke="url(#${gid}l)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`;
-      } else strokes += `<circle cx="${segment[0][0].toFixed(2)}" cy="${segment[0][1].toFixed(2)}" r="3" fill="${color}"/>`;
+        strokes += `<path d="${path} L${segment[segment.length - 1][0].toFixed(2)},${base} L${segment[0][0].toFixed(2)},${base} Z" fill="${color}" fill-opacity=".07"/>`;
+        strokes += `<path d="${path}" fill="none" stroke="${color}" stroke-width="1.7" stroke-linejoin="miter"/>`;
+      }
+      for (const pt of segment) dots += `<rect x="${(pt[0] - 2).toFixed(2)}" y="${(pt[1] - 2).toFixed(2)}" width="4" height="4" fill="#ffffff" stroke="${color}" stroke-width="1.2"/>`;
       segment = [];
     };
     for (let i = 0; i < coords.length; i++) {
@@ -2297,29 +2279,21 @@ void main(){
       segment.push(coords[i]);
     }
     flush();
-    // marcas de máximo y mínimo
-    const pill = (x, y, text, below) => {
-      const w = text.length * 5.6 + 10, px = Math.min(W - R - w / 2, Math.max(L + w / 2, x)), py = below ? Math.min(base - 2, y + 15) : Math.max(T + 9, y - 9);
-      return `<g><rect x="${(px - w / 2).toFixed(1)}" y="${(py - 7.5).toFixed(1)}" width="${w.toFixed(1)}" height="14" rx="7" fill="#ffffff" stroke="${color}" stroke-opacity=".35"/><text x="${px.toFixed(1)}" y="${(py + 3.2).toFixed(1)}" text-anchor="middle" fill="${color}" font-family="Segoe UI,Inter,Arial" font-size="9" font-weight="700">${text}</text></g>`;
-    };
-    let marks = '';
-    if (recent.length > 2 && maxValue - minValue > (unit === 'm' ? .005 : .5)) {
-      const iMax = values.indexOf(maxValue), iMin = values.indexOf(minValue);
-      if (iMax !== recent.length - 1) marks += `<circle cx="${coords[iMax][0].toFixed(2)}" cy="${coords[iMax][1].toFixed(2)}" r="2.6" fill="${color}"/>` + pill(coords[iMax][0], coords[iMax][1], 'MÁX ' + fmt(maxValue), false);
-      if (iMin !== recent.length - 1) marks += `<circle cx="${coords[iMin][0].toFixed(2)}" cy="${coords[iMin][1].toFixed(2)}" r="2.6" fill="${color}"/>` + pill(coords[iMin][0], coords[iMin][1], 'MÍN ' + fmt(minValue), true);
-    }
     const last = coords[coords.length - 1];
-    const lastDot = `<line x1="${last[0].toFixed(2)}" x2="${last[0].toFixed(2)}" y1="${last[1].toFixed(2)}" y2="${base}" stroke="${color}" stroke-opacity=".35" stroke-dasharray="2 3"/>
-      <circle cx="${last[0].toFixed(2)}" cy="${last[1].toFixed(2)}" r="5" fill="${color}" fill-opacity=".25"><animate attributeName="r" values="4;9;4" dur="2s" repeatCount="indefinite"/><animate attributeName="fill-opacity" values=".35;0;.35" dur="2s" repeatCount="indefinite"/></circle>
-      <circle cx="${last[0].toFixed(2)}" cy="${last[1].toFixed(2)}" r="3.6" fill="#fff" stroke="${color}" stroke-width="2.2"/>`;
-    plot.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="presentation">${grid}${strokes}${marks}${lastDot}<g class="mv-dh-cursor" visibility="hidden"><line x1="0" x2="0" y1="${T}" y2="${base}" stroke="${color}" stroke-width="1.2" stroke-opacity=".55"/><circle cx="0" cy="0" r="5" fill="white" stroke="${color}" stroke-width="2.4"/></g></svg><div class="mv-dh-tooltip" hidden></div>`;
+    const tagText = fmt(recent[recent.length - 1][1]);
+    const tagW = Math.max(R - 4, tagText.length * 6.2 + 10);
+    const tagY = Math.min(base - 8, Math.max(T + 8, last[1]));
+    const lastDot = `<line x1="${last[0].toFixed(2)}" x2="${(L + pw).toFixed(2)}" y1="${last[1].toFixed(2)}" y2="${last[1].toFixed(2)}" stroke="${color}" stroke-width="1" stroke-dasharray="3 2"/>
+      <path d="M${(L + pw).toFixed(2)},${tagY.toFixed(2)} l5,-8 h${tagW.toFixed(2)} v16 h-${tagW.toFixed(2)} z" fill="${color}"/>
+      <text x="${(L + pw + 5 + tagW / 2).toFixed(2)}" y="${(tagY + 3.6).toFixed(2)}" text-anchor="middle" fill="#ffffff" font-family="Segoe UI,Arial" font-size="10" font-weight="700" style="font-variant-numeric:tabular-nums">${tagText}</text>
+      <rect x="${(last[0] - 3).toFixed(2)}" y="${(last[1] - 3).toFixed(2)}" width="6" height="6" fill="${color}"/>`;
+    plot.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="presentation">${grid}${strokes}${dots}${lastDot}<g class="mv-dh-cursor" visibility="hidden"><line x1="0" x2="0" y1="${T}" y2="${base}" stroke="#1f2a33" stroke-width="1" stroke-dasharray="2 2"/><circle cx="0" cy="0" r="4" fill="white" stroke="${color}" stroke-width="2"/></g></svg><div class="mv-dh-tooltip" hidden></div>`;
     plot.dataset.mvChartSize = W + 'x' + H;
     const svg = plot.querySelector('svg');
     const cursor = svg.querySelector('.mv-dh-cursor');
     const guide = cursor.querySelector('line');
     const circle = cursor.querySelector('circle');
     const tooltip = plot.querySelector('.mv-dh-tooltip');
-    tooltip.style.background = color;
     const hide = () => { cursor.setAttribute('visibility', 'hidden'); tooltip.hidden = true; };
     svg.addEventListener('pointermove', event => {
       const bounds = svg.getBoundingClientRect();
