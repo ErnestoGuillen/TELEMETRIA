@@ -4,7 +4,7 @@
   const config={
     title:'Acueducto Linares',
     nodes:[
-      ['li00','Presa Cerro Prieto','reservoir',34,14,null],
+      ['li00','Presa Cerro Prieto','reservoir',34,14,'PRESACP'],
       ['li01','PB1 Linares','pump',22,12.6,'LINPB001'],
       ['li02','PB2 Linares','pump',10,10.6,'LINPB002'],
       ['li02a','PB2A Linares','pump',-1.5,8.2,'LINPB02A'],
@@ -122,7 +122,9 @@ void main(){
     float p1=dot(aPos.xz,vec2(.46,.27))+t*.75;
     float p2=dot(aPos.xz,vec2(-.21,.64))-t*1.02;
     float p3=dot(aPos.xz,vec2(.93,-.73))+t*1.37;
-    p.y+=edge*uAnimate*(.034*sin(p1)+.020*sin(p2)+.008*sin(p3));
+    float damLevel=uLevels[35];
+    if(damLevel>.0005)p.y+=(clamp(damLevel,0.0,1.0)-.85)*.55;
+    p.y+=edge*uAnimate*(.050*sin(p1)+.030*sin(p2)+.012*sin(p3));
     vec2 slope=edge*uAnimate*(vec2(.46,.27)*(.034*cos(p1))+vec2(-.21,.64)*(.020*cos(p2))+vec2(.93,-.73)*(.008*cos(p3)));
     surfaceNormal=normalize(vec3(-slope.x,1.0,-slope.y));
   }
@@ -335,15 +337,20 @@ if(kind>.5&&kind<1.5){
 } else if(kind>11.5&&kind<12.5){
   float t=uTime*uAnimate;
   vec2 uv=vPos.xz;
-  float swell=waterNoise(uv*.18+vec2(t*.043,-t*.034));
-  float ripples=waterNoise(uv*.79+vec2(-t*.17,t*.12));
-  float fine=sin(uv.x*1.12+uv.y*.37+t*1.25)*sin(uv.y*.93-uv.x*.28-t*.91);
-  float shadow=clamp(.17+.61*swell+.18*ripples+.09*fine,0.,1.);
-  c=mix(vec3(.028,.143,.191),vec3(.109,.335,.364),shadow);
-  float crests=pow(smoothstep(.69,.93,ripples+.12*fine),2.0);
-  float reflection=pow(max(dot(N,H),0.),28.0)*(.42+.58*swell);
-  float horizon=pow(1.0-max(dot(N,V),0.0),3.0);
-  c+=vec3(.20,.37,.39)*(crests*.115+reflection*.52+horizon*.13);
+  /* MV PRO: agua de presa realista (oleaje animado, reflejo del cielo, destellos del sol y espuma en la orilla) */
+  vec2 w1=vec2(t*.09,-t*.07),w2=vec2(-t*.21,t*.16);const float e=.30;
+  float h0=waterNoise(uv*.55+w1)+.5*waterNoise(uv*1.7+w2)+.25*waterNoise(uv*4.3-w1*2.0);
+  float hx=waterNoise((uv+vec2(e,0.))*.55+w1)+.5*waterNoise((uv+vec2(e,0.))*1.7+w2)+.25*waterNoise((uv+vec2(e,0.))*4.3-w1*2.0);
+  float hz=waterNoise((uv+vec2(0.,e))*.55+w1)+.5*waterNoise((uv+vec2(0.,e))*1.7+w2)+.25*waterNoise((uv+vec2(0.,e))*4.3-w1*2.0);
+  vec3 Nw=normalize(vec3(-(hx-h0)*2.2,1.0,-(hz-h0)*2.2)+(N-vec3(0.,1.,0.)));
+  float fr=.03+.97*pow(1.0-max(dot(Nw,V),0.0),5.0);
+  float shoreF=1.0-clamp(vData.x,0.0,1.0);
+  c=mix(vec3(.012,.085,.125),vec3(.055,.27,.30),clamp(.22*h0+.55*shoreF,0.,1.));
+  c=mix(c,mvSky(reflect(-V,Nw))*.95,clamp(fr*.9,0.,.78));
+  vec3 Hw=normalize(L+V);
+  c+=vec3(1.0,.96,.86)*(pow(max(dot(Nw,Hw),0.0),220.0)*2.4+pow(max(dot(Nw,Hw),0.0),36.0)*.18)*mvSh*(1.0-.75*uEvening);
+  float foam=smoothstep(.80,1.0,shoreF)*(.55+.45*sin(t*1.4+uv.x*.9+uv.y*.7));
+  c=mix(c,vec3(.86,.93,.93),foam*.38);
 } else if(kind>10.5&&kind<11.5){
   vec2 pos=vPos.xz;
   float radius=length(pos);
@@ -1842,6 +1849,16 @@ void main(){
     box(x,1.30,back+.17,w-.40,2.18,.32,'#b0bfc0');
     box(x,3.77,back+.16,w-.40,2.76,.32,'#a2b4b7');
     box(x,5.23,back+.17,w+.06,.20,.41,'#d7dfde');
+    /* MV PRO: pared frontal (la caseta queda cerrada por ambos lados) */
+    box(x,1.30,front-.17,w-.40,2.18,.32,'#b0bfc0');
+    box(x,3.77,front-.16,w-.40,2.76,.32,'#a2b4b7');
+    for(const xx of [left+1.7,left+3.9,right-3.9,right-1.7]){
+      box(xx,3.25,front+.02,1.40,1.65,.06,'#688494',1,.09,.33);
+      box(xx,3.25,front+.04,1.46,.08,.07,'#d8e6e5');
+      box(xx,3.25,front+.04,.07,1.70,.07,'#d8e6e5');
+    }
+    box(x,1.30,front+.03,1.5,2.0,.08,'#56656c');
+    box(x,1.30,front+.06,.06,2.0,.06,'#8b9aa0');
     for(let k=0;k<7;k++){
       const xx=left+.65+k*(w-1.3)/6;
       box(xx,3.52,back+.365,.07,2.20,.06,'#83959b');
@@ -2173,6 +2190,7 @@ void main(){
       const limit=normalizedMaximum!==null&&normalizedMaximum>0&&normalizedMaximum>=level?normalizedMaximum:modelHeight;
       levelsUniform[i]=level===null||level<=0?0:Math.max(0,Math.min(.94,level/limit*.90));
     }
+    { const pr=live.get('PRESACP'); let pct=null; if(pr&&Array.isArray(pr.extra)){ const it=pr.extra.find(q=>q&&q.unit==='%'); if(it&&Number.isFinite(Number(it.value)))pct=Number(it.value); } levelsUniform[35]=pct===null?0:Math.max(.001,Math.min(1,pct/100)); }
     for(let group=0;group<casetaIds.length;group++){
       const reading=live.get(casetaDataCodes[group]);
       for(let motor=0;motor<casetaCounts[group];motor++){
@@ -2190,7 +2208,7 @@ void main(){
     gl.drawArrays(gl.TRIANGLES,0,b.count);
   }
   const sub=minus;
-  const CAMERA_LIMITS={minDist:10,maxDist:118,maxPitch:1.24,panXMin:-58,panXMax:40,panZMin:-24,panZMax:26};
+  const CAMERA_LIMITS={minDist:10,maxDist:84,maxPitch:1.24,panXMin:-58,panXMax:40,panZMin:-24,panZMax:26};
   const state={yaw:.75,pitch:.98,dist:79,target:[0,1.5,0],auto:'',mode:'orbit',night:false,names:true,flowNames:true,levels:true,alerts:true,date:true,showInfo:true,water:true,speed:1,spinFast:false,selected:null,paused:false,pt:0,presIndex:0,presDuration:9.5,quality:1.1,frameCount:0,frameElapsed:0};
   const labels=new Map(),flowLabels=new Map();
   const sillaLabel=document.createElement('div');
@@ -2264,7 +2282,8 @@ void main(){
     const isTank=kind==='tank';
     const isReference=!n[5];
     $('primaryLabel').textContent=isTank||hasLevel?'Nivel actual':kind==='pump'?'Flujo de salida':kind==='meter'?'Flujo medido':'Referencia';
-    $('primaryValue').textContent=isTank||hasLevel?(hasLevel?fmt(s.level)+' m':'N/D'):(hasFlow?fmt(s.flow,0)+' LPS':'N/D');
+    $('primaryValue').textContent=isTank||hasLevel?(hasLevel?fmt(s.level)+(kind==='reservoir'?' msnm':' m'):'N/D'):(hasFlow?fmt(s.flow,0)+' LPS':'N/D');
+    if(kind==='reservoir')$('primaryLabel').textContent='Elevación';
     $('flowValue').textContent=hasFlow?fmt(s.flow,0)+' LPS':'N/D';
     $('stateValue').textContent=isReference?'Sin lectura':!s||s.status==='sin_datos'?'Sin datos':s.status==='sin_comunicacion'?'Sin comunicación':s.observation?'Observación':'Actual';
     $('lastReading').textContent=s&&s.updated?'Actualización: '+s.updated:isReference?'Referencia hidráulica · sin sensor asociado':'Sin actualización';
@@ -2277,7 +2296,7 @@ void main(){
     for(const item of items){if(!item||item.value===null||!Number.isFinite(Number(item.value)))continue;
       const row=document.createElement('div');row.className='linares-detail-row';
       const name=document.createElement('span');name.textContent=item.label;
-      const value=document.createElement('strong');value.textContent=fmt(item.value,item.unit==='kg/cm²'?2:0)+' '+(item.unit||'');
+      const value=document.createElement('strong');value.textContent=fmt(item.value,item.unit==='kg/cm²'||item.unit==='Mm³'?2:item.unit==='%'?1:0)+' '+(item.unit||'');
       row.append(name,value);details.appendChild(row);
     }
     details.hidden=!details.childElementCount;
@@ -2326,6 +2345,7 @@ void main(){
       const f=flowLabels.get(n[0]);
       if(f){const s=getData(n);f.value.textContent=s&&s.flow!=null?fmt(s.flow,0)+' LPS':'N/D';}
     }
+    { const l=labels.get('li00'),pr=live.get('PRESACP'); if(l){ let v=l.el.querySelector('.sign-value'); if(!v){v=document.createElement('span');v.className='sign-value';l.el.appendChild(v);} const pct=pr&&Array.isArray(pr.extra)?pr.extra.find(q=>q&&q.unit==='%'):null; const parts=[]; if(pr&&pr.level!==null&&Number.isFinite(Number(pr.level)))parts.push(fmt(pr.level)+' msnm'); if(pct&&Number.isFinite(Number(pct.value)))parts.push(fmt(pct.value,1)+' %'); v.textContent=parts.length?parts.join(' · '):'N/D'; } }
     if(state.selected)updatePanel(nodeById.get(state.selected).data);
     alertsRefresh();
   }

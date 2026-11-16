@@ -1,0 +1,110 @@
+--- original/linares_3d_datos.php
++++ pro/linares_3d_datos.php
+@@ -40,7 +40,7 @@
+         if ($dt && $dt->getTimestamp() > $now->getTimestamp() + 300) $dt = $dt->modify('-1 year');
+         if ($dt) return $dt->getTimestamp();
+     }
+-    foreach (array('Y-m-d', 'd/m/Y', 'Y/m/d', 'd-m-Y', 'y-m-d', 'd/m/y') as $f) {
++    foreach (array('Y-m-d', 'Y/m/d', 'y/m/d', 'd/m/Y', 'd-m-Y', 'y-m-d', 'd/m/y') as $f) {
+         if ($d === '' || $h === '') continue;
+         $dt = DateTimeImmutable::createFromFormat('!' . $f . ' H:i:s', $d . ' ' . $h, $zone);
+         if ($dt && $dt->format($f . ' H:i:s') === $d . ' ' . $h) return $dt->getTimestamp();
+@@ -83,13 +83,77 @@
+     return $rows;
+ }
+ 
++function lnRoots($sub) {
++    $bases = array(dirname(dirname(__DIR__)), dirname(__DIR__), realpath(getcwd() . '/../..'),
++        isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '');
++    $out = array();
++    foreach ($bases as $b) {
++        if (!$b) continue;
++        foreach (array($sub, ucfirst($sub)) as $s) $out[] = rtrim($b, '/\\') . '/' . $s;
++    }
++    return $out;
++}
++
+ function lnCsvRoot() {
+-    foreach (array(dirname(dirname(__DIR__)) . '/lecturas', dirname(dirname(__DIR__)) . '/Lecturas', dirname(__DIR__) . '/lecturas') as $root) {
++    foreach (lnRoots('lecturas') as $root) {
+         if (is_dir($root) && is_readable($root)) return $root;
+     }
+     return '';
+ }
+ 
++function lnLastRow($file) {
++    if (!is_file($file) || !is_readable($file)) return null;
++    $f = @fopen($file, 'r');
++    if (!$f) return null;
++    $last = null;
++    while (($row = fgetcsv($f, 8192, ',')) !== false) {
++        foreach ($row as $cell) { if (trim((string)$cell) !== '') { $last = $row; break; } }
++    }
++    fclose($f);
++    return $last;
++}
++
++/* Presa Cerro Prieto: elevación (lecturas/ymd00_OBTO0002.CSV, ELEV0001 o columna 4)
++   y almacenamiento / porcentaje (lab/presas.CSV columnas 5 y 6), igual que presas.php y presamapa.php */
++function lnReadPresaCerroPrieto() {
++    $out = array('elevation' => null, 'timestamp' => null, 'storage' => null, 'percent' => null);
++    $root = lnCsvRoot();
++    if ($root !== '') {
++        $zone = new DateTimeZone('America/Monterrey');
++        for ($i = 0; $i <= 1 && $out['elevation'] === null; $i++) {
++            $day = (new DateTimeImmutable('today', $zone))->modify('-' . $i . ' day');
++            foreach (array('.CSV', '.csv') as $ext) {
++                $file = $root . '/' . $day->format('ymd') . '00_OBTO0002' . $ext;
++                if (!is_readable($file)) continue;
++                $f = @fopen($file, 'r');
++                if (!$f) continue;
++                $headers = fgetcsv($f, 8192, ',');
++                $col = 4;
++                if (is_array($headers)) foreach ($headers as $k => $h) if (strtoupper(trim((string)preg_replace('/^\xEF\xBB\xBF/', '', $h))) === 'ELEV0001') $col = $k;
++                while (($row = fgetcsv($f, 8192, ',')) !== false) {
++                    $v = isset($row[$col]) ? lnNumber($row[$col]) : null;
++                    if ($v === null || $v <= 0) continue;
++                    $hour = isset($row[2], $row[3]) && is_numeric($row[2]) && is_numeric($row[3]) ? sprintf('%02d:%02d:00', (int)$row[2], (int)$row[3]) : (isset($row[1]) ? $row[1] : '');
++                    $ts = lnStamp(isset($row[0]) ? $row[0] : '', $hour);
++                    $out['elevation'] = $v;
++                    if ($ts !== null) $out['timestamp'] = $ts;
++                }
++                fclose($f);
++                break;
++            }
++        }
++    }
++    foreach (lnRoots('lab') as $lab) {
++        $row = lnLastRow($lab . '/presas.CSV');
++        if ($row === null) $row = lnLastRow($lab . '/presas.csv');
++        if ($row === null) continue;
++        $out['storage'] = isset($row[5]) ? lnNumber($row[5]) : null;
++        $out['percent'] = isset($row[6]) ? lnNumber(str_replace('%', '', (string)$row[6])) : null;
++        break;
++    }
++    return $out;
++}
++
+ function lnReadRompedor() {
+     $root = lnCsvRoot();
+     if ($root === '') return null;
+@@ -245,5 +309,19 @@
+     $items['ROMPE001'] = $item;
+     $readings++;
+ }
++$presa = lnReadPresaCerroPrieto();
++$item = lnEmpty('PRESACP');
++$item['level'] = $presa['elevation'];
++if ($presa['timestamp'] !== null) {
++    $item['updated'] = date('Y-m-d H:i:s', $presa['timestamp']);
++    $item['status'] = time() - $presa['timestamp'] > 1800 ? 'sin_comunicacion' : 'operando';
++} elseif ($presa['elevation'] !== null || $presa['percent'] !== null) {
++    $item['status'] = 'operando';
++}
++lnExtra($item, 'Almacenamiento', $presa['storage'], 'Mm³');
++lnExtra($item, 'Llenado', $presa['percent'], '%');
++$items['PRESACP'] = $item;
++if ($presa['elevation'] !== null || $presa['percent'] !== null) $readings++;
++
+ echo json_encode(array('ok' => true, 'items' => $items, 'updated' => date('Y-m-d H:i:s'),
+     'available' => $readings > 0, 'source' => 'linares/sanroque/lecturas'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

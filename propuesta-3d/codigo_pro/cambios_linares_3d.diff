@@ -1,5 +1,14 @@
 --- original/linares_3d.js
 +++ pro/linares_3d.js
+@@ -4,7 +4,7 @@
+   const config={
+     title:'Acueducto Linares',
+     nodes:[
+-      ['li00','Presa Cerro Prieto','reservoir',34,14,null],
++      ['li00','Presa Cerro Prieto','reservoir',34,14,'PRESACP'],
+       ['li01','PB1 Linares','pump',22,12.6,'LINPB001'],
+       ['li02','PB2 Linares','pump',10,10.6,'LINPB002'],
+       ['li02a','PB2A Linares','pump',-1.5,8.2,'LINPB02A'],
 @@ -20,9 +20,26 @@
    };
    const separateCasetaX=x=>x>=22?x:22+(x-22)*1.105;
@@ -35,7 +44,18 @@
  varying vec3 vNormal; varying vec3 vColor; varying vec3 vPos; varying vec4 vData;
  varying float vTankFill;
  float getLevel(float id){
-@@ -116,6 +134,7 @@
+@@ -104,7 +122,9 @@
+     float p1=dot(aPos.xz,vec2(.46,.27))+t*.75;
+     float p2=dot(aPos.xz,vec2(-.21,.64))-t*1.02;
+     float p3=dot(aPos.xz,vec2(.93,-.73))+t*1.37;
+-    p.y+=edge*uAnimate*(.034*sin(p1)+.020*sin(p2)+.008*sin(p3));
++    float damLevel=uLevels[35];
++    if(damLevel>.0005)p.y+=(clamp(damLevel,0.0,1.0)-.85)*.55;
++    p.y+=edge*uAnimate*(.050*sin(p1)+.030*sin(p2)+.012*sin(p3));
+     vec2 slope=edge*uAnimate*(vec2(.46,.27)*(.034*cos(p1))+vec2(-.21,.64)*(.020*cos(p2))+vec2(.93,-.73)*(.008*cos(p3)));
+     surfaceNormal=normalize(vec3(-slope.x,1.0,-slope.y));
+   }
+@@ -116,6 +136,7 @@
      vData.x+=enabled*.22;
    }
    gl_Position=uVP*vec4(p,1.0);
@@ -43,7 +63,7 @@
  }`;
    const frag = `
  precision highp float;
-@@ -131,6 +150,50 @@
+@@ -131,6 +152,50 @@
    return uCasetaLights[4];
  }
  uniform sampler2D uTurfTex; uniform sampler2D uForestTex;
@@ -94,7 +114,7 @@
  float hash2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
  float noise2(vec2 p){
    vec2 i=floor(p),f=fract(p); f=f*f*(3.0-2.0*f);
-@@ -197,8 +260,9 @@
+@@ -197,8 +262,9 @@
  void main(){
  vec3 N=normalize(vNormal);vec3 L=normalize(vec3(-.42,.95,.56));vec3 L2=normalize(vec3(.7,.8,-.4));
  float d=max(dot(N,L),0.0), d2=max(dot(N,L2),0.0);
@@ -105,7 +125,37 @@
  float fres=pow(1.0-max(dot(N,V),0.0),2.0);
  float shine=vData.x, kind=vData.z;
  if(((kind>4.5&&kind<6.5)||(kind>8.5&&kind<10.5)) && vTankFill<.018) discard;
-@@ -343,6 +407,14 @@
+@@ -271,15 +337,20 @@
+ } else if(kind>11.5&&kind<12.5){
+   float t=uTime*uAnimate;
+   vec2 uv=vPos.xz;
+-  float swell=waterNoise(uv*.18+vec2(t*.043,-t*.034));
+-  float ripples=waterNoise(uv*.79+vec2(-t*.17,t*.12));
+-  float fine=sin(uv.x*1.12+uv.y*.37+t*1.25)*sin(uv.y*.93-uv.x*.28-t*.91);
+-  float shadow=clamp(.17+.61*swell+.18*ripples+.09*fine,0.,1.);
+-  c=mix(vec3(.028,.143,.191),vec3(.109,.335,.364),shadow);
+-  float crests=pow(smoothstep(.69,.93,ripples+.12*fine),2.0);
+-  float reflection=pow(max(dot(N,H),0.),28.0)*(.42+.58*swell);
+-  float horizon=pow(1.0-max(dot(N,V),0.0),3.0);
+-  c+=vec3(.20,.37,.39)*(crests*.115+reflection*.52+horizon*.13);
++  /* MV PRO: agua de presa realista (oleaje animado, reflejo del cielo, destellos del sol y espuma en la orilla) */
++  vec2 w1=vec2(t*.09,-t*.07),w2=vec2(-t*.21,t*.16);const float e=.30;
++  float h0=waterNoise(uv*.55+w1)+.5*waterNoise(uv*1.7+w2)+.25*waterNoise(uv*4.3-w1*2.0);
++  float hx=waterNoise((uv+vec2(e,0.))*.55+w1)+.5*waterNoise((uv+vec2(e,0.))*1.7+w2)+.25*waterNoise((uv+vec2(e,0.))*4.3-w1*2.0);
++  float hz=waterNoise((uv+vec2(0.,e))*.55+w1)+.5*waterNoise((uv+vec2(0.,e))*1.7+w2)+.25*waterNoise((uv+vec2(0.,e))*4.3-w1*2.0);
++  vec3 Nw=normalize(vec3(-(hx-h0)*2.2,1.0,-(hz-h0)*2.2)+(N-vec3(0.,1.,0.)));
++  float fr=.03+.97*pow(1.0-max(dot(Nw,V),0.0),5.0);
++  float shoreF=1.0-clamp(vData.x,0.0,1.0);
++  c=mix(vec3(.012,.085,.125),vec3(.055,.27,.30),clamp(.22*h0+.55*shoreF,0.,1.));
++  c=mix(c,mvSky(reflect(-V,Nw))*.95,clamp(fr*.9,0.,.78));
++  vec3 Hw=normalize(L+V);
++  c+=vec3(1.0,.96,.86)*(pow(max(dot(Nw,Hw),0.0),220.0)*2.4+pow(max(dot(Nw,Hw),0.0),36.0)*.18)*mvSh*(1.0-.75*uEvening);
++  float foam=smoothstep(.80,1.0,shoreF)*(.55+.45*sin(t*1.4+uv.x*.9+uv.y*.7));
++  c=mix(c,vec3(.86,.93,.93),foam*.38);
+ } else if(kind>10.5&&kind<11.5){
+   vec2 pos=vPos.xz;
+   float radius=length(pos);
+@@ -343,6 +414,14 @@
    c=mix(vec3(.30,.36,.39)*(.76+.24*d),vec3(.035,.75,.15)*(.75+.25*d),operating);
    c+=vec3(.025,.28,.04)*operating;
  }
@@ -120,7 +170,7 @@
  c*=mix(vec3(1.0),vec3(.66,.72,.83),uEvening);
  if(kind>14.5&&kind<15.5){
    c=vec3(.028,.047,.033);
-@@ -351,10 +423,12 @@
+@@ -351,10 +430,12 @@
    c=vec3(.98,.77,.46);
    outAlpha=min(1.0,outAlpha*(1.0+2.6*uEvening));
  }
@@ -134,7 +184,7 @@
  }`;
    const fallbackVert = `
  attribute vec3 aPos; attribute vec3 aNormal; attribute vec3 aColor; attribute vec4 aData;
-@@ -645,6 +719,79 @@
+@@ -645,6 +726,79 @@
    }
    gl.useProgram(program);
    const loc = { pos: gl.getAttribLocation(program, 'aPos'), normal: gl.getAttribLocation(program, 'aNormal'), color: gl.getAttribLocation(program, 'aColor'), data: gl.getAttribLocation(program, 'aData'), vp: gl.getUniformLocation(program, 'uVP'), cam: gl.getUniformLocation(program, 'uCamera'), time: gl.getUniformLocation(program, 'uTime'), levels: gl.getUniformLocation(program, 'uLevels[0]'), anim: gl.getUniformLocation(program, 'uAnimate'), terrainDetail: gl.getUniformLocation(program, 'uTerrainDetail'), turf: gl.getUniformLocation(program, 'uTurfTex'), forest: gl.getUniformLocation(program, 'uForestTex'), evening: gl.getUniformLocation(program, 'uEvening'), casetaLights: gl.getUniformLocation(program, 'uCasetaLights[0]') };
@@ -214,7 +264,7 @@
    function terrainRand(seed) {
      let value = seed >>> 0;
      return () => {
-@@ -754,8 +901,40 @@
+@@ -754,8 +908,40 @@
  uniform float uSkySeconds;
  uniform float uSkyReady;
  uniform float uEvening;
@@ -255,7 +305,7 @@
    float azimuth=atan(direction.z,direction.x);
    float elevation=asin(clamp(direction.y,-1.0,1.0));
    vec2 uv=vec2(fract(azimuth*.1591549431+uSkySeconds*.00120),clamp(.27+elevation*.68,.008,.992));
-@@ -778,7 +957,8 @@
+@@ -778,7 +964,8 @@
        aspect: gl.getUniformLocation(skyProgram, 'uSkyAspect'),
        seconds: gl.getUniformLocation(skyProgram, 'uSkySeconds'),
        ready: gl.getUniformLocation(skyProgram, 'uSkyReady'),
@@ -265,7 +315,7 @@
      };
      skyBuffer = gl.createBuffer();
      gl.bindBuffer(gl.ARRAY_BUFFER, skyBuffer);
-@@ -847,6 +1027,7 @@
+@@ -847,6 +1034,7 @@
      gl.uniform1f(skyLoc.seconds, seconds);
      gl.uniform1f(skyLoc.ready, skyReady ? 1 : 0);
      if (skyLoc.evening !== null) gl.uniform1f(skyLoc.evening, eveningBlend);
@@ -273,7 +323,7 @@
      gl.drawArrays(gl.TRIANGLES, 0, 3);
      gl.depthMask(true);
      gl.enable(gl.DEPTH_TEST);
-@@ -1198,6 +1379,13 @@
+@@ -1198,6 +1386,13 @@
        height += roundedRelief + naturalFolds + ridgeLift + localTexture;
      }
      height+=sillaRelief(x,z);
@@ -287,7 +337,7 @@
      if(x>28&&x<128&&z>-32&&z<72){
        const shore=lakeDistance(x,z);
        if(shore<=0)return .43-.89*smoothTerrain(0,3.7,-shore);
-@@ -1314,21 +1502,30 @@
+@@ -1314,21 +1509,30 @@
      const a=pointNodes.get(start),b=pointNodes.get(end);
      if(!a||!b)continue;
      const key=start+'|'+end;
@@ -330,7 +380,24 @@
    pipe(mountainPipePath, .31, { source: 'PB4 Linares', target: 'PB4 Linares' });
    function pumpStationScene(x,z){pumpUnit(x,z,4);}
    function facilityScene(x,z,type){
-@@ -1675,16 +1872,24 @@
+@@ -1645,6 +1849,16 @@
+     box(x,1.30,back+.17,w-.40,2.18,.32,'#b0bfc0');
+     box(x,3.77,back+.16,w-.40,2.76,.32,'#a2b4b7');
+     box(x,5.23,back+.17,w+.06,.20,.41,'#d7dfde');
++    /* MV PRO: pared frontal (la caseta queda cerrada por ambos lados) */
++    box(x,1.30,front-.17,w-.40,2.18,.32,'#b0bfc0');
++    box(x,3.77,front-.16,w-.40,2.76,.32,'#a2b4b7');
++    for(const xx of [left+1.7,left+3.9,right-3.9,right-1.7]){
++      box(xx,3.25,front+.02,1.40,1.65,.06,'#688494',1,.09,.33);
++      box(xx,3.25,front+.04,1.46,.08,.07,'#d8e6e5');
++      box(xx,3.25,front+.04,.07,1.70,.07,'#d8e6e5');
++    }
++    box(x,1.30,front+.03,1.5,2.0,.08,'#56656c');
++    box(x,1.30,front+.06,.06,2.0,.06,'#8b9aa0');
+     for(let k=0;k<7;k++){
+       const xx=left+.65+k*(w-1.3)/6;
+       box(xx,3.52,back+.365,.07,2.20,.06,'#83959b');
+@@ -1675,16 +1889,24 @@
        const px=x+(i-centerOffset)*1.75;
        const pz=z+.30;
        const dataId=8+start+i;
@@ -359,7 +426,7 @@
      box(left+.63,1.74,back+.70,.66,2.44,1.09,'#435d67');
      box(left+.65,1.98,back+1.29,.48,1.24,.075,'#90b0b9',1,.13,.80);
      for(const yy of [1.59,1.87,2.12])for(const dx of [-.14,.12]){
-@@ -1711,19 +1916,241 @@
+@@ -1711,19 +1933,241 @@
        cylinder(xx,4.42,front+.38,.24,.14,'#f3e5c6',{seg:14,kind:16,levelId:index,em:1.1});
        casetaGlowDisk(xx,.36,front+.62,.95,.95,index,.20);
      }
@@ -605,7 +672,24 @@
    for (const segment of siteRoadSegments) siteRoad(segment);
    const buffers=[];
    for(let group=0;group<3;group++){
-@@ -1799,7 +2226,7 @@
+@@ -1746,6 +2190,7 @@
+       const limit=normalizedMaximum!==null&&normalizedMaximum>0&&normalizedMaximum>=level?normalizedMaximum:modelHeight;
+       levelsUniform[i]=level===null||level<=0?0:Math.max(0,Math.min(.94,level/limit*.90));
+     }
++    { const pr=live.get('PRESACP'); let pct=null; if(pr&&Array.isArray(pr.extra)){ const it=pr.extra.find(q=>q&&q.unit==='%'); if(it&&Number.isFinite(Number(it.value)))pct=Number(it.value); } levelsUniform[35]=pct===null?0:Math.max(.001,Math.min(1,pct/100)); }
+     for(let group=0;group<casetaIds.length;group++){
+       const reading=live.get(casetaDataCodes[group]);
+       for(let motor=0;motor<casetaCounts[group];motor++){
+@@ -1763,7 +2208,7 @@
+     gl.drawArrays(gl.TRIANGLES,0,b.count);
+   }
+   const sub=minus;
+-  const CAMERA_LIMITS={minDist:10,maxDist:118,maxPitch:1.24,panXMin:-58,panXMax:40,panZMin:-24,panZMax:26};
++  const CAMERA_LIMITS={minDist:10,maxDist:84,maxPitch:1.24,panXMin:-58,panXMax:40,panZMin:-24,panZMax:26};
+   const state={yaw:.75,pitch:.98,dist:79,target:[0,1.5,0],auto:'',mode:'orbit',night:false,names:true,flowNames:true,levels:true,alerts:true,date:true,showInfo:true,water:true,speed:1,spinFast:false,selected:null,paused:false,pt:0,presIndex:0,presDuration:9.5,quality:1.1,frameCount:0,frameElapsed:0};
+   const labels=new Map(),flowLabels=new Map();
+   const sillaLabel=document.createElement('div');
+@@ -1799,7 +2244,7 @@
    const mul=(a,b)=>{const m=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+r]*b[c*4+k];m[c*4+r]=s;}return m};
    const project=(p,m,w,h)=>{const x=p[0],y=p[1],z=p[2],q=m[3]*x+m[7]*y+m[11]*z+m[15];if(q<=.05)return null;const px=(m[0]*x+m[4]*y+m[8]*z+m[12])/q,py=(m[1]*x+m[5]*y+m[9]*z+m[13])/q;if(Math.abs(px)>1.13||Math.abs(py)>1.13)return null;return [(px*.5+.5)*w,(-py*.5+.5)*h,q]};
    const presentation=$('presentationPanel');
@@ -614,7 +698,25 @@
    const showPanel=(show=true)=>{presentation.hidden=!show||!state.showInfo;};
    function selectNode(id){const entry=nodeById.get(id);if(!entry)return;state.selected=id;const n=entry.data;updatePanel(n);showPanel();for(const [key,val]of labels)val.el.classList.toggle('selected',key===id);loadHistory(n);}
    const casetaControl=document.createElement('div');
-@@ -1857,7 +2284,38 @@
+@@ -1837,7 +2282,8 @@
+     const isTank=kind==='tank';
+     const isReference=!n[5];
+     $('primaryLabel').textContent=isTank||hasLevel?'Nivel actual':kind==='pump'?'Flujo de salida':kind==='meter'?'Flujo medido':'Referencia';
+-    $('primaryValue').textContent=isTank||hasLevel?(hasLevel?fmt(s.level)+' m':'N/D'):(hasFlow?fmt(s.flow,0)+' LPS':'N/D');
++    $('primaryValue').textContent=isTank||hasLevel?(hasLevel?fmt(s.level)+(kind==='reservoir'?' msnm':' m'):'N/D'):(hasFlow?fmt(s.flow,0)+' LPS':'N/D');
++    if(kind==='reservoir')$('primaryLabel').textContent='Elevación';
+     $('flowValue').textContent=hasFlow?fmt(s.flow,0)+' LPS':'N/D';
+     $('stateValue').textContent=isReference?'Sin lectura':!s||s.status==='sin_datos'?'Sin datos':s.status==='sin_comunicacion'?'Sin comunicación':s.observation?'Observación':'Actual';
+     $('lastReading').textContent=s&&s.updated?'Actualización: '+s.updated:isReference?'Referencia hidráulica · sin sensor asociado':'Sin actualización';
+@@ -1850,14 +2296,45 @@
+     for(const item of items){if(!item||item.value===null||!Number.isFinite(Number(item.value)))continue;
+       const row=document.createElement('div');row.className='linares-detail-row';
+       const name=document.createElement('span');name.textContent=item.label;
+-      const value=document.createElement('strong');value.textContent=fmt(item.value,item.unit==='kg/cm²'?2:0)+' '+(item.unit||'');
++      const value=document.createElement('strong');value.textContent=fmt(item.value,item.unit==='kg/cm²'||item.unit==='Mm³'?2:item.unit==='%'?1:0)+' '+(item.unit||'');
+       row.append(name,value);details.appendChild(row);
+     }
+     details.hidden=!details.childElementCount;
    }
    let historyRequest=0,history=[];
    async function loadHistory(n){const request=++historyRequest;history=[];$('graphSection').hidden=true;const code=n[5];if(!code)return;try{const resp=await fetch('/Telemetria/php/linares_3d_historial.php?codigo='+encodeURIComponent(code)+'&horas=6',{cache:'no-store'});if(!resp.ok)return;const obj=await resp.json();if(request!==historyRequest||state.selected!==n[0])return;const key=n[2]==='tank'||n[2]==='reservoir'?'level':'flow';history=Array.isArray(obj[key])?obj[key]:[];if(history.length>=2){$('graphTitle').textContent=key==='flow'?'FLUJO':'NIVEL';$('graphValue').textContent=history.length?fmt(history[history.length-1][1])+(key==='flow'?' LPS':' m'):'';$('graphSection').hidden=false;drawChart();}}catch(e){}}
@@ -654,7 +756,15 @@
    function alertsRefresh(){const alerts=[];for(const n of config.nodes){const s=getData(n);if(!s)continue;if(s.status==='sin_comunicacion')alerts.push({id:n[0],name:n[1],type:'Sin comunicación'});else if(s.observation)alerts.push({id:n[0],name:n[1],type:'Nivel fuera de parámetros'});}const bar=$('alertBar');bar.hidden=!state.alerts||!alerts.length;$('alertCount').hidden=!alerts.length;$('alertCount').textContent=alerts.length;$('alertSummary').textContent=alerts.length?alerts[0].name+'   '+alerts[0].type:'';$('alertsList').replaceChildren();for(const a of alerts){const b=document.createElement('button');b.type='button';b.textContent=a.name+' · '+a.type;b.onclick=()=>{selectNode(a.id);$('alertsList').hidden=true};$('alertsList').appendChild(b);}}
    function updateData(){
      const g=live.get('TGRP0001');
-@@ -1913,15 +2371,82 @@
+@@ -1868,6 +2345,7 @@
+       const f=flowLabels.get(n[0]);
+       if(f){const s=getData(n);f.value.textContent=s&&s.flow!=null?fmt(s.flow,0)+' LPS':'N/D';}
+     }
++    { const l=labels.get('li00'),pr=live.get('PRESACP'); if(l){ let v=l.el.querySelector('.sign-value'); if(!v){v=document.createElement('span');v.className='sign-value';l.el.appendChild(v);} const pct=pr&&Array.isArray(pr.extra)?pr.extra.find(q=>q&&q.unit==='%'):null; const parts=[]; if(pr&&pr.level!==null&&Number.isFinite(Number(pr.level)))parts.push(fmt(pr.level)+' msnm'); if(pct&&Number.isFinite(Number(pct.value)))parts.push(fmt(pct.value,1)+' %'); v.textContent=parts.length?parts.join(' · '):'N/D'; } }
+     if(state.selected)updatePanel(nodeById.get(state.selected).data);
+     alertsRefresh();
+   }
+@@ -1913,15 +2391,82 @@
    $('presentationNext').onclick=()=>jumpPresentation(1);
    $('presentationPause').onclick=()=>{state.paused=!state.paused;$('presentationPause').textContent=state.paused?'Continuar':'Pausar';};
    $('alertsAll').onclick=()=>{$('alertsList').hidden=!$('alertsList').hidden;$('alertsAll').setAttribute('aria-expanded',String(!$('alertsList').hidden));};
@@ -743,7 +853,7 @@
    function drawLabels(mat,eye){
      const tankInfo=tankLabels[0];
      const direction=tankInfo?Math.hypot(eye[0]-tankInfo.x,eye[2]-tankInfo.z)||1:1;
-@@ -1945,9 +2470,9 @@
+@@ -1945,9 +2490,9 @@
      eye[1]=Math.max(eye[1],safeHeight);
    }
    function render(now){const dt=Math.min(.06,Math.max(.001,(now-lastFrame)/1000));lastFrame=now;qualityFrames++;qualityMs+=dt*1000;if(qualityFrames>=90){const avg=qualityMs/qualityFrames,old=state.quality;if(avg>29)state.quality=Math.max(.75,state.quality-.08);else if(avg<18)state.quality=Math.min(1.24,state.quality+.03);qualityFrames=0;qualityMs=0;if(Math.abs(state.quality-old)>.005)resize();}if(vw!==canvas.clientWidth||vh!==canvas.clientHeight||density!==(window.devicePixelRatio||1))resize();
@@ -755,7 +865,7 @@
      state.dist=Math.max(CAMERA_LIMITS.minDist,Math.min(CAMERA_LIMITS.maxDist,state.dist));
      state.pitch=Math.max(.18,Math.min(CAMERA_LIMITS.maxPitch,state.pitch));
      const sn=Math.sin(state.pitch),cs=Math.cos(state.pitch),eye=[state.target[0]+Math.cos(state.yaw)*state.dist*sn,Math.max(2.1,state.target[1]+state.dist*cs),state.target[2]+Math.sin(state.yaw)*state.dist*sn];
-@@ -1955,6 +2480,7 @@
+@@ -1955,6 +2500,7 @@
      eye[2]=Math.max(-64,Math.min(58,eye[2]));
      keepCameraAboveTerrain(eye,state.target);
      const mat=mul(proj(Math.PI/3.45,canvas.width/Math.max(canvas.height,1),.12,600),view(eye,state.target));
@@ -763,7 +873,7 @@
      gl.clearColor(.60,.78,.88,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
      eveningBlend+=(Number(state.night)-eveningBlend)*Math.min(1,dt*2.6);
      renderSky(eye,state.target,now*.001,canvas.width/Math.max(1,canvas.height));
-@@ -1963,6 +2489,7 @@
+@@ -1963,6 +2509,7 @@
      if(loc.time!==null)gl.uniform1f(loc.time,now*.001*state.speed);
      if(loc.anim!==null)gl.uniform1f(loc.anim,state.water?1:0);
      if(loc.evening!==null)gl.uniform1f(loc.evening,eveningBlend);
@@ -771,7 +881,7 @@
      if(loc.casetaLights!==null)gl.uniform1fv(loc.casetaLights,casetaLightState);
      if(loc.terrainDetail!==null)gl.uniform1f(loc.terrainDetail,state.quality>.80?1:0);
      updateWaterLevels();if(loc.levels!==null)gl.uniform1fv(loc.levels,levelsUniform);
-@@ -1974,6 +2501,7 @@
+@@ -1974,6 +2521,7 @@
      drawGroup(1);drawGroup(2);
      gl.depthMask(true);gl.disable(gl.BLEND);
      drawLabels(mat,eye);

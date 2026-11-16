@@ -1,0 +1,37 @@
+--- original/linares_3d_historial.php
++++ pro/linares_3d_historial.php
+@@ -4,7 +4,7 @@
+ header('X-Content-Type-Options: nosniff');
+ date_default_timezone_set('America/Monterrey');
+ 
+-$allowed = array('LINPB001', 'LINPB002', 'LINPB02A', 'LINPB003', 'ROMPE001', 'LINPB004', 'PPLLN001', 'PBSRQ005', 'TACPSR01', 'TACPSR02', 'TGRP0001');
++$allowed = array('PRESACP', 'LINPB001', 'LINPB002', 'LINPB02A', 'LINPB003', 'ROMPE001', 'LINPB004', 'PPLLN001', 'PBSRQ005', 'TACPSR01', 'TACPSR02', 'TGRP0001');
+ $code = isset($_GET['codigo']) ? strtoupper(trim((string)$_GET['codigo'])) : '';
+ $hours = isset($_GET['horas']) ? (int)$_GET['horas'] : 6;
+ if (!in_array($code, $allowed, true) || !in_array($hours, array(6, 24), true)) {
+@@ -50,7 +50,7 @@
+         $day = (new DateTimeImmutable('today', $zone))->modify('-' . $days . ' day');
+         $filename = null;
+         foreach (array('.CSV', '.csv') as $extension) {
+-            $candidate = $root . '/' . $day->format('ymd') . '00_' . $code . $extension;
++            $candidate = $root . '/' . $day->format('ymd') . '00_' . ($code === 'PRESACP' ? 'OBTO0002' : $code) . $extension;
+             if (is_readable($candidate)) { $filename = $candidate; break; }
+         }
+         if ($filename === null) continue;
+@@ -63,6 +63,7 @@
+             $key = strtoupper(trim((string)preg_replace('/^\xEF\xBB\xBF/', '', $h)));
+             if ($key !== '') $keys[$key] = $i;
+         }
++        if ($code === 'PRESACP') $keys['NI0000001'] = isset($keys['ELEV0001']) ? $keys['ELEV0001'] : 4;
+         if (!isset($keys['NI0000001']) && !isset($keys['FL0000001'])) { fclose($file); continue; }
+         while (($row = fgetcsv($file, 8192, ',')) !== false) {
+             $timestamp = lhTimestamp($row, $keys, $zone);
+@@ -71,7 +72,7 @@
+             $k = (string)$ms;
+             if (isset($keys['NI0000001'], $row[$keys['NI0000001']])) {
+                 $value = lhNumber($row[$keys['NI0000001']]);
+-                if ($value !== null && $value > 0 && $value < 9000) $levels[$k] = array($ms, round($value / 100, 3));
++                if ($value !== null && $value > 0 && $value < 9000) $levels[$k] = array($ms, $code === 'PRESACP' ? round($value, 2) : round($value / 100, 3));
+             }
+             if (isset($keys['FL0000001'], $row[$keys['FL0000001']])) {
+                 $value = lhNumber($row[$keys['FL0000001']]);
