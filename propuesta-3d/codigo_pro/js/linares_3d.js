@@ -2526,6 +2526,8 @@ void main(){
     drawGroup(1);drawGroup(2);
     gl.depthMask(true);gl.disable(gl.BLEND);
     drawLabels(mat,eye);
+    { const l=labels.get('li00'); if(l){ const p=project([lakeCenter[0],2.6,lakeCenter[1]],mat,vw,vh); const show=state.names&&p&&(state.auto!=='presentation'||state.selected==='li00'); l.el.hidden=!show; if(show){l.el.style.left=p[0]+'px';l.el.style.top=p[1]+'px';} } }
+    if(!garrapatasLevel.hidden&&tankLabels[0]){const t0=tankLabels[0];garrapatasLevel.style.setProperty('--mv-s',Math.max(.75,Math.min(1.5,30/Math.hypot(eye[0]-t0.x,eye[1]-3,eye[2]-t0.z))).toFixed(3));}
     for(const n of config.nodes){const l=labels.get(n[0]);if(!l||l.el.hidden)continue;const d=Math.hypot(eye[0]-n[3],eye[1]-5,eye[2]-n[4]);l.el.style.setProperty('--mv-s',Math.max(.8,Math.min(1.45,44/d)).toFixed(3));}
     const sillaPosition=project([-84,30,10],mat,vw,vh);
     sillaLabel.hidden=!state.names||!sillaPosition||state.auto==='presentation';
@@ -2535,6 +2537,446 @@ void main(){
   setInterval(()=>{if(state.date)$('clockText').textContent=new Date().toLocaleString('es-MX',{timeZone:'America/Monterrey',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})},1000);
   window.addEventListener('resize',resize,{passive:true});
   window.addEventListener('visibilitychange',()=>{lastFrame=performance.now();});
+
+  /* ===== MV PRO: presentación, notificaciones y nivel del tanque con el diseño de Monterrey V ===== */
+  let MV_HISTORY_WINDOW_MS=60*60000;
+  const mvHistoryNumber=new Intl.NumberFormat('es-MX',{maximumFractionDigits:1});
+  const mvHistoryClock=new Intl.DateTimeFormat('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Monterrey'});
+  const mvHistoryFormatTime=ms=>mvHistoryClock.format(new Date(ms));
+  function mvHistoryEmpty(plot,message){plot.replaceChildren();const el=document.createElement('div');el.className='mv-dh-empty';el.textContent=message;plot.appendChild(el);}
+  function mvHistoryChart(plot, samples, unit, hue) {
+    /* MV PRO: gráfica estilo tendencia SCADA (línea por lectura, rejilla técnica, valor actual en el eje) */
+    const endTime = Date.now();
+    const startTime = endTime - MV_HISTORY_WINDOW_MS;
+    const recent = samples.filter(item => Array.isArray(item) && Number.isFinite(item[0]) && Number.isFinite(item[1]) && item[0] >= startTime && item[0] <= endTime + 60000).sort((a, b) => a[0] - b[0]);
+    if (!recent.length) return null;
+    const isFlow = hue === 'flow';
+    const fmt = v => unit === 'm' ? v.toFixed(2) : mvHistoryNumber.format(v);
+    const values = recent.map(point => point[1]);
+    const minValue = Math.min(...values), maxValue = Math.max(...values);
+    const spread = Math.max(unit === 'm' ? .11 : 2, (maxValue - minValue) * .20);
+    const low = Math.max(0, minValue - spread), high = Math.max(maxValue + spread, low + (unit === 'm' ? .2 : 3));
+    const W = Math.max(200, Math.round(plot.clientWidth || 380)), H = Math.max(128, Math.round(plot.clientHeight || 145)), L = 42, R = 48, T = 10, B = 22;
+    const pw = W - L - R, ph = H - T - B, base = T + ph;
+    const xAt = t => L + (t - startTime) / (endTime - startTime) * pw;
+    const yAt = v => T + (high - v) / (high - low) * ph;
+    const coords = recent.map(point => [xAt(point[0]), yAt(point[1])]);
+    const color = isFlow ? '#4f5b66' : '#0058b7';
+    const font = 'font-family="Segoe UI,Arial" font-size="10" style="font-variant-numeric:tabular-nums"';
+    let grid = `<rect x="${L}" y="${T}" width="${pw}" height="${ph}" fill="#ffffff" stroke="#c3ccd4" stroke-width="1"/>`;
+    for (let i = 0; i <= 4; i++) {
+      const y = T + ph * i / 4;
+      const value = high - (high - low) * i / 4;
+      if (i > 0 && i < 4) grid += `<line x1="${L}" x2="${L + pw}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}" stroke="#e9eef2" stroke-width="1"/>`;
+      grid += `<line x1="${L - 4}" x2="${L}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}" stroke="#8a98a5" stroke-width="1"/>`;
+      grid += `<text x="${L - 7}" y="${(y + 3.5).toFixed(2)}" text-anchor="end" fill="#3d4852" ${font}>${unit === 'm' ? value.toFixed(2) : mvHistoryNumber.format(Math.round(value))}</text>`;
+    }
+    for (let i = 0; i <= 6; i++) {
+      const x = L + pw * i / 6;
+      const when = startTime + (endTime - startTime) * i / 6;
+      if (i > 0 && i < 6) grid += `<line x1="${x.toFixed(2)}" x2="${x.toFixed(2)}" y1="${T}" y2="${base}" stroke="#f0f3f6" stroke-width="1"/>`;
+      grid += `<line x1="${x.toFixed(2)}" x2="${x.toFixed(2)}" y1="${base}" y2="${base + 4}" stroke="#8a98a5" stroke-width="1"/>`;
+      if (i % 2 === 0) grid += `<text x="${x.toFixed(2)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : i === 6 ? 'end' : 'middle'}" fill="#3d4852" ${font}>${mvHistoryFormatTime(when)}</text>`;
+    }
+    let strokes = '', dots = '', segment = [];
+    const flush = () => {
+      if (!segment.length) return;
+      const path = segment.map((pt, index) => (index ? 'L' : 'M') + pt[0].toFixed(2) + ',' + pt[1].toFixed(2)).join(' ');
+      if (segment.length > 1) {
+        strokes += `<path d="${path} L${segment[segment.length - 1][0].toFixed(2)},${base} L${segment[0][0].toFixed(2)},${base} Z" fill="${color}" fill-opacity=".07"/>`;
+        strokes += `<path d="${path}" fill="none" stroke="${color}" stroke-width="1.7" stroke-linejoin="miter"/>`;
+      }
+      for (const pt of segment) dots += `<rect x="${(pt[0] - 2).toFixed(2)}" y="${(pt[1] - 2).toFixed(2)}" width="4" height="4" fill="#ffffff" stroke="${color}" stroke-width="1.2"/>`;
+      segment = [];
+    };
+    for (let i = 0; i < coords.length; i++) {
+      if (i && recent[i][0] - recent[i - 1][0] > 20 * 60000) flush();
+      segment.push(coords[i]);
+    }
+    flush();
+    const last = coords[coords.length - 1];
+    const tagText = fmt(recent[recent.length - 1][1]);
+    const tagW = Math.max(R - 4, tagText.length * 6.2 + 10);
+    const tagY = Math.min(base - 8, Math.max(T + 8, last[1]));
+    const lastDot = `<line x1="${last[0].toFixed(2)}" x2="${(L + pw).toFixed(2)}" y1="${last[1].toFixed(2)}" y2="${last[1].toFixed(2)}" stroke="${color}" stroke-width="1" stroke-dasharray="3 2"/>
+      <path d="M${(L + pw).toFixed(2)},${tagY.toFixed(2)} l5,-8 h${tagW.toFixed(2)} v16 h-${tagW.toFixed(2)} z" fill="${color}"/>
+      <text x="${(L + pw + 5 + tagW / 2).toFixed(2)}" y="${(tagY + 3.6).toFixed(2)}" text-anchor="middle" fill="#ffffff" font-family="Segoe UI,Arial" font-size="10" font-weight="700" style="font-variant-numeric:tabular-nums">${tagText}</text>
+      <rect x="${(last[0] - 3).toFixed(2)}" y="${(last[1] - 3).toFixed(2)}" width="6" height="6" fill="${color}"/>`;
+    plot.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="presentation">${grid}${strokes}${dots}${lastDot}<g class="mv-dh-cursor" visibility="hidden"><line x1="0" x2="0" y1="${T}" y2="${base}" stroke="#1f2a33" stroke-width="1" stroke-dasharray="2 2"/><circle cx="0" cy="0" r="4" fill="white" stroke="${color}" stroke-width="2"/></g></svg><div class="mv-dh-tooltip" hidden></div>`;
+    plot.dataset.mvChartSize = W + 'x' + H;
+    const svg = plot.querySelector('svg');
+    const cursor = svg.querySelector('.mv-dh-cursor');
+    const guide = cursor.querySelector('line');
+    const circle = cursor.querySelector('circle');
+    const tooltip = plot.querySelector('.mv-dh-tooltip');
+    const hide = () => { cursor.setAttribute('visibility', 'hidden'); tooltip.hidden = true; };
+    svg.addEventListener('pointermove', event => {
+      const bounds = svg.getBoundingClientRect();
+      const x = (event.clientX - bounds.left) / Math.max(1, bounds.width) * W;
+      if (x < L || x > W - R) return hide();
+      const selectedTime = startTime + (x - L) / pw * (endTime - startTime);
+      let left = 0, right = recent.length - 1;
+      while (left < right) {
+        const middle = (left + right) >>> 1;
+        if (recent[middle][0] < selectedTime) left = middle + 1;
+        else right = middle;
+      }
+      let index = left;
+      if (index > 0 && Math.abs(recent[index - 1][0] - selectedTime) < Math.abs(recent[index][0] - selectedTime)) index--;
+      if (Math.abs(recent[index][0] - selectedTime) > 20 * 60000) return hide();
+      const point = coords[index];
+      cursor.setAttribute('visibility', 'visible');
+      guide.setAttribute('x1', point[0].toFixed(2));
+      guide.setAttribute('x2', point[0].toFixed(2));
+      circle.setAttribute('cx', point[0].toFixed(2));
+      circle.setAttribute('cy', point[1].toFixed(2));
+      tooltip.textContent = mvHistoryFormatTime(recent[index][0]) + ' · ' + fmt(recent[index][1]) + ' ' + unit;
+      const px = point[0] / W * bounds.width;
+      tooltip.style.left = Math.min(bounds.width - 40, Math.max(40, px)) + 'px';
+      tooltip.style.top = Math.max(28, point[1] / H * bounds.height) + 'px';
+      tooltip.hidden = false;
+    });
+    svg.addEventListener('pointerleave', hide);
+    return { count: recent.length, latest: recent[recent.length - 1][0], latestValue: recent[recent.length - 1][1] };
+  }
+
+  function pumpMiniature(state) {
+    const icon = document.createElement('div');
+    icon.className = 'presentation-pump-model';
+    const colors = state === true ? {
+      base: '#267744', baseEdge: '#19542f', foot: '#2c7147', body: '#39bb61', bodyEdge: '#187742', middle: '#249b4f',
+      stripes: '#27a754', bright: '#a9f2bb', rail: '#61d885', light: '#d3f9dc', top: '#57c879', topEdge: '#18633a',
+      inlet: '#207b46', inletEdge: '#155a35', core: '#70eb94'
+    } : {
+      base: '#52616a', baseEdge: '#64747f', foot: '#8d9ba3', body: '#aab4bb', bodyEdge: '#64747f', middle: '#7d8e98',
+      stripes: '#7d8e98', bright: '#d9e0e4', rail: '#4c5d67', light: '#bac4c9', top: '#7b8b96', topEdge: '#4d5e68',
+      inlet: '#6b7e89', inletEdge: '#4d5b65', core: '#84939c'
+    };
+    icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 64" aria-hidden="true" focusable="false">
+ <rect x="7" y="56" width="40" height="5" rx="1" fill="${colors.base}"/>
+ <rect x="12" y="53" width="31" height="3" fill="${colors.foot}"/>
+ <rect x="13" y="16" width="29" height="37" rx="4" fill="${colors.body}" stroke="${colors.bodyEdge}" stroke-width="1.4"/>
+ <path d="M16 20h23v6H16zM16 31h23v5H16zM16 41h23v6H16z" fill="${colors.middle}"/>
+ <path d="M17 18h5v33h-5zM33 18h5v33h-5z" fill="${colors.bright}" opacity=".8"/>
+ <path d="M11 24h33v5H11zM11 45h33v5H11z" fill="${colors.rail}" stroke="${colors.topEdge}" stroke-width=".6"/>
+ <rect x="21" y="8" width="13" height="9" rx="2" fill="${colors.top}" stroke="${colors.topEdge}"/>
+ <ellipse cx="27" cy="7" rx="11" ry="4.4" fill="${colors.top}" stroke="${colors.topEdge}" stroke-width="1.2"/>
+ <ellipse cx="27" cy="7" rx="6" ry="2.2" fill="${colors.topEdge}"/>
+ <rect x="41" y="31" width="7" height="15" rx="1.2" fill="${colors.inlet}" stroke="${colors.inletEdge}" stroke-width="1"/>
+ <path d="M45 33h2m-2 4h2m-2 4h2" stroke="${colors.light}" stroke-width=".7"/>
+ <rect x="13" y="52" width="28" height="2" fill="${colors.baseEdge}"/>
+ <rect class="pump-operation-core" x="24.5" y="31" width="5" height="13" rx="1" fill="${colors.core}"/>
+ </svg>`;
+    return icon;
+  }
+
+  const mvTrendDirection=d=>!Number.isFinite(d)?null:Number(d.toFixed(2))>0?'up':'down';
+  const mvTrendDisplay=d=>{const dir=mvTrendDirection(d);if(dir===null)return 'SIN DATOS';const r=Number(d.toFixed(2));return (dir==='up'?'▲ +':r<0?'▼ −':'▼ ')+Math.abs(r).toFixed(2)+' m';};
+  const mvLnStyle=document.createElement('style');
+  mvLnStyle.textContent=`
+    #presentationPanel .presentation-secondary-table{display:none!important}
+    #presentationPanel #presentationUpdated{display:none!important}
+    #presentationPanel .mv-dual-history{margin:12px 0 8px;border:1px solid #c5d2dc;border-left:3px solid #275b7d;border-radius:3px;background:#fff;color:#21374a;font-family:'Segoe UI',Tahoma,Arial,sans-serif;box-shadow:none;overflow:hidden}
+    #presentationPanel .mv-dh-body{display:block;padding:0 11px}
+    #presentationPanel .mv-dh-card{background:#fff;border:0;border-radius:0;padding:11px 0 9px;min-width:0;box-shadow:none}
+    #presentationPanel .mv-dh-flow{border-top:1px solid #d4dfe7}
+    #presentationPanel .mv-dh-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 3px}
+    #presentationPanel .mv-dh-card-name{display:flex;align-items:center;gap:8px;color:#111111;font-size:11.5px;font-weight:650;letter-spacing:.035em}
+    #presentationPanel .mv-dh-symbol{display:block;width:3px;height:15px;border-radius:0;background:#005288;box-shadow:none;flex:none}
+    #presentationPanel .mv-dh-flow .mv-dh-symbol{background:#6c757d;box-shadow:none}
+    #presentationPanel .mv-dh-value{color:#111111;font-size:17px;font-weight:400;letter-spacing:0;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+    #presentationPanel .mv-dh-flow .mv-dh-value{color:#111111}
+    #presentationPanel .mv-dh-value small{color:#111111;font-size:10px;font-weight:500;letter-spacing:0}
+    #presentationPanel .mv-dh-flow-choice{display:block;width:100%;margin:3px 0 6px;min-height:26px;padding:3px 7px;border:1px solid #c6d4dc;border-radius:2px;background:#f8fafb;color:#314c5d;font:500 11px 'Segoe UI',Tahoma,Arial,sans-serif}
+    #presentationPanel .mv-dh-flow-choice[hidden]{display:none}
+    #presentationPanel .mv-dh-plot{position:relative;width:100%;height:137px;min-width:0;overflow:visible;background:transparent}
+    #presentationPanel .mv-dh-plot svg{width:100%;height:100%;display:block;overflow:hidden}
+    #presentationPanel .mv-dh-foot{display:flex;align-items:center;justify-content:flex-end;gap:7px;padding:5px 1px 0;border-top:1px solid #edf1f4;color:#111111;font-size:10px;line-height:1.3}
+    #presentationPanel .mv-dh-foot span:first-child{display:none!important}
+    #presentationPanel .mv-dh-foot span:last-child{font-weight:500;text-align:right}
+    #presentationPanel .mv-dh-empty{display:flex;align-items:center;justify-content:center;min-height:100px;height:100%;padding:9px;text-align:center;color:#6b7c86;font-size:11px;line-height:1.5}
+    #presentationPanel .mv-dh-tooltip{position:absolute;z-index:5;pointer-events:none;background:#274455;color:#fff;padding:4px 7px;border-radius:2px;font-weight:600;font-size:10.5px;line-height:1.35;box-shadow:0 2px 7px rgba(0,0,0,.15);white-space:nowrap;transform:translate(-50%,-105%)}
+    #presentationPanel .mv-dh-tooltip[hidden]{display:none}
+    #presentationPanel .mv-dh-cursor{pointer-events:none}
+    #presentationPanel .mv-dh-message{margin:0 11px 10px;padding:7px 0;border:0;border-top:1px solid #e0e7ed;border-radius:0;background:#fff;color:#667b88;font-size:10px;line-height:1.45}
+    #presentationPanel .mv-dh-message[hidden]{display:none}
+    @media(max-width:700px){#presentationPanel .mv-dh-body{padding:0 9px}#presentationPanel .mv-dh-card{padding:9px 0 8px}#presentationPanel .mv-dh-plot{height:136px;min-height:128px}#presentationPanel .mv-dh-value{font-size:16px}}
+    #presentationPanel .presentation-pumps{text-align:center}
+    #presentationPanel .presentation-pumps-title{text-align:center}
+    #presentationPanel .presentation-pump-group{display:flex;flex-direction:column;align-items:center}
+    #presentationPanel .presentation-pump-group-title{width:100%;text-align:center;font-weight:600;letter-spacing:.015em}
+    #presentationPanel .presentation-pump-grid{justify-content:center;justify-items:center}
+    #presentationPanel .presentation-pump-item{text-align:left;justify-self:center;width:min(100%,240px)}
+    #presentationPanel .presentation-pump-grid{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:flex-start!important;column-gap:8px!important;row-gap:4px!important;max-width:100%!important}
+    #presentationPanel .presentation-pump-grid .presentation-pump-item{flex:0 1 calc((100% - 16px)/3)!important;box-sizing:border-box!important;min-width:0!important;max-width:none!important;margin:0!important;justify-self:auto!important}
+    #presentationPanel .presentation-pump-grid.mv-pump-count-1 .presentation-pump-item{flex:0 1 180px!important}
+    #presentationPanel .presentation-pump-grid.mv-pump-count-2 .presentation-pump-item,#presentationPanel .presentation-pump-grid.mv-pump-count-4 .presentation-pump-item{flex:0 1 calc((100% - 8px)/2)!important}
+    #presentationPanel .presentation-pump-grid.mv-pump-count-3 .presentation-pump-item,#presentationPanel .presentation-pump-grid.mv-pump-count-5 .presentation-pump-item{flex:0 1 calc((100% - 16px)/3)!important}
+    #presentationPanel .presentation-pump-grid .presentation-pump-model svg{filter:none!important}
+    @media(max-width:380px){#presentationPanel .presentation-pump-grid.mv-pump-count-3 .presentation-pump-item,#presentationPanel .presentation-pump-grid.mv-pump-count-5 .presentation-pump-item{flex:0 1 calc((100% - 8px)/2)!important}}
+
+    @media (min-width:701px) and (min-height:560px) {
+      #presentationPanel.mv-fit-no-scroll:not([hidden]){top:9px!important;right:13px!important;bottom:auto!important;transform:none!important;width:min(444px,calc(100vw - 30px))!important;max-height:calc(100dvh - 18px)!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-head{flex:0 0 auto!important;padding:10px 14px 8px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-head-top{min-height:0!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-tank-title{margin:3px 0 0!important;font-size:20px!important;line-height:1.2!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-progress-track{flex:0 0 2px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-content{flex:0 1 auto!important;min-height:0!important;overflow:hidden!important;padding:7px 13px 6px!important;overscroll-behavior:contain}
+      #presentationPanel.mv-fit-no-scroll .presentation-readings{padding-bottom:6px!important;margin-bottom:4px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-reading{padding-top:0!important;padding-bottom:0!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-reading-label{margin-bottom:3px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-primary-value{font-weight:400!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-flow{padding:5px 0!important;margin:3px 0 5px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-flow-heading{margin-bottom:3px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-flow-row{padding:3px 0!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-flow-row strong{font-weight:400!important}
+      #presentationPanel.mv-fit-no-scroll .mv-dual-history{margin:7px 0 5px!important}
+      #presentationPanel.mv-fit-no-scroll .mv-dh-body{padding:0 11px!important}
+      #presentationPanel.mv-fit-no-scroll .mv-dh-card{padding:6px 0 5px!important}
+      #presentationPanel.mv-fit-no-scroll .mv-dh-card-head{margin-bottom:2px!important}
+      #presentationPanel.mv-fit-no-scroll .mv-dh-plot{height:var(--mv-fit-plot-height,145px)!important;min-height:128px!important;flex-shrink:0!important}
+      #presentationPanel.mv-fit-no-scroll .mv-dh-foot{padding-top:3px!important}
+      #presentationPanel.mv-fit-no-scroll .mv-dh-message{margin:0 11px 6px!important;padding:4px 0!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pumps{margin-top:5px!important;padding-top:6px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pumps-title{font-size:12px!important;margin-bottom:4px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pump-group{margin-bottom:3px!important;padding-bottom:2px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pump-group+.presentation-pump-group{margin-top:3px!important;padding-top:5px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pump-group-title{font-size:10.5px!important;margin-bottom:3px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pump-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;column-gap:8px!important;row-gap:1px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pump-grid.mv-fit-three{grid-template-columns:repeat(3,minmax(0,1fr))!important;column-gap:5px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pump-item{grid-template-columns:25px minmax(0,1fr)!important;grid-template-rows:16px 15px!important;column-gap:4px!important;min-height:34px!important;padding:1px 0!important;white-space:nowrap!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pump-model{width:25px!important;height:31px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pump-model svg{width:24px!important;height:30px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pump-item-eq{font-size:10.5px!important;font-weight:500!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pump-status{font-size:10px!important;gap:3px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pump-status::before{width:5px!important;height:5px!important;flex-basis:5px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-actions{flex:0 0 auto!important;padding:7px 11px!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-actions>button{min-height:32px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-center-minimal .presentation-content{flex:1 1 auto!important;display:flex!important;flex-direction:column!important;justify-content:center!important}
+      #presentationPanel.mv-fit-no-scroll.mv-center-minimal .presentation-readings{margin-top:auto!important}
+      #presentationPanel.mv-fit-no-scroll.mv-center-minimal .presentation-flow{display:none!important}
+      #presentationPanel.mv-fit-no-scroll.mv-center-minimal .mv-dual-history{margin:9px 0!important}
+      #presentationPanel.mv-fit-no-scroll.mv-center-minimal .presentation-pumps{display:none!important}
+      #presentationPanel.mv-fit-no-scroll.mv-center-minimal .presentation-actions{margin-top:auto!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .presentation-head{padding:7px 12px 6px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .presentation-tank-title{font-size:18px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .presentation-content{padding:4px 12px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .presentation-readings{padding-bottom:4px!important;margin-bottom:2px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .presentation-flow{padding:3px 0!important;margin:2px 0!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .presentation-flow-row{padding:2px 0!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .mv-dual-history{margin:4px 0!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .mv-dh-card{padding:3px 0!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .presentation-pumps{margin-top:2px!important;padding-top:3px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .presentation-pump-item{grid-template-rows:14px 13px!important;min-height:29px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .presentation-pump-model{height:28px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .presentation-pump-model svg{height:27px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-tight .presentation-actions{padding:5px 9px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-overflow .presentation-content{overflow-y:auto!important}
+    }
+    @media (min-width:701px) and (min-height:560px) {
+      #presentationPanel.mv-fit-no-scroll.mv-fit-flow-grid #presentationFlowReadings{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;column-gap:13px!important;align-items:center!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-flow-grid .presentation-flow-row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:5px!important;min-width:0!important;padding:3px 0!important;white-space:nowrap!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-flow-grid .presentation-flow-row span{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-flow-grid .presentation-flow-row strong{flex:none!important;text-align:right!important;white-space:nowrap!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pump-grid.mv-pump-count-6 .presentation-pump-item{flex-basis:calc((100% - 16px)/3)!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .presentation-head{padding-top:6px!important;padding-bottom:5px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .presentation-content{padding-top:4px!important;padding-bottom:3px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .presentation-flow{padding-top:3px!important;padding-bottom:3px!important;margin-top:1px!important;margin-bottom:2px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .presentation-flow-row{padding-top:2px!important;padding-bottom:2px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .mv-dual-history{margin-top:3px!important;margin-bottom:2px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .mv-dh-body{padding-left:9px!important;padding-right:9px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .mv-dh-card{padding-top:3px!important;padding-bottom:3px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .mv-dh-card-head{margin-bottom:1px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .mv-dh-foot{padding-top:2px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .mv-dh-flow-choice{margin-top:2px!important;margin-bottom:3px!important;min-height:25px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .presentation-pumps{margin-top:3px!important;padding-top:3px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .presentation-pumps-title{margin-bottom:2px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .presentation-pump-group{margin-bottom:2px!important;padding-bottom:1px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .presentation-pump-group+.presentation-pump-group{margin-top:1px!important;padding-top:3px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .presentation-pump-group-title{margin-bottom:2px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .presentation-pump-grid{row-gap:0!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .presentation-pump-item{min-height:30px!important;padding-top:0!important;padding-bottom:0!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dense .presentation-actions{padding-top:5px!important;padding-bottom:5px!important}
+    }
+    #presentationPanel .presentation-pump-grid.mv-pump-aligned{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-flow:row!important;justify-content:center!important;justify-items:stretch!important;align-items:center!important;gap:3px 13px!important;width:min(100%,354px)!important;max-width:354px!important;margin:4px auto 2px!important;box-sizing:border-box!important}
+    #presentationPanel .presentation-pump-grid.mv-pump-aligned .presentation-pump-item{display:grid!important;grid-template-columns:26px minmax(0,1fr)!important;grid-template-rows:15px 14px!important;column-gap:6px!important;row-gap:0!important;align-items:center!important;justify-self:stretch!important;min-width:0!important;max-width:none!important;width:100%!important;height:30px!important;min-height:30px!important;padding:0 3px!important;margin:0!important;flex:none!important;box-sizing:border-box!important;text-align:left!important;border:0!important}
+    #presentationPanel .presentation-pump-grid.mv-pump-aligned .presentation-pump-model{grid-row:1/3!important;grid-column:1!important;width:25px!important;height:29px!important;margin:0!important;align-self:center!important}
+    #presentationPanel .presentation-pump-grid.mv-pump-aligned .presentation-pump-model svg{display:block!important;width:25px!important;height:29px!important}
+    #presentationPanel .presentation-pump-grid.mv-pump-aligned .presentation-pump-item-eq{grid-column:2!important;grid-row:1!important;display:block!important;font-size:10.5px!important;line-height:14px!important;min-width:0!important;white-space:nowrap!important;text-align:left!important}
+    #presentationPanel .presentation-pump-grid.mv-pump-aligned .presentation-pump-status{grid-column:2!important;grid-row:2!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;font-size:10px!important;line-height:13px!important;min-width:0!important;white-space:nowrap!important;text-align:left!important}
+    #presentationPanel .presentation-pump-grid.mv-pump-aligned.mv-pump-count-5 .presentation-pump-item:last-child,#presentationPanel .presentation-pump-grid.mv-pump-aligned.mv-pump-count-1 .presentation-pump-item{grid-column:1/-1!important;justify-self:center!important;width:calc((100% - 13px)/2)!important}
+    #presentationPanel .presentation-pump-group:has(.mv-pump-aligned){width:100%!important;align-items:center!important}
+    #presentationPanel .presentation-pump-grid.mv-pump-aligned.mv-fit-three{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    @media(max-width:420px){#presentationPanel .presentation-pump-grid.mv-pump-aligned{width:min(100%,330px)!important;column-gap:8px!important}#presentationPanel .presentation-pump-grid.mv-pump-aligned.mv-pump-count-5 .presentation-pump-item:last-child,#presentationPanel .presentation-pump-grid.mv-pump-aligned.mv-pump-count-1 .presentation-pump-item{width:calc((100% - 8px)/2)!important}}
+    #presentationPanel .presentation-primary-value{font-weight:400!important}
+    #presentationPanel .presentation-flow-row strong{font-weight:400!important}
+    #presentationPanel .mv-dh-value{font-weight:400!important}
+    @media (min-width:701px) and (min-height:560px){
+      #presentationPanel.mv-fit-no-scroll:not([hidden]){width:min(488px,calc(100vw - 30px))!important;height:max-content!important;min-height:0!important;max-height:none!important;overflow:visible!important;transform-origin:top right!important;contain:none!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-content{display:block!important;flex:0 0 auto!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-overflow .presentation-content{overflow:visible!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-actions{flex:0 0 auto!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dual-graphs .mv-dh-body{display:block!important;padding:0 10px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dual-graphs .mv-dh-card{min-width:0!important;padding:8px 0 6px!important;border:0!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dual-graphs .mv-dh-flow{border:0!important;border-top:1px solid #d4dfe7!important;padding:8px 0 0!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dual-graphs .mv-dh-plot{height:var(--mv-fit-plot-height,172px)!important;min-height:0!important;max-height:none!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dual-graphs .mv-dh-flow-choice{min-height:25px!important;margin-top:3px!important;margin-bottom:4px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dual-graphs .mv-dh-card-head{min-height:23px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dual-graphs .mv-dh-value{font-size:16px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-dual-graphs .mv-dh-foot{white-space:nowrap!important}
+      #presentationPanel.mv-fit-no-scroll .presentation-pumps{margin-top:5px!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-flow-grid #presentationFlowReadings{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      #presentationPanel.mv-fit-no-scroll.mv-fit-flow-grid .presentation-flow-row span{text-overflow:clip!important}
+    }
+  
+    #presentationPanel .mv-ln-old{display:none!important}
+    #presentationPanel #mvLnPres{display:flex;flex-direction:column;gap:6px}
+    #presentationPanel #mvLnPres .presentation-primary-value.up{color:#167a45}
+    #presentationPanel #mvLnPres .presentation-primary-value.down{color:#c2283a}
+    #presentationPanel #mvLnPres .presentation-flow-row small{display:block;color:#a35a00;font-size:10px}
+    #presentationPanel #mvLnPres .presentation-flow-row strong.stale{color:#8a6a2a}
+    #labels .mv-ln-level-tile{position:absolute;transform:translate(-50%,-50%) scale(var(--mv-s,1));transform-origin:50% 50%;min-width:118px;padding:6px 13px 7px 22px;border-radius:7px;background:linear-gradient(#5c7680,#425f6a);border:1.5px solid #c3d2d7;color:#fff;text-align:center;font-family:"Segoe UI",Arial,sans-serif;box-shadow:0 3px 9px rgba(0,0,0,.3);pointer-events:none;white-space:nowrap}
+    #labels .mv-ln-level-tile::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:4px;border-radius:2px;background:var(--mv-trend,#bac9d0)}
+    #labels .mv-ln-level-tile .k{display:block;font:700 9px/1.1 "Segoe UI",Arial,sans-serif;letter-spacing:.09em;color:#d9e7eb}
+    #labels .mv-ln-level-tile .v{display:block;font:800 23px/1.12 "Segoe UI",Arial,sans-serif;color:#fff}
+    #labels .mv-ln-level-tile .t{display:block;font:800 11px/1.2 "Segoe UI",Arial,sans-serif;color:var(--mv-trend-t,#bac9d0)}
+    #alertBar{display:none!important}
+  `;
+  document.head.appendChild(mvLnStyle);
+
+  /* --- historial (cache por código) --- */
+  const mvLnHist=new Map();
+  async function mvLnFetchHistory(code){
+    if(!code)return null;
+    try{const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),9000);const r=await fetch('/Telemetria/php/linares_3d_historial.php?codigo='+encodeURIComponent(code)+'&horas=6&_='+Date.now(),{cache:'no-store',signal:ctl.signal}).finally(()=>clearTimeout(to));if(!r.ok)return mvLnHist.get(code)||null;const o=await r.json();const v={level:Array.isArray(o.level)?o.level:[],flow:Array.isArray(o.flow)?o.flow:[],at:Date.now()};mvLnHist.set(code,v);return v;}catch(e){return mvLnHist.get(code)||null;}
+  }
+  const mvLnTrend=series=>{if(!series||series.length<2)return null;const last=series[series.length-1];let ref=series[0];for(const p of series){if(p[0]>=last[0]-60*60000){ref=p;break;}}return last[1]-ref[1];};
+
+  /* --- panel de presentación --- */
+  const mvPresContent=$('presentationPanel').querySelector('.presentation-content');
+  $('presentationName').classList.add('presentation-tank-title');
+  $('presentationStep').classList.add('presentation-kicker');
+  const mvLnBox=document.createElement('div');mvLnBox.id='mvLnPres';
+  mvLnBox.innerHTML=`<div class="presentation-readings"><div class="presentation-reading"><div class="presentation-reading-label" id="mvLnL1">Nivel actual</div><div class="presentation-primary-value" id="mvLnV1">N/D</div></div><div class="presentation-reading"><div class="presentation-reading-label" id="mvLnL2">Tendencia</div><div class="presentation-primary-value" id="mvLnV2">N/D</div></div></div>
+  <section class="presentation-flow" id="mvLnFlowSec"><div class="presentation-flow-heading" id="mvLnFlowHead">Flujo</div><div class="presentation-flow-list" id="mvLnFlows"></div></section>
+  <section class="mv-dual-history"><div class="mv-dh-body">
+    <section class="mv-dh-card mv-dh-level" id="mvLnLevelCard"><div class="mv-dh-card-head"><span class="mv-dh-card-name"><i class="mv-dh-symbol"></i><span id="mvLnLevelName">NIVEL</span></span><span class="mv-dh-value" id="mvLnLevelLatest">N/D</span></div><div class="mv-dh-plot" id="mvLnLevelPlot"></div><div class="mv-dh-foot"><span id="mvLnLevelCount"></span><span id="mvLnLevelTime">m</span></div></section>
+    <section class="mv-dh-card mv-dh-flow" id="mvLnFlowCard"><div class="mv-dh-card-head"><span class="mv-dh-card-name"><i class="mv-dh-symbol"></i>FLUJO</span><span class="mv-dh-value" id="mvLnFlowLatest">N/D</span></div><div class="mv-dh-plot" id="mvLnFlowPlot"></div><div class="mv-dh-foot"><span id="mvLnFlowCount"></span><span id="mvLnFlowTime">LPS</span></div></section>
+  </div></section>
+  <section class="presentation-pumps" id="mvLnPumps" hidden><div class="presentation-pumps-title">Equipos de bombeo</div><div id="mvLnPumpList"></div><p class="presentation-pumps-note" id="mvLnPumpNote" hidden>Último estado recibido; conexión sin confirmar.</p></section>`;
+  mvPresContent.prepend(mvLnBox);
+  for(const ch of [...mvPresContent.children])if(ch!==mvLnBox&&ch!==casetaControl)ch.classList.add('mv-ln-old');
+  const mvNum=new Intl.NumberFormat('es-MX',{maximumFractionDigits:2});
+  function mvLnChart(plot,series,unit,hue,latestEl,countEl,timeEl,label){
+    MV_HISTORY_WINDOW_MS=60*60000;
+    const recent=(series||[]).filter(p=>p[0]>=Date.now()-MV_HISTORY_WINDOW_MS);
+    if(recent.length<2)MV_HISTORY_WINDOW_MS=6*60*60000;
+    const c=series&&series.length?mvHistoryChart(plot,series,unit,hue):null;
+    if(!c){mvHistoryEmpty(plot,'Sin lecturas recientes');latestEl.textContent='N/D';countEl.textContent='Esperando lecturas recientes';timeEl.textContent=unit;return;}
+    latestEl.replaceChildren(unit==='LPS'?mvHistoryNumber.format(c.latestValue):c.latestValue.toFixed(2));const sm=document.createElement('small');sm.textContent=' '+unit;latestEl.appendChild(sm);
+    countEl.textContent=c.count+' lecturas '+(MV_HISTORY_WINDOW_MS>3600000?'(6 h)':'recientes');timeEl.textContent='Última '+mvHistoryFormatTime(c.latest);
+  }
+  function mvLnRender(n){
+    if(!n)return;
+    const s=getData(n),kind=n[2],code=n[5],h=code?mvLnHist.get(code):null;
+    const num=v=>v!==null&&v!==undefined&&Number.isFinite(Number(v));
+    const ex=s&&Array.isArray(s.extra)?s.extra:[];
+    const pct=ex.find(q=>q&&q.unit==='%'),sto=ex.find(q=>q&&q.unit==='Mm³');
+    const L1=$('mvLnL1'),V1=$('mvLnV1'),L2=$('mvLnL2'),V2=$('mvLnV2');
+    const stateTxt=!code?'Referencia':!s||s.status==='sin_datos'?'Sin datos':s.status==='sin_comunicacion'?'Sin comunicación':s.observation?'Observación':'Actual';
+    V2.className='presentation-primary-value';
+    const trend=h?mvLnTrend(h.level):null;
+    if(kind==='reservoir'){
+      if(s&&num(s.level)){L1.textContent='Elevación';V1.textContent=fmt(s.level)+' msnm';L2.textContent='Llenado';V2.textContent=pct?fmt(pct.value,2)+' %':'N/D';}
+      else{L1.textContent='Llenado';V1.textContent=pct?fmt(pct.value,2)+' %':'N/D';L2.textContent='Almacenamiento';V2.textContent=sto?fmt(sto.value,2)+' Mm³':'N/D';}
+    }else if(s&&num(s.level)){
+      L1.textContent='Nivel actual';V1.textContent=fmt(s.level)+' m';L2.textContent='Tendencia';V2.textContent=trend===null?'N/D':mvTrendDisplay(trend);const d=mvTrendDirection(trend);if(d)V2.classList.add(d);
+    }else{
+      L1.textContent=kind==='pump'?'Flujo de salida':kind==='facility'?'Conducción 30"':'Flujo';V1.textContent=s&&num(s.flow)?fmt(s.flow,0)+' LPS':'N/D';L2.textContent='Comunicación';V2.textContent=stateTxt;
+    }
+    const rows=[];
+    if(kind==='reservoir'){ if(sto)rows.push(['Almacenamiento',fmt(sto.value,2)+' Mm³']); if(pct)rows.push(['Llenado',fmt(pct.value,2)+' %']); }
+    else{
+      if(s&&num(s.flow)&&num(s.level))rows.push([kind==='pump'?'Salida':'Flujo',fmt(s.flow,0)+' LPS']);
+      for(const q of ex){if(!q||!num(q.value))continue;rows.push([q.label,fmt(q.value,q.unit==='kg/cm²'?2:0)+' '+q.unit]);}
+    }
+    rows.push(['Comunicación',stateTxt+(s&&s.updated?' · '+s.updated:'')]);
+    $('mvLnFlowHead').textContent=kind==='reservoir'?'Almacenamiento':'Lecturas';
+    const host=$('mvLnFlows');host.replaceChildren();
+    for(const [a,b] of rows){const r=document.createElement('div');r.className='presentation-flow-row';const sp=document.createElement('span');sp.textContent=a;const st=document.createElement('strong');st.textContent=b;if(s&&s.status==='sin_comunicacion'&&a!=='Comunicación')st.classList.add('stale');r.append(sp,st);host.appendChild(r);}
+    const lvlUnit=kind==='reservoir'?'msnm':'m';
+    $('mvLnLevelName').textContent=kind==='reservoir'?'ELEVACIÓN':'NIVEL';
+    const showLevel=kind==='tank'||kind==='reservoir'||(s&&num(s.level))||(h&&h.level.length>1);
+    const showFlow=kind!=='tank'&&kind!=='reservoir'&&((s&&num(s.flow))||(h&&h.flow.length>1));
+    $('mvLnLevelCard').style.display=showLevel?'':'none';$('mvLnFlowCard').style.display=showFlow?'':'none';
+    mvLnBox.querySelector('.mv-dual-history').style.display=(showLevel||showFlow)&&code?'':'none';
+    if(showLevel)mvLnChart($('mvLnLevelPlot'),h?h.level:null,lvlUnit,'level',$('mvLnLevelLatest'),$('mvLnLevelCount'),$('mvLnLevelTime'));
+    if(showFlow)mvLnChart($('mvLnFlowPlot'),h?h.flow:null,'LPS','flow',$('mvLnFlowLatest'),$('mvLnFlowCount'),$('mvLnFlowTime'));
+    const pumps=$('mvLnPumps'),list=$('mvLnPumpList');list.replaceChildren();
+    const idx=casetaLightById.get(n[0]);
+    if(kind==='pump'&&idx!==undefined){
+      const block=document.createElement('section');block.className='presentation-pump-group';
+      const title=document.createElement('div');title.className='presentation-pump-group-title';title.textContent=n[1].toUpperCase();block.appendChild(title);
+      const count=casetaCounts[idx],grid=document.createElement('div');grid.className='presentation-pump-grid mv-pump-count-'+Math.min(count,5);
+      for(let i=0;i<count;i++){const p=s&&Array.isArray(s.pumps)?s.pumps[i]:null;const st=p&&typeof p.on==='boolean'?p.on:null;const cat=st===true?'on':st===false?'off':'unknown';
+        const line=document.createElement('div');line.className='presentation-pump-item '+cat;line.appendChild(pumpMiniature(st));
+        const eq=document.createElement('span');eq.className='presentation-pump-item-eq';eq.textContent='Equipo '+String(i+1).padStart(2,'0');
+        const sx=document.createElement('span');sx.className='presentation-pump-status '+cat;sx.textContent=st===true?'Operando':st===false?'Apagado':'Sin dato';
+        line.append(eq,sx);grid.appendChild(line);}
+      block.appendChild(grid);list.appendChild(block);pumps.hidden=false;$('mvLnPumpNote').hidden=!(s&&s.status==='sin_comunicacion');
+    }else pumps.hidden=true;
+  }
+  {const orig=updatePanel;updatePanel=function(n){orig(n);mvLnRender(n);};}
+  loadHistory=async function(n){if(!n)return;const code=n[5];if(code)await mvLnFetchHistory(code);if(state.selected===n[0])mvLnRender(n);};
+
+  /* --- nivel del Tanque Garrapatas con el diseño de Monterrey V --- */
+  garrapatasLevel.className='mv-ln-level-tile';garrapatasLevel.style.cssText='';
+  garrapatasLevel.innerHTML='<span class="k">NIVEL</span><span class="v">N/D</span><span class="t">SIN DATOS</span>';
+  function mvLnTile(){
+    const g=live.get('TGRP0001'),lv=g&&g.level!==null&&Number.isFinite(Number(g.level))?Number(g.level):null;
+    const h=mvLnHist.get('TGRP0001'),tr=h?mvLnTrend(h.level):null,dir=mvTrendDirection(tr);
+    garrapatasLevel.innerHTML='<span class="k">NIVEL</span><span class="v"></span><span class="t"></span>';
+    garrapatasLevel.querySelector('.v').textContent=lv===null?'N/D':lv.toFixed(2)+' m';
+    garrapatasLevel.querySelector('.t').textContent=mvTrendDisplay(tr);
+    garrapatasLevel.style.setProperty('--mv-trend',dir==='up'?'#69efa8':dir==='down'?'#ff919e':'#bac9d0');
+    garrapatasLevel.style.setProperty('--mv-trend-t',dir==='up'?'#7df5af':dir==='down'?'#ff9fa7':'#bac9d0');
+  }
+  {const orig=updateData;updateData=function(){orig();mvLnTile();};}
+  setInterval(()=>{mvLnFetchHistory('TGRP0001').then(mvLnTile);},60000);mvLnFetchHistory('TGRP0001').then(mvLnTile);
+
+  /* --- notificaciones con el diseño de Monterrey V --- */
+  const mvAl=document.createElement('aside');mvAl.className='mv-alerts';mvAl.id='mvAlerts';
+  mvAl.innerHTML=`<section class="mv-alerts-strip"><div class="mv-alerts-marquee"><div class="mv-alerts-chip"><svg class="mv-alerts-logo" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 5.2c-5.1 0-8.2 3.9-8.2 9v3.6c0 2.6-1.2 4.1-2.5 5.6-.4.5-.1 1.2.5 1.2h20.4c.6 0 .9-.7.5-1.2-1.3-1.5-2.5-3-2.5-5.6v-3.6c0-5.1-3.1-9-8.2-9z" fill="#f2b43b" stroke="#34454e" stroke-width="1.7" stroke-linejoin="round"/><path d="M12.6 26.5a3.4 3.4 0 0 0 6.8 0" fill="none" stroke="#34454e" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="mv-alerts-marquee-window"><div class="mv-alerts-ticker" id="mvAlertsTicker"></div></div></div><span class="mv-alerts-count" id="mvAlertsCount" hidden>0</span><button class="mv-alerts-toggle" id="mvAlertsToggle" type="button">VER TODOS</button></section><section class="mv-alerts-panel" id="mvAlertsPanel" hidden><div class="mv-alerts-heading"><strong>Alertas activas</strong><button type="button" id="mvAlertsClose">Cerrar</button></div><div class="mv-alerts-list" id="mvAlertsList"></div></section>`;
+  document.body.appendChild(mvAl);
+  const mvAlLabels={com:'Sin comunicación',obs:'Nivel fuera de parámetros',zero:'Flujo 0'};
+  let mvAlItems=[],mvAlIndex=0,mvAlTimer=0,mvAlReceived=false;
+  const mvAlLine=(it,expanded)=>{const b=document.createElement('button');b.type='button';b.className=(expanded?'mv-alert-item ':'mv-alert-line ')+'mv-alert-'+it.type;b.title='Localizar '+it.name+' en el modelo 3D';const dot=document.createElement('span');dot.className='mv-alert-pin';
+    if(expanded){const c=document.createElement('span');c.className='mv-alert-item-body';const hd=document.createElement('span');hd.className='mv-alert-item-title';const nm=document.createElement('strong');nm.textContent=it.name;const kd=document.createElement('span');kd.textContent=mvAlLabels[it.type];hd.append(nm,kd);const dt=document.createElement('small');dt.textContent=it.detail;c.append(hd,dt);b.append(dot,c);}
+    else{const c=document.createElement('span');c.className='mv-alert-marquee-copy';const nm=document.createElement('strong');nm.textContent=it.name;const kd=document.createElement('span');kd.className='mv-alert-label';kd.textContent=mvAlLabels[it.type];c.append(nm,kd);b.append(dot,c);}
+    b.addEventListener('click',()=>{$('mvAlertsPanel').hidden=true;selectNode(it.id);});return b;};
+  function mvAlTicker(){clearTimeout(mvAlTimer);mvAl.classList.remove('is-cycle-open');const t=$('mvAlertsTicker');t.replaceChildren();
+    if(!mvAlItems.length){const d=document.createElement('div');d.className='mv-alerts-normal'+(mvAlReceived?'':' is-waiting');const p=document.createElement('span');p.className='mv-alert-pin';const x=document.createElement('span');x.textContent=mvAlReceived?'Sin alertas activas':'Esperando lecturas de Telemetría';d.append(p,x);t.appendChild(d);return;}
+    if(mvAlIndex>=mvAlItems.length)mvAlIndex=0;const it=mvAlItems[mvAlIndex];t.appendChild(mvAlLine(it,false));
+    mvAlTimer=setTimeout(()=>{mvAl.classList.add('is-cycle-open');mvAlTimer=setTimeout(()=>{mvAl.classList.remove('is-cycle-open');mvAlTimer=setTimeout(()=>{mvAlIndex=(mvAlIndex+1)%Math.max(1,mvAlItems.length);mvAlTicker();},480);},3200);},2500);}
+  function mvAlList(){const l=$('mvAlertsList');l.replaceChildren();if(!mvAlItems.length){const p=document.createElement('p');p.className='mv-alerts-empty';p.textContent='No hay alertas registradas.';l.appendChild(p);return;}for(const it of mvAlItems)l.appendChild(mvAlLine(it,true));}
+  $('mvAlertsToggle').onclick=()=>{const p=$('mvAlertsPanel');p.hidden=!p.hidden;if(!p.hidden)mvAlList();};
+  $('mvAlertsClose').onclick=()=>{$('mvAlertsPanel').hidden=true;};
+  alertsRefresh=function(){
+    const items=[];
+    for(const n of config.nodes){const s=getData(n);if(!s||!n[5])continue;mvAlReceived=true;
+      if(s.status==='sin_comunicacion')items.push({id:n[0],name:n[1],type:'com',detail:s.updated?'Última lectura '+s.updated:'Sin hora de lectura confirmada'});
+      else if(s.observation)items.push({id:n[0],name:n[1],type:'obs',detail:Number.isFinite(Number(s.level))?fmt(s.level)+' m':''});
+      else if(n[2]==='pump'&&s.status==='operando'&&Number(s.flow)===0)items.push({id:n[0],name:n[1],type:'zero',detail:'Flujo 0 LPS'});}
+    const changed=items.map(i=>i.type+i.id).join()!==mvAlItems.map(i=>i.type+i.id).join();
+    mvAlItems=items;$('alertBar').hidden=true;
+    mvAl.style.display=state.alerts?'':'none';
+    const c=$('mvAlertsCount');c.textContent=String(items.length);c.hidden=!items.length;
+    mvAl.classList.toggle('has-active-alerts',items.length>0);mvAl.dataset.ready='true';
+    mvAl.dataset.severity=items.some(i=>i.type==='com')?'com':items.some(i=>i.type==='obs')?'obs':items.some(i=>i.type==='zero')?'zero':'normal';
+    if(!$('mvAlertsPanel').hidden)mvAlList();
+    if(changed||!mvAlTimer)mvAlTicker();
+  };
+  alertsRefresh();
   /* MV PRO: tiempo real (igual que Monterrey V: lecturas cada 10 s; gráfica de la instalación seleccionada cada 60 s) */
   syncButtons();resize();loadData();setInterval(loadData,10000);
   setInterval(()=>{if(state.selected&&!document.hidden){const e=nodeById.get(state.selected);if(e)loadHistory(e.data);}},60000);
