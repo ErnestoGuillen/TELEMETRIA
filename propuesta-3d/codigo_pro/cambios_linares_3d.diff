@@ -16,7 +16,7 @@
 +  /* MV PRO: acomodo como el mapa SCADA: presa -> PB1, línea a PB2/PB2A/PB3, baja a Garrapatas, diagonal al rompedor y PB4 */
 +  const mvNodeAngle=new Map(), MV_PUMP_LANE=6.2, MV_PIPE_LANE=5.45;
 +  (()=>{
-+    const layout={li01:[23.0,5.2],li02:[6.8,3.6],li02a:[-9.4,2.6],li03:[-25.6,2.0],li04a:[-34.4,6.2],li05:[-37.6,-6.8],li04:[-40.0,-21.5]};
++    const layout={li00:[57.8,14.0],li01:[39.0,5.2],li02:[22.8,3.6],li02a:[6.6,2.6],li03:[-9.6,2.0],li04a:[-18.4,6.2],li05:[-21.6,-6.8],li04:[-24.0,-21.5]};
 +    for(const n of config.nodes){const q=layout[n[0]];if(q){n[3]=q[0];n[4]=q[1];}}
 +    const order=['li00','li01','li02','li02a','li03','li04a','li05','li04'].map(id=>config.nodes.find(n=>n[0]===id)).filter(Boolean);
 +    order.forEach((n,i)=>{const a=order[Math.max(0,i-1)],b=order[Math.min(order.length-1,i+1)];const tx=b[3]-a[3],tz=b[4]-a[4],l=Math.hypot(tx,tz)||1;mvNodeAngle.set(n[0],n[0]==='li00'?0:Math.atan2(-tz/l,-tx/l));});
@@ -323,13 +323,24 @@
      gl.drawArrays(gl.TRIANGLES, 0, 3);
      gl.depthMask(true);
      gl.enable(gl.DEPTH_TEST);
-@@ -1198,6 +1386,13 @@
+@@ -1144,7 +1332,9 @@
+     [91.2,-8.8],[86.8,-11.4],[80.6,-14.0],[74.1,-15.6],[66.2,-15.2],[57.8,-14.3],
+     [49.1,-11.7],[43.2,-8.0],[39.2,-3.7]
+   ];
+-  const lakeCenter=[73.0,14.2];
++  /* MV PRO: presa más chica (se reduce hacia el fondo) para separar PB4 del cerro */
++  for(const q of lakeOutline){q[0]=104+(q[0]-104)*.66;q[1]=14+(q[1]-14)*.78;}
++  const lakeCenter=[104+(73.0-104)*.66,14.2];
+   const lakeShore=[];
+   for(let i=0;i<lakeOutline.length;i++){
+     const p0=lakeOutline[(i-1+lakeOutline.length)%lakeOutline.length];
+@@ -1198,6 +1388,13 @@
        height += roundedRelief + naturalFolds + ridgeLift + localTexture;
      }
      height+=sillaRelief(x,z);
 +    /* MV PRO: corte del cerro (cañón de piso plano por donde pasa la tubería) */
-+    if(x<-36){
-+      const d=Math.abs(z+20.6), entry=smoothTerrain(36,43,-x);
++    if(x<-34){
++      const d=Math.abs(z+20.6), entry=smoothTerrain(34,43,-x);
 +      const floor=-.05+Math.max(0,-x-60)*.02;
 +      const open=1-smoothTerrain(4.5,9.5,d);
 +      if(height>floor) height=floor+(height-floor)*(1-open*entry);
@@ -337,7 +348,7 @@
      if(x>28&&x<128&&z>-32&&z<72){
        const shore=lakeDistance(x,z);
        if(shore<=0)return .43-.89*smoothTerrain(0,3.7,-shore);
-@@ -1314,21 +1509,30 @@
+@@ -1314,21 +1511,30 @@
      const a=pointNodes.get(start),b=pointNodes.get(end);
      if(!a||!b)continue;
      const key=start+'|'+end;
@@ -380,7 +391,24 @@
    pipe(mountainPipePath, .31, { source: 'PB4 Linares', target: 'PB4 Linares' });
    function pumpStationScene(x,z){pumpUnit(x,z,4);}
    function facilityScene(x,z,type){
-@@ -1645,6 +1849,16 @@
+@@ -1472,6 +1678,7 @@
+         tube([[d[0],.48,d[1]],[d[0],roadTop,d[1]]],.016,'#687573',{seg:5});
+       }
+     }
++    const mvDamStart=A.map(g=>g.length);
+     const damPoints=[[37.0,-3.5],[35.9,1.3],[35.0,6.9],[34.7,13.1],[35.2,19.6],[36.2,25.4],[38.7,31.7]];
+     const ribbon=(path,width,top,bottom,color)=>{
+       for(let i=0;i<path.length-1;i++){
+@@ -1536,6 +1743,8 @@
+     }
+     ribbon([[32.8,13.0],[30.0,12.8],[27.6,12.5]],2.25,1.60,.04,'#8e9999');
+     tube([[32.9,1.08,14.0],[30.8,1.07,13.5],[27.4,1.04,13.0]],.32,'#167ab3',{seg:18,kind:1});
++    /* MV PRO: la cortina y la toma se ajustan a la presa más chica */
++    for(let g=0;g<A.length;g++){const arr=A[g];for(let i=mvDamStart[g];i<arr.length;i+=13){arr[i]=104+(arr[i]-104)*.66;arr[i+2]=14+(arr[i+2]-14)*.78;}}
+   }
+   function flowMeterScene(x,z){
+     pad(x,z,2.9);
+@@ -1645,6 +1854,16 @@
      box(x,1.30,back+.17,w-.40,2.18,.32,'#b0bfc0');
      box(x,3.77,back+.16,w-.40,2.76,.32,'#a2b4b7');
      box(x,5.23,back+.17,w+.06,.20,.41,'#d7dfde');
@@ -397,7 +425,7 @@
      for(let k=0;k<7;k++){
        const xx=left+.65+k*(w-1.3)/6;
        box(xx,3.52,back+.365,.07,2.20,.06,'#83959b');
-@@ -1675,16 +1889,24 @@
+@@ -1675,16 +1894,24 @@
        const px=x+(i-centerOffset)*1.75;
        const pz=z+.30;
        const dataId=8+start+i;
@@ -426,7 +454,7 @@
      box(left+.63,1.74,back+.70,.66,2.44,1.09,'#435d67');
      box(left+.65,1.98,back+1.29,.48,1.24,.075,'#90b0b9',1,.13,.80);
      for(const yy of [1.59,1.87,2.12])for(const dx of [-.14,.12]){
-@@ -1711,19 +1933,241 @@
+@@ -1711,19 +1938,241 @@
        cylinder(xx,4.42,front+.38,.24,.14,'#f3e5c6',{seg:14,kind:16,levelId:index,em:1.1});
        casetaGlowDisk(xx,.36,front+.62,.95,.95,index,.20);
      }
@@ -672,7 +700,7 @@
    for (const segment of siteRoadSegments) siteRoad(segment);
    const buffers=[];
    for(let group=0;group<3;group++){
-@@ -1746,6 +2190,7 @@
+@@ -1746,6 +2195,7 @@
        const limit=normalizedMaximum!==null&&normalizedMaximum>0&&normalizedMaximum>=level?normalizedMaximum:modelHeight;
        levelsUniform[i]=level===null||level<=0?0:Math.max(0,Math.min(.94,level/limit*.90));
      }
@@ -680,16 +708,18 @@
      for(let group=0;group<casetaIds.length;group++){
        const reading=live.get(casetaDataCodes[group]);
        for(let motor=0;motor<casetaCounts[group];motor++){
-@@ -1763,7 +2208,7 @@
+@@ -1763,8 +2213,8 @@
      gl.drawArrays(gl.TRIANGLES,0,b.count);
    }
    const sub=minus;
 -  const CAMERA_LIMITS={minDist:10,maxDist:118,maxPitch:1.24,panXMin:-58,panXMax:40,panZMin:-24,panZMax:26};
-+  const CAMERA_LIMITS={minDist:10,maxDist:84,maxPitch:1.24,panXMin:-58,panXMax:40,panZMin:-24,panZMax:26};
-   const state={yaw:.75,pitch:.98,dist:79,target:[0,1.5,0],auto:'',mode:'orbit',night:false,names:true,flowNames:true,levels:true,alerts:true,date:true,showInfo:true,water:true,speed:1,spinFast:false,selected:null,paused:false,pt:0,presIndex:0,presDuration:9.5,quality:1.1,frameCount:0,frameElapsed:0};
+-  const state={yaw:.75,pitch:.98,dist:79,target:[0,1.5,0],auto:'',mode:'orbit',night:false,names:true,flowNames:true,levels:true,alerts:true,date:true,showInfo:true,water:true,speed:1,spinFast:false,selected:null,paused:false,pt:0,presIndex:0,presDuration:9.5,quality:1.1,frameCount:0,frameElapsed:0};
++  const CAMERA_LIMITS={minDist:10,maxDist:84,maxPitch:1.24,panXMin:-50,panXMax:58,panZMin:-24,panZMax:26};
++  const state={yaw:.75,pitch:.98,dist:79,target:[10,1.5,0],auto:'',mode:'orbit',night:false,names:true,flowNames:true,levels:true,alerts:true,date:true,showInfo:true,water:true,speed:1,spinFast:false,selected:null,paused:false,pt:0,presIndex:0,presDuration:9.5,quality:1.1,frameCount:0,frameElapsed:0};
    const labels=new Map(),flowLabels=new Map();
    const sillaLabel=document.createElement('div');
-@@ -1799,7 +2244,7 @@
+   sillaLabel.className='world-sign';
+@@ -1799,7 +2249,7 @@
    const mul=(a,b)=>{const m=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+r]*b[c*4+k];m[c*4+r]=s;}return m};
    const project=(p,m,w,h)=>{const x=p[0],y=p[1],z=p[2],q=m[3]*x+m[7]*y+m[11]*z+m[15];if(q<=.05)return null;const px=(m[0]*x+m[4]*y+m[8]*z+m[12])/q,py=(m[1]*x+m[5]*y+m[9]*z+m[13])/q;if(Math.abs(px)>1.13||Math.abs(py)>1.13)return null;return [(px*.5+.5)*w,(-py*.5+.5)*h,q]};
    const presentation=$('presentationPanel');
@@ -698,7 +728,7 @@
    const showPanel=(show=true)=>{presentation.hidden=!show||!state.showInfo;};
    function selectNode(id){const entry=nodeById.get(id);if(!entry)return;state.selected=id;const n=entry.data;updatePanel(n);showPanel();for(const [key,val]of labels)val.el.classList.toggle('selected',key===id);loadHistory(n);}
    const casetaControl=document.createElement('div');
-@@ -1837,7 +2282,8 @@
+@@ -1837,7 +2287,8 @@
      const isTank=kind==='tank';
      const isReference=!n[5];
      $('primaryLabel').textContent=isTank||hasLevel?'Nivel actual':kind==='pump'?'Flujo de salida':kind==='meter'?'Flujo medido':'Referencia';
@@ -708,7 +738,7 @@
      $('flowValue').textContent=hasFlow?fmt(s.flow,0)+' LPS':'N/D';
      $('stateValue').textContent=isReference?'Sin lectura':!s||s.status==='sin_datos'?'Sin datos':s.status==='sin_comunicacion'?'Sin comunicación':s.observation?'Observación':'Actual';
      $('lastReading').textContent=s&&s.updated?'Actualización: '+s.updated:isReference?'Referencia hidráulica · sin sensor asociado':'Sin actualización';
-@@ -1850,14 +2296,45 @@
+@@ -1850,14 +2301,45 @@
      for(const item of items){if(!item||item.value===null||!Number.isFinite(Number(item.value)))continue;
        const row=document.createElement('div');row.className='linares-detail-row';
        const name=document.createElement('span');name.textContent=item.label;
@@ -758,7 +788,7 @@
    function alertsRefresh(){const alerts=[];for(const n of config.nodes){const s=getData(n);if(!s)continue;if(s.status==='sin_comunicacion')alerts.push({id:n[0],name:n[1],type:'Sin comunicación'});else if(s.observation)alerts.push({id:n[0],name:n[1],type:'Nivel fuera de parámetros'});}const bar=$('alertBar');bar.hidden=!state.alerts||!alerts.length;$('alertCount').hidden=!alerts.length;$('alertCount').textContent=alerts.length;$('alertSummary').textContent=alerts.length?alerts[0].name+'   '+alerts[0].type:'';$('alertsList').replaceChildren();for(const a of alerts){const b=document.createElement('button');b.type='button';b.textContent=a.name+' · '+a.type;b.onclick=()=>{selectNode(a.id);$('alertsList').hidden=true};$('alertsList').appendChild(b);}}
    function updateData(){
      const g=live.get('TGRP0001');
-@@ -1868,11 +2345,12 @@
+@@ -1868,12 +2350,13 @@
        const f=flowLabels.get(n[0]);
        if(f){const s=getData(n);f.value.textContent=s&&s.flow!=null?fmt(s.flow,0)+' LPS':'N/D';}
      }
@@ -768,11 +798,13 @@
    }
    let retrieving=false;
 -  async function loadData(){if(retrieving)return;retrieving=true;try{const r=await fetch('/Telemetria/php/linares_3d_datos.php?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('Error HTTP');const obj=await r.json();if(!obj.items)throw Error('Datos incompletos');live.clear();for(const [code,item]of Object.entries(obj.items))live.set(code,item);updateData();$('notice').hidden=true;}catch(e){live.clear();updateData();$('notice').textContent='Sin conexión con lecturas de Linares';$('notice').hidden=false;}finally{retrieving=false;}}
+-  function reset(){state.yaw=.75;state.pitch=.98;state.dist=79;state.target=[0,1.5,0];state.auto='';state.mode='orbit';state.selected=null;showPanel(false);syncButtons();}
 +  async function loadData(){if(retrieving)return;retrieving=true;try{const mvCtl=new AbortController(),mvTo=setTimeout(()=>mvCtl.abort(),8000);const r=await fetch('/Telemetria/php/linares_3d_datos.php?t='+Date.now(),{cache:'no-store',signal:mvCtl.signal}).finally(()=>clearTimeout(mvTo));if(!r.ok)throw Error('Error HTTP');const obj=await r.json();if(!obj.items)throw Error('Datos incompletos');live.clear();for(const [code,item]of Object.entries(obj.items))live.set(code,item);updateData();$('notice').hidden=true;}catch(e){live.clear();updateData();$('notice').textContent='Sin conexión con lecturas de Linares';$('notice').hidden=false;}finally{retrieving=false;}}
-   function reset(){state.yaw=.75;state.pitch=.98;state.dist=79;state.target=[0,1.5,0];state.auto='';state.mode='orbit';state.selected=null;showPanel(false);syncButtons();}
++  function reset(){state.yaw=.75;state.pitch=.98;state.dist=79;state.target=[10,1.5,0];state.auto='';state.mode='orbit';state.selected=null;showPanel(false);syncButtons();}
    function startPresentation(){state.auto='presentation';state.pt=0;state.presIndex=0;state.paused=false;state.showInfo=true;selectNode(config.nodes[0][0]);showPanel();syncButtons();}
    function endPresentation(){state.auto='';state.paused=false;state.selected=null;showPanel(false);syncButtons();}
-@@ -1913,15 +2391,82 @@
+   function jumpPresentation(delta){state.presIndex=(state.presIndex+delta+config.nodes.length)%config.nodes.length;state.pt=0;selectNode(config.nodes[state.presIndex][0]);}
+@@ -1913,15 +2396,82 @@
    $('presentationNext').onclick=()=>jumpPresentation(1);
    $('presentationPause').onclick=()=>{state.paused=!state.paused;$('presentationPause').textContent=state.paused?'Continuar':'Pausar';};
    $('alertsAll').onclick=()=>{$('alertsList').hidden=!$('alertsList').hidden;$('alertsAll').setAttribute('aria-expanded',String(!$('alertsList').hidden));};
@@ -861,7 +893,7 @@
    function drawLabels(mat,eye){
      const tankInfo=tankLabels[0];
      const direction=tankInfo?Math.hypot(eye[0]-tankInfo.x,eye[2]-tankInfo.z)||1:1;
-@@ -1945,9 +2490,9 @@
+@@ -1945,9 +2495,9 @@
      eye[1]=Math.max(eye[1],safeHeight);
    }
    function render(now){const dt=Math.min(.06,Math.max(.001,(now-lastFrame)/1000));lastFrame=now;qualityFrames++;qualityMs+=dt*1000;if(qualityFrames>=90){const avg=qualityMs/qualityFrames,old=state.quality;if(avg>29)state.quality=Math.max(.75,state.quality-.08);else if(avg<18)state.quality=Math.min(1.24,state.quality+.03);qualityFrames=0;qualityMs=0;if(Math.abs(state.quality-old)>.005)resize();}if(vw!==canvas.clientWidth||vh!==canvas.clientHeight||density!==(window.devicePixelRatio||1))resize();
@@ -873,7 +905,7 @@
      state.dist=Math.max(CAMERA_LIMITS.minDist,Math.min(CAMERA_LIMITS.maxDist,state.dist));
      state.pitch=Math.max(.18,Math.min(CAMERA_LIMITS.maxPitch,state.pitch));
      const sn=Math.sin(state.pitch),cs=Math.cos(state.pitch),eye=[state.target[0]+Math.cos(state.yaw)*state.dist*sn,Math.max(2.1,state.target[1]+state.dist*cs),state.target[2]+Math.sin(state.yaw)*state.dist*sn];
-@@ -1955,6 +2500,7 @@
+@@ -1955,6 +2505,7 @@
      eye[2]=Math.max(-64,Math.min(58,eye[2]));
      keepCameraAboveTerrain(eye,state.target);
      const mat=mul(proj(Math.PI/3.45,canvas.width/Math.max(canvas.height,1),.12,600),view(eye,state.target));
@@ -881,7 +913,7 @@
      gl.clearColor(.60,.78,.88,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
      eveningBlend+=(Number(state.night)-eveningBlend)*Math.min(1,dt*2.6);
      renderSky(eye,state.target,now*.001,canvas.width/Math.max(1,canvas.height));
-@@ -1963,6 +2509,7 @@
+@@ -1963,6 +2514,7 @@
      if(loc.time!==null)gl.uniform1f(loc.time,now*.001*state.speed);
      if(loc.anim!==null)gl.uniform1f(loc.anim,state.water?1:0);
      if(loc.evening!==null)gl.uniform1f(loc.evening,eveningBlend);
@@ -889,7 +921,7 @@
      if(loc.casetaLights!==null)gl.uniform1fv(loc.casetaLights,casetaLightState);
      if(loc.terrainDetail!==null)gl.uniform1f(loc.terrainDetail,state.quality>.80?1:0);
      updateWaterLevels();if(loc.levels!==null)gl.uniform1fv(loc.levels,levelsUniform);
-@@ -1974,6 +2521,7 @@
+@@ -1974,6 +2526,7 @@
      drawGroup(1);drawGroup(2);
      gl.depthMask(true);gl.disable(gl.BLEND);
      drawLabels(mat,eye);
@@ -897,7 +929,7 @@
      const sillaPosition=project([-84,30,10],mat,vw,vh);
      sillaLabel.hidden=!state.names||!sillaPosition||state.auto==='presentation';
      if(!sillaLabel.hidden){sillaLabel.style.left=sillaPosition[0]+'px';sillaLabel.style.top=sillaPosition[1]+'px';}
-@@ -1982,5 +2530,9 @@
+@@ -1982,5 +2535,9 @@
    setInterval(()=>{if(state.date)$('clockText').textContent=new Date().toLocaleString('es-MX',{timeZone:'America/Monterrey',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})},1000);
    window.addEventListener('resize',resize,{passive:true});
    window.addEventListener('visibilitychange',()=>{lastFrame=performance.now();});

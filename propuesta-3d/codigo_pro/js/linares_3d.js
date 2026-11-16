@@ -23,7 +23,7 @@
   /* MV PRO: acomodo como el mapa SCADA: presa -> PB1, línea a PB2/PB2A/PB3, baja a Garrapatas, diagonal al rompedor y PB4 */
   const mvNodeAngle=new Map(), MV_PUMP_LANE=6.2, MV_PIPE_LANE=5.45;
   (()=>{
-    const layout={li01:[23.0,5.2],li02:[6.8,3.6],li02a:[-9.4,2.6],li03:[-25.6,2.0],li04a:[-34.4,6.2],li05:[-37.6,-6.8],li04:[-40.0,-21.5]};
+    const layout={li00:[57.8,14.0],li01:[39.0,5.2],li02:[22.8,3.6],li02a:[6.6,2.6],li03:[-9.6,2.0],li04a:[-18.4,6.2],li05:[-21.6,-6.8],li04:[-24.0,-21.5]};
     for(const n of config.nodes){const q=layout[n[0]];if(q){n[3]=q[0];n[4]=q[1];}}
     const order=['li00','li01','li02','li02a','li03','li04a','li05','li04'].map(id=>config.nodes.find(n=>n[0]===id)).filter(Boolean);
     order.forEach((n,i)=>{const a=order[Math.max(0,i-1)],b=order[Math.min(order.length-1,i+1)];const tx=b[3]-a[3],tz=b[4]-a[4],l=Math.hypot(tx,tz)||1;mvNodeAngle.set(n[0],n[0]==='li00'?0:Math.atan2(-tz/l,-tx/l));});
@@ -1332,7 +1332,9 @@ void main(){
     [91.2,-8.8],[86.8,-11.4],[80.6,-14.0],[74.1,-15.6],[66.2,-15.2],[57.8,-14.3],
     [49.1,-11.7],[43.2,-8.0],[39.2,-3.7]
   ];
-  const lakeCenter=[73.0,14.2];
+  /* MV PRO: presa más chica (se reduce hacia el fondo) para separar PB4 del cerro */
+  for(const q of lakeOutline){q[0]=104+(q[0]-104)*.66;q[1]=14+(q[1]-14)*.78;}
+  const lakeCenter=[104+(73.0-104)*.66,14.2];
   const lakeShore=[];
   for(let i=0;i<lakeOutline.length;i++){
     const p0=lakeOutline[(i-1+lakeOutline.length)%lakeOutline.length];
@@ -1387,8 +1389,8 @@ void main(){
     }
     height+=sillaRelief(x,z);
     /* MV PRO: corte del cerro (cañón de piso plano por donde pasa la tubería) */
-    if(x<-36){
-      const d=Math.abs(z+20.6), entry=smoothTerrain(36,43,-x);
+    if(x<-34){
+      const d=Math.abs(z+20.6), entry=smoothTerrain(34,43,-x);
       const floor=-.05+Math.max(0,-x-60)*.02;
       const open=1-smoothTerrain(4.5,9.5,d);
       if(height>floor) height=floor+(height-floor)*(1-open*entry);
@@ -1676,6 +1678,7 @@ void main(){
         tube([[d[0],.48,d[1]],[d[0],roadTop,d[1]]],.016,'#687573',{seg:5});
       }
     }
+    const mvDamStart=A.map(g=>g.length);
     const damPoints=[[37.0,-3.5],[35.9,1.3],[35.0,6.9],[34.7,13.1],[35.2,19.6],[36.2,25.4],[38.7,31.7]];
     const ribbon=(path,width,top,bottom,color)=>{
       for(let i=0;i<path.length-1;i++){
@@ -1740,6 +1743,8 @@ void main(){
     }
     ribbon([[32.8,13.0],[30.0,12.8],[27.6,12.5]],2.25,1.60,.04,'#8e9999');
     tube([[32.9,1.08,14.0],[30.8,1.07,13.5],[27.4,1.04,13.0]],.32,'#167ab3',{seg:18,kind:1});
+    /* MV PRO: la cortina y la toma se ajustan a la presa más chica */
+    for(let g=0;g<A.length;g++){const arr=A[g];for(let i=mvDamStart[g];i<arr.length;i+=13){arr[i]=104+(arr[i]-104)*.66;arr[i+2]=14+(arr[i+2]-14)*.78;}}
   }
   function flowMeterScene(x,z){
     pad(x,z,2.9);
@@ -2208,8 +2213,8 @@ void main(){
     gl.drawArrays(gl.TRIANGLES,0,b.count);
   }
   const sub=minus;
-  const CAMERA_LIMITS={minDist:10,maxDist:84,maxPitch:1.24,panXMin:-58,panXMax:40,panZMin:-24,panZMax:26};
-  const state={yaw:.75,pitch:.98,dist:79,target:[0,1.5,0],auto:'',mode:'orbit',night:false,names:true,flowNames:true,levels:true,alerts:true,date:true,showInfo:true,water:true,speed:1,spinFast:false,selected:null,paused:false,pt:0,presIndex:0,presDuration:9.5,quality:1.1,frameCount:0,frameElapsed:0};
+  const CAMERA_LIMITS={minDist:10,maxDist:84,maxPitch:1.24,panXMin:-50,panXMax:58,panZMin:-24,panZMax:26};
+  const state={yaw:.75,pitch:.98,dist:79,target:[10,1.5,0],auto:'',mode:'orbit',night:false,names:true,flowNames:true,levels:true,alerts:true,date:true,showInfo:true,water:true,speed:1,spinFast:false,selected:null,paused:false,pt:0,presIndex:0,presDuration:9.5,quality:1.1,frameCount:0,frameElapsed:0};
   const labels=new Map(),flowLabels=new Map();
   const sillaLabel=document.createElement('div');
   sillaLabel.className='world-sign';
@@ -2351,7 +2356,7 @@ void main(){
   }
   let retrieving=false;
   async function loadData(){if(retrieving)return;retrieving=true;try{const mvCtl=new AbortController(),mvTo=setTimeout(()=>mvCtl.abort(),8000);const r=await fetch('/Telemetria/php/linares_3d_datos.php?t='+Date.now(),{cache:'no-store',signal:mvCtl.signal}).finally(()=>clearTimeout(mvTo));if(!r.ok)throw Error('Error HTTP');const obj=await r.json();if(!obj.items)throw Error('Datos incompletos');live.clear();for(const [code,item]of Object.entries(obj.items))live.set(code,item);updateData();$('notice').hidden=true;}catch(e){live.clear();updateData();$('notice').textContent='Sin conexión con lecturas de Linares';$('notice').hidden=false;}finally{retrieving=false;}}
-  function reset(){state.yaw=.75;state.pitch=.98;state.dist=79;state.target=[0,1.5,0];state.auto='';state.mode='orbit';state.selected=null;showPanel(false);syncButtons();}
+  function reset(){state.yaw=.75;state.pitch=.98;state.dist=79;state.target=[10,1.5,0];state.auto='';state.mode='orbit';state.selected=null;showPanel(false);syncButtons();}
   function startPresentation(){state.auto='presentation';state.pt=0;state.presIndex=0;state.paused=false;state.showInfo=true;selectNode(config.nodes[0][0]);showPanel();syncButtons();}
   function endPresentation(){state.auto='';state.paused=false;state.selected=null;showPanel(false);syncButtons();}
   function jumpPresentation(delta){state.presIndex=(state.presIndex+delta+config.nodes.length)%config.nodes.length;state.pt=0;selectNode(config.nodes[state.presIndex][0]);}
