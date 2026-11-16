@@ -20,23 +20,13 @@
   };
   const separateCasetaX=x=>x>=22?x:22+(x-22)*1.105;
   for(const node of config.nodes){if(node[0]!=='li00')node[3]=separateCasetaX(node[3]);}
-  /* MV PRO: trazo curvo del acueducto (sale de la presa, se aleja y regresa a PB4) */
-  const mvNodeAngle=new Map(), mvNodeFrac=new Map();
-  const mvCurve=(()=>{
+  /* MV PRO: acomodo como el mapa SCADA: presa -> PB1, línea a PB2/PB2A/PB3, baja a Garrapatas, diagonal al rompedor y PB4 */
+  const mvNodeAngle=new Map();
+  (()=>{
+    const layout={li01:[23.2,5.4],li02:[11.2,4.0],li02a:[-1.2,3.0],li03:[-13.6,2.3],li04a:[-22.6,4.6],li05:[-31.8,-3.9],li04:[-43.2,-5.6]};
+    for(const n of config.nodes){const q=layout[n[0]];if(q){n[3]=q[0];n[4]=q[1];}}
     const order=['li00','li01','li02','li02a','li03','li04a','li05','li04'].map(id=>config.nodes.find(n=>n[0]===id)).filter(Boolean);
-    const cum=[0];for(let i=1;i<order.length;i++)cum.push(cum[i-1]+Math.hypot(order[i][3]-order[i-1][3],order[i][4]-order[i-1][4]));
-    const P0=[order[0][3],order[0][4]],P3=[order[order.length-1][3],order[order.length-1][4]];
-    const cl=Math.hypot(P3[0]-P0[0],P3[1]-P0[1])||1,dir=[(P3[0]-P0[0])/cl,(P3[1]-P0[1])/cl];
-    let away=[dir[1],-dir[0]];if(away[1]>0)away=[-away[0],-away[1]];
-    const C1=[P0[0]+away[0]*36+dir[0]*4,P0[1]+away[1]*36+dir[1]*4],C2=[P3[0]+away[0]*32-dir[0]*16,P3[1]+away[1]*32-dir[1]*16];
-    const bz=t=>{const u=1-t;return [u*u*u*P0[0]+3*u*u*t*C1[0]+3*u*t*t*C2[0]+t*t*t*P3[0],u*u*u*P0[1]+3*u*u*t*C1[1]+3*u*t*t*C2[1]+t*t*t*P3[1]];};
-    const N=600,pts=[],len=[0];for(let i=0;i<=N;i++){pts.push(bz(i/N));if(i)len.push(len[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));}
-    const total=len[N];
-    const at=f=>{const L=Math.max(0,Math.min(1,f))*total;let i=1;while(i<N&&len[i]<L)i++;const k=(L-len[i-1])/Math.max(1e-6,len[i]-len[i-1]);const a=pts[i-1],b=pts[i];return {x:a[0]+(b[0]-a[0])*k,z:a[1]+(b[1]-a[1])*k,tx:(b[0]-a[0]),tz:(b[1]-a[1])};};
-    order.forEach((n,i)=>{const f=cum[i]/cum[cum.length-1];mvNodeFrac.set(n[0],f);const p=at(f);const l=Math.hypot(p.tx,p.tz)||1;
-      if(n[0]!=='li00'&&n[0]!=='li04'){n[3]=p.x;n[4]=p.z;}
-      mvNodeAngle.set(n[0],Math.atan2(-p.tz/l,-p.tx/l));});
-    return {at};
+    order.forEach((n,i)=>{const a=order[Math.max(0,i-1)],b=order[Math.min(order.length-1,i+1)];const tx=b[3]-a[3],tz=b[4]-a[4],l=Math.hypot(tx,tz)||1;mvNodeAngle.set(n[0],n[0]==='li00'?0:Math.atan2(-tz/l,-tx/l));});
   })();
   const nodeById = new Map(config.nodes.map((node, index) => [node[0], { data: node, index }]));
   const live = new Map();
@@ -1505,7 +1495,7 @@ void main(){
     const a=pointNodes.get(start),b=pointNodes.get(end);
     if(!a||!b)continue;
     const key=start+'|'+end;
-    const fa=mvNodeFrac.get(start),fb=mvNodeFrac.get(end);const path=(fa!==undefined&&fb!==undefined)?Array.from({length:13},(_,k)=>{const q=mvCurve.at(fa+(fb-fa)*k/12);return [q.x,1.03,q.z];}):[[a[3],1.03,a[4]],[b[3],1.03,b[4]]];
+    const path=key==='li00|li01'?[[a[3],1.03,a[4]],[a[3]+1.2,1.03,a[4]-4.6],[b[3]+5.2,1.03,b[4]+.4],[b[3],1.03,b[4]]]:key==='li03|li04a'?[[a[3],1.03,a[4]],[a[3]-4.4,1.03,a[4]+1.4],[b[3],1.03,b[4]]]:[[a[3],1.03,a[4]],[b[3],1.03,b[4]]];
     const meta={nodes:path,source:a[1],target:b[1]};
     pipeDefs.push(meta);
   }
@@ -1530,7 +1520,7 @@ void main(){
     [-60, terrainHeight(-60, 7) + .60, 7],
     [-52, Math.max(terrainHeight(-52, 5.8) + .38, 1.18), 5.8],
     [-48.8, 1.08, 3.7],
-    [pointNodes.get('li04')[3], 1.03, 2.4]
+    [pointNodes.get('li04')[3], 1.03, pointNodes.get('li04')[4]]
   ];
   pipe(mountainPipePath, .31, { source: 'PB4 Linares', target: 'PB4 Linares' });
   function pumpStationScene(x,z){pumpUnit(x,z,4);}
