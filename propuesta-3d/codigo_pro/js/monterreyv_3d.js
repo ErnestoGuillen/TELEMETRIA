@@ -883,37 +883,7 @@ void main(){
     const spec = tankSpecs.find(s => s.name === name);
     return spec ? Math.max(0, Math.min(1, Number(spec.fraction) || 0)) : .45;
   }
-  /* MV PRO: si un tubo termina cerca de un tanque, se prolonga hasta la pared y se le pone brida */
-  function mvSnapPipeToTanks(path, r) {
-    if (!Array.isArray(path) || path.length < 2 || !tankLabels.length) return path;
-    const out = path.map(p => [p[0], p[1], p[2]]);
-    const snap = (endIndex, prevIndex) => {
-      const e = out[endIndex];
-      let best = null, bestD = Infinity;
-      for (const t of tankLabels) { const d = Math.hypot(e[0] - t.x, e[2] - t.z); if (d < bestD) { bestD = d; best = t; } }
-      if (!best) return null;
-      const R = best.radius || 1.3;
-      if (bestD <= R * .97 || bestD > R * 2.15) return null;
-      const ux = (e[0] - best.x) / bestD, uz = (e[2] - best.z) / bestD;
-      const wall = [best.x + ux * R * .955, e[1], best.z + uz * R * .955];
-      return { wall, ux, uz, R };
-    };
-    const collars = [];
-    const tail = snap(out.length - 1, out.length - 2);
-    if (tail) { out.push(tail.wall); collars.push(tail); }
-    const head = snap(0, 1);
-    if (head) { out.unshift(head.wall); collars.push(head); }
-    for (const c of collars) {
-      const a = [c.wall[0] + c.ux * c.R * .02, c.wall[1], c.wall[2] + c.uz * c.R * .02];
-      const b = [c.wall[0] + c.ux * (c.R * .02 + .20), c.wall[1], c.wall[2] + c.uz * (c.R * .02 + .20)];
-      orientedCylinder(a, b, r + .17, '#7c8f99', { seg: 18, em: .05 });
-      const b2 = [b[0] + c.ux * .05, b[1], b[2] + c.uz * .05];
-      orientedCylinder(b, b2, r + .21, '#5f707a', { seg: 18, em: .03 });
-    }
-    return out;
-  }
   function pipe(path, r = .30, meta = {}) {
-    path = mvSnapPipeToTanks(path, r);
     const pts = roundPath(path, .85);
     const src = tankFractionByName(meta.source);
     const dst = meta.target ? tankFractionByName(meta.target) : src;
