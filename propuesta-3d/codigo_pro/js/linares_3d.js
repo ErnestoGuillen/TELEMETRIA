@@ -1500,7 +1500,7 @@ void main(){
     pipeDefs.push(meta);
   }
   /* MV PRO: la tubería principal se corta dentro de las casetas para que se vean todos los equipos */
-  const mvInsideCaseta=(x,z)=>config.nodes.some(n=>{if(n[2]!=='pump')return false;const a=mvNodeAngle.get(n[0])||0,c=Math.cos(a),sn=Math.sin(a),dx=x-n[3],dz=z-n[4];return Math.abs(dx*c+dz*sn)<10.8*.5-.05&&Math.abs(-dx*sn+dz*c)<8.15*.5-.05;});
+  const mvInsideCaseta=(x,z)=>config.nodes.some(n=>{if(n[2]!=='pump')return false;const a=mvNodeAngle.get(n[0])||0,c=Math.cos(a),sn=Math.sin(a),dx=x-n[3],dz=z-n[4];return Math.abs(dx*c+dz*sn)<10.8*.5+1.05&&Math.abs(-dx*sn+dz*c)<8.15*.5-.05;});
   for(const def of pipeDefs){
     const pts=def.nodes,parts=[];let cur=[];
     for(let i=0;i<pts.length;i++){
@@ -1869,6 +1869,11 @@ void main(){
       const pz=z+.30;
       const dataId=8+start+i;
       linaresMotor3D(px,pz,dataId);
+      orientedCylinder([px-.05,1.03,z-1.35],[px+.05,1.03,z-1.35],.42,'#6f7f88',{seg:20});
+      tube([[px,1.03,z-1.35],[px,1.03,pz-.95],[px,.86,pz-.62]],.13,'#1d78c4',{seg:12});
+      box(px,1.03,pz-1.08,.30,.34,.30,'#2c5f8f');
+      cylinder(px,1.36,pz-1.08,.03,.34,'#b9c2c7',{seg:6});
+      ring(px,1.55,pz-1.08,.16,'#c62828',.025,{seg:6});
       box(px,.375,z-1.58,1.28,.012,.075,'#dce3e0');
       box(px,1.01,front+.38,1.23,.20,.63,'#61747b');
       box(px,1.15,front+.38,1.03,.07,.48,'#c2d1d0');
@@ -1877,7 +1882,14 @@ void main(){
       /* MV PRO: sin tubo de descarga visible; sólo el equipo */
     }
     tube([[left+.50,1.35,z+1.48],[right-.50,1.35,z+1.48]],.18,'#1486b9',{seg:14});
-    tube([[left+.50,1.01,z-1.35],[right-.50,1.01,z-1.35]],.13,'#4194b2',{seg:12});
+    /* MV PRO: tubería principal por en medio de la caseta; los equipos se conectan a ella */
+    {
+      const mz=z-1.35, my=1.03, r=.31;
+      tube([[left-1.12,my,z],[left-.78,my,z-.28],[left-.42,my,mz+.12],[left-.10,my,mz],[right+.10,my,mz],[right+.42,my,mz+.12],[right+.78,my,z-.28],[right+1.12,my,z]],r,'#1d6fb8',{seg:20});
+      for(const wx of [left,right]){ orientedCylinder([wx-.16,my,mz],[wx+.16,my,mz],r+.20,'#a7aea8',{seg:22}); }
+      for(const fx of [left+.55,right-.55]) orientedCylinder([fx-.05,my,mz],[fx+.05,my,mz],r+.12,'#6f7f88',{seg:22});
+      for(const sx of [left+1.2,x,right-1.2]){ box(sx,(my-r)/2+.2,mz,.34,my-r-.2,.62,'#9aa3a0'); }
+    }
     box(left+.63,1.74,back+.70,.66,2.44,1.09,'#435d67');
     box(left+.65,1.98,back+1.29,.48,1.24,.075,'#90b0b9',1,.13,.80);
     for(const yy of [1.59,1.87,2.12])for(const dx of [-.14,.12]){
