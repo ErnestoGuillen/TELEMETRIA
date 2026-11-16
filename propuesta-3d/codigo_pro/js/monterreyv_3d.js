@@ -1923,13 +1923,13 @@ void main(){
     #presentationPanel .mv-dh-value small{color:#111111;font-size:10px;font-weight:500;letter-spacing:0}
     #presentationPanel .mv-dh-flow-choice{display:block;width:100%;margin:3px 0 6px;min-height:26px;padding:3px 7px;border:1px solid #c6d4dc;border-radius:2px;background:#f8fafb;color:#314c5d;font:500 11px 'Segoe UI',Tahoma,Arial,sans-serif}
     #presentationPanel .mv-dh-flow-choice[hidden]{display:none}
-    #presentationPanel .mv-dh-plot{position:relative;width:100%;height:137px;min-width:0;overflow:visible;background:#fcfdfe}
+    #presentationPanel .mv-dh-plot{position:relative;width:100%;height:137px;min-width:0;overflow:visible;background:transparent}
     #presentationPanel .mv-dh-plot svg{width:100%;height:100%;display:block;overflow:hidden}
     #presentationPanel .mv-dh-foot{display:flex;align-items:center;justify-content:flex-end;gap:7px;padding:5px 1px 0;border-top:1px solid #edf1f4;color:#111111;font-size:10px;line-height:1.3}
     #presentationPanel .mv-dh-foot span:first-child{display:none!important}
     #presentationPanel .mv-dh-foot span:last-child{font-weight:500;text-align:right}
     #presentationPanel .mv-dh-empty{display:flex;align-items:center;justify-content:center;min-height:100px;height:100%;padding:9px;text-align:center;color:#6b7c86;font-size:11px;line-height:1.5}
-    #presentationPanel .mv-dh-tooltip{position:absolute;z-index:5;pointer-events:none;background:#274455;color:#fff;padding:5px 7px;border-radius:2px;font-size:10.5px;line-height:1.35;box-shadow:0 2px 7px rgba(0,0,0,.15);white-space:nowrap;transform:translate(-50%,-105%)}
+    #presentationPanel .mv-dh-tooltip{position:absolute;z-index:5;pointer-events:none;background:#274455;color:#fff;padding:5px 9px;border-radius:999px;font-weight:600;font-size:10.5px;line-height:1.35;box-shadow:0 2px 7px rgba(0,0,0,.15);white-space:nowrap;transform:translate(-50%,-105%)}
     #presentationPanel .mv-dh-tooltip[hidden]{display:none}
     #presentationPanel .mv-dh-cursor{pointer-events:none}
     #presentationPanel .mv-dh-message{margin:0 11px 10px;padding:7px 0;border:0;border-top:1px solid #e0e7ed;border-radius:0;background:#fff;color:#667b88;font-size:10px;line-height:1.45}
@@ -2230,42 +2230,66 @@ void main(){
   }
 
   function mvHistoryChart(plot, samples, unit, hue) {
+    /* MV PRO: gráfica rediseñada (curva suave, degradado, máximo/mínimo y valor actual) */
     const endTime = Date.now();
     const startTime = endTime - MV_HISTORY_WINDOW_MS;
     const recent = samples.filter(item => Array.isArray(item) && Number.isFinite(item[0]) && Number.isFinite(item[1]) && item[0] >= startTime && item[0] <= endTime + 60000).sort((a, b) => a[0] - b[0]);
     if (!recent.length) return null;
+    const isFlow = hue === 'flow';
+    const fmt = v => unit === 'm' ? v.toFixed(2) : mvHistoryNumber.format(v);
     const values = recent.map(point => point[1]);
     const minValue = Math.min(...values), maxValue = Math.max(...values);
-    const spread = Math.max(unit === 'm' ? .11 : 2, (maxValue - minValue) * .20);
+    const spread = Math.max(unit === 'm' ? .11 : 2, (maxValue - minValue) * .28);
     const low = Math.max(0, minValue - spread), high = Math.max(maxValue + spread, low + (unit === 'm' ? .2 : 3));
-    const W = Math.max(200, Math.round(plot.clientWidth || 380)), H = Math.max(128, Math.round(plot.clientHeight || 145)), L = 43, R = 11, T = 11, B = 24;
-    const pw = W - L - R, ph = H - T - B;
+    const W = Math.max(200, Math.round(plot.clientWidth || 380)), H = Math.max(128, Math.round(plot.clientHeight || 145)), L = 42, R = 14, T = 14, B = 24;
+    const pw = W - L - R, ph = H - T - B, base = T + ph;
     const xAt = t => L + (t - startTime) / (endTime - startTime) * pw;
     const yAt = v => T + (high - v) / (high - low) * ph;
     const coords = recent.map(point => [xAt(point[0]), yAt(point[1])]);
-    let grid = '';
-    const color = hue === 'flow' ? '#626c75' : '#0058b7';
+    const color = isFlow ? '#0f8b8d' : '#1668dc';
+    const colorSoft = isFlow ? '#5cc8c2' : '#5aa2ff';
+    const gid = 'mvg' + Math.random().toString(36).slice(2, 9);
+    const font = 'font-family="Segoe UI,Inter,Arial" font-size="10"';
+    let grid = `<defs>
+      <linearGradient id="${gid}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${colorSoft}" stop-opacity=".42"/><stop offset=".65" stop-color="${colorSoft}" stop-opacity=".10"/><stop offset="1" stop-color="${colorSoft}" stop-opacity="0"/></linearGradient>
+      <linearGradient id="${gid}l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${colorSoft}"/><stop offset="1" stop-color="${color}"/></linearGradient>
+    </defs>`;
+    grid += `<rect x="${L}" y="${T}" width="${pw}" height="${ph}" rx="6" fill="${isFlow ? '#f3fbfb' : '#f3f8ff'}"/>`;
     for (let i = 0; i <= 3; i++) {
       const y = T + ph * i / 3;
       const value = high - (high - low) * i / 3;
-      grid += `<line x1="${L}" x2="${W - R}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}" stroke="#d5e0e7" stroke-width=".85"/>`;
-      grid += `<text x="${L - 6}" y="${(y + 3.6).toFixed(2)}" text-anchor="end" fill="#111111" font-size="10" font-family="Segoe UI,Arial">${unit === 'm' ? value.toFixed(2) : mvHistoryNumber.format(value)}</text>`;
+      if (i > 0 && i < 3) grid += `<line x1="${L + 4}" x2="${W - R - 4}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}" stroke="#c9d6e2" stroke-width=".8" stroke-dasharray="2 4"/>`;
+      grid += `<text x="${L - 7}" y="${(y + 3.5).toFixed(2)}" text-anchor="end" fill="#6b7a89" ${font}>${fmt(value)}</text>`;
     }
     for (let i = 0; i <= 3; i++) {
       const x = L + pw * i / 3;
-      grid += `<line x1="${x.toFixed(2)}" x2="${x.toFixed(2)}" y1="${T}" y2="${T + ph}" stroke="#e7edf1" stroke-width=".85"/>`;
       const when = startTime + (endTime - startTime) * i / 3;
-      grid += `<text x="${x.toFixed(2)}" y="${H - 5}" text-anchor="${i === 0 ? 'start' : i === 3 ? 'end' : 'middle'}" fill="#111111" font-size="10" font-family="Segoe UI,Arial">${mvHistoryFormatTime(when)}</text>`;
+      grid += `<line x1="${x.toFixed(2)}" x2="${x.toFixed(2)}" y1="${base}" y2="${base + 3}" stroke="#9fb0bf" stroke-width="1"/>`;
+      grid += `<text x="${x.toFixed(2)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : i === 3 ? 'end' : 'middle'}" fill="#6b7a89" ${font}>${mvHistoryFormatTime(when)}</text>`;
     }
+    // curva monótona suave (sin picos falsos)
+    const smoothPath = pts => {
+      if (pts.length < 3) return pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' ');
+      const n = pts.length, dx = [], m = [], t = [];
+      for (let i = 0; i < n - 1; i++) { dx[i] = pts[i + 1][0] - pts[i][0]; m[i] = (pts[i + 1][1] - pts[i][1]) / Math.max(.0001, dx[i]); }
+      t[0] = m[0]; t[n - 1] = m[n - 2];
+      for (let i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : 3 * (dx[i - 1] + dx[i]) / ((2 * dx[i] + dx[i - 1]) / m[i - 1] + (dx[i] + 2 * dx[i - 1]) / m[i]);
+      let d = 'M' + pts[0][0].toFixed(2) + ',' + pts[0][1].toFixed(2);
+      for (let i = 0; i < n - 1; i++) {
+        const h = dx[i] / 3;
+        d += ` C${(pts[i][0] + h).toFixed(2)},${(pts[i][1] + t[i] * h).toFixed(2)} ${(pts[i + 1][0] - h).toFixed(2)},${(pts[i + 1][1] - t[i + 1] * h).toFixed(2)} ${pts[i + 1][0].toFixed(2)},${pts[i + 1][1].toFixed(2)}`;
+      }
+      return d;
+    };
     let strokes = '', segment = [];
     const flush = () => {
       if (!segment.length) return;
-      const path = segment.map((point, index) => (index ? 'L' : 'M') + point[0].toFixed(2) + ',' + point[1].toFixed(2)).join(' ');
       if (segment.length > 1) {
-        const base = T + ph;
-        strokes += `<path d="${path} L${segment[segment.length - 1][0].toFixed(2)},${base} L${segment[0][0].toFixed(2)},${base} Z" fill="${color}" fill-opacity="1"/>`;
-        strokes += `<path d="${path}" fill="none" stroke="${color}" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>`;
-      } else strokes += `<circle cx="${segment[0][0].toFixed(2)}" cy="${segment[0][1].toFixed(2)}" r="2.5" fill="${color}"/>`;
+        const path = smoothPath(segment);
+        strokes += `<path d="${path} L${segment[segment.length - 1][0].toFixed(2)},${base} L${segment[0][0].toFixed(2)},${base} Z" fill="url(#${gid}a)"/>`;
+        strokes += `<path d="${path}" fill="none" stroke="${color}" stroke-opacity=".16" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`;
+        strokes += `<path d="${path}" fill="none" stroke="url(#${gid}l)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+      } else strokes += `<circle cx="${segment[0][0].toFixed(2)}" cy="${segment[0][1].toFixed(2)}" r="3" fill="${color}"/>`;
       segment = [];
     };
     for (let i = 0; i < coords.length; i++) {
@@ -2273,14 +2297,29 @@ void main(){
       segment.push(coords[i]);
     }
     flush();
+    // marcas de máximo y mínimo
+    const pill = (x, y, text, below) => {
+      const w = text.length * 5.6 + 10, px = Math.min(W - R - w / 2, Math.max(L + w / 2, x)), py = below ? Math.min(base - 2, y + 15) : Math.max(T + 9, y - 9);
+      return `<g><rect x="${(px - w / 2).toFixed(1)}" y="${(py - 7.5).toFixed(1)}" width="${w.toFixed(1)}" height="14" rx="7" fill="#ffffff" stroke="${color}" stroke-opacity=".35"/><text x="${px.toFixed(1)}" y="${(py + 3.2).toFixed(1)}" text-anchor="middle" fill="${color}" font-family="Segoe UI,Inter,Arial" font-size="9" font-weight="700">${text}</text></g>`;
+    };
+    let marks = '';
+    if (recent.length > 2 && maxValue - minValue > (unit === 'm' ? .005 : .5)) {
+      const iMax = values.indexOf(maxValue), iMin = values.indexOf(minValue);
+      if (iMax !== recent.length - 1) marks += `<circle cx="${coords[iMax][0].toFixed(2)}" cy="${coords[iMax][1].toFixed(2)}" r="2.6" fill="${color}"/>` + pill(coords[iMax][0], coords[iMax][1], 'MÁX ' + fmt(maxValue), false);
+      if (iMin !== recent.length - 1) marks += `<circle cx="${coords[iMin][0].toFixed(2)}" cy="${coords[iMin][1].toFixed(2)}" r="2.6" fill="${color}"/>` + pill(coords[iMin][0], coords[iMin][1], 'MÍN ' + fmt(minValue), true);
+    }
     const last = coords[coords.length - 1];
-    plot.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="presentation">${grid}${strokes}<circle cx="${last[0].toFixed(2)}" cy="${last[1].toFixed(2)}" r="3.1" fill="#fff" stroke="${color}" stroke-width="1.8"/><g class="mv-dh-cursor" visibility="hidden"><line x1="0" x2="0" y1="${T}" y2="${T + ph}" stroke="${color}" stroke-dasharray="3 3" stroke-opacity=".7"/><circle cx="0" cy="0" r="4.4" fill="white" stroke="${color}" stroke-width="2"/></g></svg><div class="mv-dh-tooltip" hidden></div>`;
+    const lastDot = `<line x1="${last[0].toFixed(2)}" x2="${last[0].toFixed(2)}" y1="${last[1].toFixed(2)}" y2="${base}" stroke="${color}" stroke-opacity=".35" stroke-dasharray="2 3"/>
+      <circle cx="${last[0].toFixed(2)}" cy="${last[1].toFixed(2)}" r="5" fill="${color}" fill-opacity=".25"><animate attributeName="r" values="4;9;4" dur="2s" repeatCount="indefinite"/><animate attributeName="fill-opacity" values=".35;0;.35" dur="2s" repeatCount="indefinite"/></circle>
+      <circle cx="${last[0].toFixed(2)}" cy="${last[1].toFixed(2)}" r="3.6" fill="#fff" stroke="${color}" stroke-width="2.2"/>`;
+    plot.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="presentation">${grid}${strokes}${marks}${lastDot}<g class="mv-dh-cursor" visibility="hidden"><line x1="0" x2="0" y1="${T}" y2="${base}" stroke="${color}" stroke-width="1.2" stroke-opacity=".55"/><circle cx="0" cy="0" r="5" fill="white" stroke="${color}" stroke-width="2.4"/></g></svg><div class="mv-dh-tooltip" hidden></div>`;
     plot.dataset.mvChartSize = W + 'x' + H;
     const svg = plot.querySelector('svg');
     const cursor = svg.querySelector('.mv-dh-cursor');
     const guide = cursor.querySelector('line');
     const circle = cursor.querySelector('circle');
     const tooltip = plot.querySelector('.mv-dh-tooltip');
+    tooltip.style.background = color;
     const hide = () => { cursor.setAttribute('visibility', 'hidden'); tooltip.hidden = true; };
     svg.addEventListener('pointermove', event => {
       const bounds = svg.getBoundingClientRect();
@@ -2302,7 +2341,7 @@ void main(){
       guide.setAttribute('x2', point[0].toFixed(2));
       circle.setAttribute('cx', point[0].toFixed(2));
       circle.setAttribute('cy', point[1].toFixed(2));
-      tooltip.textContent = mvHistoryFormatTime(recent[index][0]) + ' · ' + (unit === 'm' ? recent[index][1].toFixed(2) : mvHistoryNumber.format(recent[index][1])) + ' ' + unit;
+      tooltip.textContent = mvHistoryFormatTime(recent[index][0]) + ' · ' + fmt(recent[index][1]) + ' ' + unit;
       const px = point[0] / W * bounds.width;
       tooltip.style.left = Math.min(bounds.width - 40, Math.max(40, px)) + 'px';
       tooltip.style.top = Math.max(28, point[1] / H * bounds.height) + 'px';
