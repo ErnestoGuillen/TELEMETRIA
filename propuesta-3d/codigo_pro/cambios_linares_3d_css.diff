@@ -1,0 +1,67 @@
+--- original/linares_3d.css
++++ pro/linares_3d.css
+@@ -4645,39 +4645,23 @@
+ body .controls-dock #controlsPanel[hidden]{display:none!important}
+ body .controls-dock #controlsPanel.is-open{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-auto-rows:minmax(47px,auto)!important;justify-content:stretch!important;align-items:stretch!important}
+ body .controls-dock #controlsPanel>button{width:100%!important;min-width:0!important;max-width:100%!important;min-height:47px!important;height:auto!important;max-height:none!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;white-space:normal!important;flex-wrap:nowrap!important;overflow-wrap:anywhere!important;padding:8px 6px!important;text-align:center!important;border:1px solid #cbd2d6!important;border-radius:6px!important;background:#fff!important;color:#202b32!important;box-shadow:none!important;font:400 clamp(12px,.88vw,15px)/1.2 Arial,sans-serif!important}
+-body .controls-dock #controlsPanel>button.active{box-shadow:inset 0 -3px 0 #74818a!important;border-color:#788791!important}
+-body .controls-dock #controlsPanel>button:hover{border-color:#0058b7!important;color:#0058b7!important;background:#f6f9fb!important}
++body .controls-dock #controlsPanel>button.active{background:#fff!important;color:#111!important;border-color:#666!important;box-shadow:inset 0 -2px 0 #777!important}
++body .controls-dock #controlsPanel>button:hover{background:#f1f1f1!important;border-color:#888!important;color:#111!important}
+ body .controls-dock #controlsPanel>button svg{width:17px!important;height:17px!important;flex:0 0 17px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+ #presentationPanel{z-index:97!important;width:min(450px,calc(100vw - 24px))!important;max-height:min(calc(100dvh - 22px),790px)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;background:#fff!important;box-shadow:0 7px 24px #0003!important;color:#203644!important}
+ #presentationPanel[hidden]{display:none!important}
+-#presentationPanel .presentation-head{padding:12px 14px 10px;border-bottom:1px solid #d5e0e6}
+-#presentationPanel .presentation-head-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+-#presentationPanel .presentation-kicker{font:400 11px Arial,sans-serif;color:#728590}
+-#presentationPanel .presentation-tank-title{font:500 23px/1.15 Arial,sans-serif;color:#203744;margin:4px 0 0;text-transform:uppercase}
+-#presentationPanel .presentation-progress-track{height:3px;background:#e9edef}
+-#presentationPanel .presentation-progress-fill{height:100%;background:#607e91}
+ #presentationPanel .presentation-content{display:flex!important;flex-direction:column!important;gap:9px!important;min-height:0!important;overflow:auto!important;padding:10px 14px 12px!important}
+-#presentationPanel .presentation-readings{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+-#presentationPanel .presentation-reading{display:flex;flex-direction:column;gap:5px}
+-#presentationPanel .presentation-reading+.presentation-reading{border-left:1px solid #dce5e9;padding-left:13px}
+-#presentationPanel .presentation-reading-label{color:#738590;font-size:12px}
+-#presentationPanel .presentation-primary-value{color:#233d4c;font:400 23px Arial,sans-serif}
+-#presentationPanel .presentation-flow{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #d9e1e5;border-bottom:1px solid #d9e1e5;padding:9px 0;font:400 12px Arial,sans-serif}
+-#presentationPanel .presentation-flow-heading{font-weight:600}
+-#presentationPanel .presentation-chart{border:1px solid #cbd7df;border-left:3px solid #0058b7;border-radius:4px;padding:9px 8px}
++#presentationPanel .presentation-chart{border:1px solid #c5d2dc;border-left:3px solid #275b7d;border-radius:3px;padding:9px 10px;background:#fff;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
+ #presentationPanel .presentation-chart[hidden],#presentationPanel .presentation-pumps[hidden]{display:none!important}
+-#presentationPanel .presentation-chart-head{display:flex;justify-content:space-between;align-items:center;padding:0 3px 7px;font:400 12px Arial,sans-serif}
++#presentationPanel .presentation-chart-head{display:flex;justify-content:space-between;align-items:center;padding:0 1px 6px;font:650 11.5px 'Segoe UI',Tahoma,Arial,sans-serif;letter-spacing:.035em;color:#111}
+ #presentationPanel .presentation-chart canvas{display:block;width:100%;height:190px}
+ #presentationPanel .presentation-chart>small{display:block;text-align:right;font:400 10px Arial,sans-serif;color:#677e89}
+ #presentationPanel .presentation-pumps{padding:3px 0;font:500 12px Arial,sans-serif}
+ #presentationPanel .presentation-pumps-title{margin-bottom:5px}
+ #presentationPanel #pumpList{display:flex;gap:6px;flex-wrap:wrap}
+-#presentationPanel #pumpList span{border:1px solid #d9e1e5;border-radius:4px;background:#eef1f3;color:#536b76;padding:5px 8px;font:400 11px Arial,sans-serif}
+-#presentationPanel #pumpList span.on{background:#e1f6e8;color:#176943}
++#presentationPanel #pumpList span{border:1px solid #d5dde2;border-radius:2px;background:#f4f6f7;color:#4d5d66;padding:4px 8px;font:500 11px 'Segoe UI',Tahoma,Arial,sans-serif}
++#presentationPanel #pumpList span.on{background:#e8f5ec;border-color:#b9dfc6;color:#1d6b3f}
+ #presentationPanel #lastReading{font:400 10px Arial,sans-serif;color:#68808b}
+-#presentationPanel .presentation-actions{position:relative;display:flex;gap:7px;justify-content:flex-end;border-top:1px solid #e1e7eb;padding:9px}
+-#presentationPanel .presentation-actions>button{border:1px solid #cdd9e0;border-radius:4px;padding:7px 11px;background:#fff;color:#2a424f;font:400 13px Arial,sans-serif;min-height:34px;cursor:pointer}
+-#presentationPanel .presentation-actions #presentationClose{background:#334d5b;color:#fff;border-color:#334d5b}
+ #presentationPanel #presentationOptions{font-size:20px}
+ #presentationPanel #presentationMore{position:absolute;right:9px;bottom:48px;background:#fff;box-shadow:0 4px 15px #0003;padding:8px;border:1px solid #c9d6de;border-radius:7px;display:flex;gap:6px}
+ #presentationPanel #presentationMore[hidden]{display:none!important}
+@@ -4706,18 +4690,11 @@
+ #labels .linares-equipment-strip{display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:center!important;gap:3px!important;margin-top:4px!important;white-space:normal!important}
+ #labels .linares-mtyv-equipment-chip{display:inline-block;border:1px solid #9eafb7;border-radius:4px;background:#748590;color:white!important;font:400 10px/1.2 Arial,sans-serif!important;padding:3px 5px;letter-spacing:0}
+ #presentationPanel{width:min(390px,calc(100vw - 24px))!important;border:1px solid #d2dce2!important;border-radius:9px!important;box-shadow:0 8px 28px #0003!important;background:#fff!important;color:#24333c!important}
+-#presentationPanel .presentation-head{padding:13px 15px 10px!important;background:#fff!important;border-bottom:1px solid #dce4e8!important}
+-#presentationPanel .presentation-kicker{color:#7d8991!important;font:400 11px/1.2 Arial,sans-serif!important}
+-#presentationPanel .presentation-tank-title{font:500 20px/1.2 Arial,sans-serif!important;color:#263b47!important;letter-spacing:0!important;text-transform:none!important}
+ #presentationPanel .presentation-content{padding:13px 15px!important;gap:11px!important;overflow-y:auto!important;scrollbar-width:thin}
+-#presentationPanel .presentation-primary-value{font:400 23px/1.2 Arial,sans-serif!important;color:#273b48!important}
+-#presentationPanel .presentation-reading-label{font:400 12px/1.2 Arial,sans-serif!important;color:#5f7580!important}
+-#presentationPanel .presentation-flow{border:1px solid #dce4e8!important;border-radius:7px!important;background:#f6f8f9!important;padding:10px 12px!important}
+ #presentationPanel .presentation-pumps{border:1px solid #dce4e8!important;border-radius:7px!important;background:#fafbfb!important;padding:10px!important}
+ #presentationPanel #pumpList{display:flex!important;flex-wrap:wrap!important;gap:5px!important}
+ #presentationPanel #pumpList span{font:400 11px/1.2 Arial,sans-serif!important;border-radius:5px!important;padding:6px 8px!important;background:#e9edf0!important;color:#52646e!important}
+ #presentationPanel #pumpList span.on{color:#186b43!important;background:#daf2e5!important;border-color:#b4d9c5!important}
+ #presentationPanel .presentation-chart{border:1px solid #dde4e8!important;border-radius:7px!important;padding:10px!important}
+ #presentationPanel .presentation-actions{background:#fff!important}
+-#presentationPanel .presentation-actions>button{border-radius:5px!important}
+ @media(max-width:670px){#labels .world-sign{min-width:90px!important;max-width:152px!important;padding:5px 6px!important}#labels .world-sign strong{font-size:10px!important}#labels .linares-mtyv-equipment-chip{padding:2px 4px;font-size:9px!important}#presentationPanel{width:min(360px,calc(100vw - 14px))!important}}

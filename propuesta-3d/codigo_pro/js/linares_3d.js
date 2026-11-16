@@ -415,6 +415,8 @@ if(kind>13.5&&kind<14.5){
   c=vec3(.98,.77,.46);
   outAlpha=min(1.0,outAlpha*(1.0+2.6*uEvening));
 }
+if(kind>19.5&&kind<20.5){ c=mix(vec3(.78,.78,.72)*(.7+.3*d),vec3(1.0,.88,.62)*1.35,uEvening); }
+if(kind>20.5&&kind<21.5){ c=vec3(1.0,.80,.50); outAlpha*=uEvening; }
 c+=vColor*shine*.28*(1.0+uEvening*.82);
 float dist=length(vPos-uCamera);
 c=mix(c,mix(vec3(.37,.46,.48),vec3(.21,.27,.32),uEvening),clamp((dist-105.0)/155.0,0.,.10));
@@ -739,7 +741,7 @@ gl_FragColor=vec4(c,outAlpha);
       if (!ok) return null;
       const sp = gl.createProgram();
       gl.attachShader(sp, shader(gl.VERTEX_SHADER, vert));
-      gl.attachShader(sp, shader(gl.FRAGMENT_SHADER, 'precision mediump float;varying vec4 vData;varying float vTankFill;void main(){float k=vData.z;if(vData.w<.10||(k>8.5&&k<11.5)||(k>.5&&k<1.5)||(k>2.5&&k<3.5)||(k>11.5&&k<14.5)||(k>15.5&&k<18.5))discard;if((k>4.5&&k<6.5)&&vTankFill<.018)discard;gl_FragColor=vec4(1.0);}'));
+      gl.attachShader(sp, shader(gl.FRAGMENT_SHADER, 'precision mediump float;varying vec4 vData;varying float vTankFill;void main(){float k=vData.z;if(vData.w<.10||(k>8.5&&k<11.5)||(k>.5&&k<1.5)||(k>2.5&&k<3.5)||(k>11.5&&k<14.5)||(k>15.5&&k<18.5)||k>19.5)discard;if((k>4.5&&k<6.5)&&vTankFill<.018)discard;gl_FragColor=vec4(1.0);}'));
       for (const [name, index] of [['aPos', loc.pos], ['aNormal', loc.normal], ['aColor', loc.color], ['aData', loc.data]]) if (index >= 0) gl.bindAttribLocation(sp, index, name);
       gl.linkProgram(sp);
       if (!gl.getProgramParameter(sp, gl.LINK_STATUS)) return null;
@@ -1489,7 +1491,19 @@ void main(){
     const meta={nodes:path,source:a[1],target:b[1]};
     pipeDefs.push(meta);
   }
-  for(const def of pipeDefs) pipe(def.nodes,.28,def);
+  /* MV PRO: la tubería principal se corta dentro de las casetas para que se vean todos los equipos */
+  const mvInsideCaseta=(x,z)=>config.nodes.some(n=>n[2]==='pump'&&Math.abs(x-n[3])<10.8*.5-.05&&Math.abs(z-n[4])<8.15*.5-.05);
+  for(const def of pipeDefs){
+    const pts=def.nodes,parts=[];let cur=[];
+    for(let i=0;i<pts.length;i++){
+      if(i>0){const a=pts[i-1],b=pts[i],L=Math.hypot(b[0]-a[0],b[2]-a[2]),n=Math.max(1,Math.ceil(L/.15));
+        for(let k=1;k<=n;k++){const q=[a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n,a[2]+(b[2]-a[2])*k/n];
+          if(mvInsideCaseta(q[0],q[2])){if(cur.length>1)parts.push(cur);cur=[];}else{if(!cur.length||k===n||k%6===0)cur.push(q);}}}
+      else if(!mvInsideCaseta(pts[0][0],pts[0][2]))cur.push(pts[0]);
+    }
+    if(cur.length>1)parts.push(cur);
+    for(const part of parts)pipe(part,.28,def);
+  }
   const mountainPipePath = [
     [-98, terrainHeight(-98, 8) + 1.38, 8],
     [-90, terrainHeight(-90, 8) + 1.22, 8],
@@ -1852,11 +1866,7 @@ void main(){
       box(px,1.15,front+.38,1.03,.07,.48,'#c2d1d0');
       cylinder(px,1.34,front+.35,.15,.18,'#34c34b',{seg:13,kind:19,levelId:dataId,em:.34});
       cylinder(px,1.53,front+.35,.11,.06,'#cededd',{seg:12});
-      /* MV PRO: salidas de tubería de las casetas */
-      tube([[px,1.34,pz+1.12],[px,1.34,front+1.05]],.13,'#1d78c4',{seg:14});
-      orientedCylinder([px,1.34,front-.08],[px,1.34,front+.14],.24,'#7d8c94',{seg:16});
-      orientedCylinder([px,1.34,front+.52],[px,1.34,front+.60],.21,'#6f7f88',{seg:16});
-      cylinder(px,1.34,front+1.18,.27,.40,'#1d6fb8',{seg:16});
+      /* MV PRO: sin tubo de descarga visible; sólo el equipo */
     }
     tube([[left+.50,1.35,z+1.48],[right-.50,1.35,z+1.48]],.18,'#1486b9',{seg:14});
     tube([[left+.50,1.01,z-1.35],[right-.50,1.01,z-1.35]],.13,'#4194b2',{seg:12});
@@ -1885,13 +1895,6 @@ void main(){
       box(xx,4.62,front+.25,.69,.24,.39,'#667c84');
       cylinder(xx,4.42,front+.38,.24,.14,'#f3e5c6',{seg:14,kind:16,levelId:index,em:1.1});
       casetaGlowDisk(xx,.36,front+.62,.95,.95,index,.20);
-    }
-    {
-      const hz=front+1.18, hy=1.34;
-      tube([[left+.55,hy,hz],[right-.55,hy,hz]],.26,'#1d6fb8',{seg:18});
-      for(const ex of [left+.55,right-.55]) orientedCylinder([ex-.06,hy,hz],[ex+.06,hy,hz],.36,'#6f7f88',{seg:18});
-      for(let sx=left+1.6;sx<right-1.0;sx+=2.6){ box(sx,(hy-.26)/2+.05,hz,.42,hy-.26,.62,'#b7b2a6'); orientedCylinder([sx-.04,hy,hz],[sx+.04,hy,hz],.33,'#6f7f88',{seg:18}); }
-      tube([[left+.55,hy,hz],[left-.35,hy,hz],[left-.95,hy,hz-.6],[left-.95,1.31,z-.80]],.24,'#1d6fb8',{seg:16});
     }
     bar([left,1.31,z-.80],[left-1.30,1.31,z-.80],.26,'#1d6fb8',{seg:16});
     orientedCylinder([left-.05,1.31,z-.80],[left-.22,1.31,z-.80],.38,'#7d8c94',{seg:18});
@@ -2004,6 +2007,47 @@ void main(){
       }
     }
 
+
+    // lámparas para modo noche (postes con luminaria y halo en el piso)
+    const lamp = (x, z, dirx, dirz) => {
+      const g = ground(x, z), H = 4.6;
+      cylinder(x, g + H / 2, z, .07, H, '#7f8b90', { seg: 8 });
+      cylinder(x, g + .15, z, .16, .3, '#6b767b', { seg: 10 });
+      const hx = x + dirx * .85, hz = z + dirz * .85;
+      bar([x, g + H - .05, z], [hx, g + H - .05, hz], .035, '#7f8b90', { seg: 6 });
+      box(hx, g + H - .14, hz, .52, .1, .3, '#4b5559');
+      box(hx, g + H - .2, hz, .44, .03, .24, '#ffffff', 0, 0, 1);
+      const lampVerts = A[0].length;
+      box(hx, g + H - .215, hz, .42, .02, .22, '#ffffff');
+      for (let i = lampVerts; i < A[0].length; i += 13) A[0][i + 11] = 20;
+      const steps = 24, gy = g + .06, radii = [0, .6, 1.2, 1.9, 2.7, 3.6, 4.6], alphas = [.55, .46, .35, .24, .14, .06, 0];
+      for (let r = 0; r < radii.length - 1; r++) {
+        const r0 = radii[r], r1 = radii[r + 1], al = (alphas[r] + alphas[r + 1]) * .5;
+        for (let k = 0; k < steps; k++) {
+          const a0 = k / steps * Math.PI * 2, a1 = (k + 1) / steps * Math.PI * 2;
+          const p00 = [hx + Math.cos(a0) * r0, gy, hz + Math.sin(a0) * r0], p01 = [hx + Math.cos(a1) * r0, gy, hz + Math.sin(a1) * r0];
+          const p10 = [hx + Math.cos(a0) * r1, gy, hz + Math.sin(a0) * r1], p11 = [hx + Math.cos(a1) * r1, gy, hz + Math.sin(a1) * r1];
+          if (r0 > 0) tri(1, p00, UP, p10, UP, p11, UP, '#ffcc80', 0, 0, 21, al);
+          tri(1, p00, UP, p11, UP, p01, UP, '#ffcc80', 0, 0, 21, al);
+        }
+      }
+    };
+    for (const n of config.nodes.filter(q => q[2] === 'pump')) {
+      const x = n[3], z = n[4], hw = 6.6, hd = 5.3;
+      for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) lamp(x + sx * hw, z + sz * hd, -sx * .7071, -sz * .7071);
+    }
+    {
+      const pts = resample(route, 1.0); let accL = 6;
+      for (let i = 1; i < pts.length; i++) {
+        accL += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][2] - pts[i - 1][2]);
+        if (accL < 12) continue;
+        const p = pts[i];
+        if (casetas.some(n => Math.abs(p[0] - n[3]) < 8.5 && Math.abs(p[2] - n[4]) < 7.5) || lakeDistance(p[0], p[2]) < 2) continue;
+        accL = 0;
+        const a = pts[i - 1]; let nx = -(p[2] - a[2]), nz = p[0] - a[0]; const l = Math.hypot(nx, nz) || 1; nx /= l; nz /= l; if (nz > 0) { nx = -nx; nz = -nz; }
+        lamp(p[0] + nx * 2.2, p[2] + nz * 2.2, -nx, -nz);
+      }
+    }
     // soportes de concreto bajo la tubería y señalización de ducto
     const nearCaseta = (x, z) => casetas.some(n => Math.abs(x - n[3]) < 6.2 && Math.abs(z - n[4]) < 5.0);
     for (const def of pipeDefs) {
