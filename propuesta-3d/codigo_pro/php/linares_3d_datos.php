@@ -1,64 +1,71 @@
 <?php
+/* Linares 3D - lecturas en tiempo real.
+   Compatible con PHP 5.x (mysql_*), lee los datos igual que sanroque.php:
+   - Tablas "sanroque" y "linares" de la base de datos
+   - lecturas/AAMMDD00_TGRP0001.CSV (Tanque Garrapatas, NI0000001 en cm)
+   - lecturas/AAMMDD00_ROMPE001.CSV (Rompedor: FL0000001, FL0000002, PRES001, PRES002)
+   - lecturas/AAMMDD00_OBTO0002.CSV (Presa Cerro Prieto: ELEV0001)
+   - lab/presas.CSV (Cerro Prieto: almacenamiento col 5, porcentaje col 6) */
+ini_set('display_errors', '0');
+error_reporting(E_ERROR | E_PARSE);
 header('Content-Type: application/json; charset=UTF-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 header('X-Content-Type-Options: nosniff');
-date_default_timezone_set('America/Monterrey');
+
+$lnBase = dirname(dirname(dirname(__FILE__)));
+if (is_file($lnBase . '/CambioHorario/horario.php')) { ob_start(); @include_once($lnBase . '/CambioHorario/horario.php'); ob_end_clean(); }
+if (is_file($lnBase . '/lol/includes/connection2.php')) { ob_start(); @include_once($lnBase . '/lol/includes/connection2.php'); ob_end_clean(); }
+set_time_limit(20);
+
+/* Misma ventana de comunicación que sanroque.php (últimos 30 min) */
+$hhh = ((date('H') * 60) + date('i')) - 30;
+$hhs = ((date('H') * 60) + date('i')) + 60;
+$S = date('ymd00');
 
 $definitions = array(
-    'LINPB001' => array('table' => 'linares', 'pumps' => array(1, 2, 4, 8)),
-    'LINPB002' => array('table' => 'sanroque', 'pumps' => array(1, 2, 4, 8, 16)),
-    'LINPB02A' => array('table' => 'sanroque', 'pumps' => array(1, 2, 4, 8, 16)),
-    'LINPB003' => array('table' => 'sanroque', 'pumps' => array(1, 2, 4, 8, 16)),
-    'TGRP0001' => array('table' => 'sanroque'),
-    'ROMPE001' => array('table' => 'csv'),
-    'LINPB004' => array('table' => 'sanroque', 'pumps' => array(2, 4, 8, 16, 32)),
-    'PPLLN001' => array('table' => 'sanroque'),
-    'PBSRQ005' => array('table' => 'sanroque', 'pumps' => array(1, 2, 4, 8, 16, 32)),
-    'TACPSR01' => array('table' => 'sanroque'),
-    'TACPSR02' => array('table' => 'sanroque')
+    'LINPB001' => array('table' => 'linares', 'pumps' => array(1, 2, 4, 8), 'level' => 'none'),
+    'LINPB002' => array('table' => 'sanroque', 'pumps' => array(1, 2, 4, 8, 16), 'level' => 'm'),
+    'LINPB02A' => array('table' => 'sanroque', 'pumps' => array(1, 2, 4, 8, 16), 'level' => 'cm'),
+    'LINPB003' => array('table' => 'sanroque', 'pumps' => array(1, 2, 4, 8, 16), 'level' => 'cm'),
+    'TGRP0001' => array('table' => 'sanroque', 'level' => 'cm'),
+    'ROMPE001' => array('table' => 'csv', 'level' => 'none'),
+    'LINPB004' => array('table' => 'sanroque', 'pumps' => array(2, 4, 8, 16, 32), 'level' => 'none'),
+    'PPLLN001' => array('table' => 'sanroque', 'level' => 'none'),
+    'PBSRQ005' => array('table' => 'sanroque', 'pumps' => array(1, 2, 4, 8, 16, 32), 'level' => 'none'),
+    'TACPSR01' => array('table' => 'sanroque', 'level' => 'cm'),
+    'TACPSR02' => array('table' => 'sanroque', 'level' => 'cm')
 );
 
 function lnNumber($value) {
     if ($value === null || is_array($value)) return null;
     $s = trim((string)$value);
     if ($s === '' || $s === '-' || strcasecmp($s, 'N/D') === 0) return null;
+    $s = str_replace('%', '', $s);
     if (strpos($s, ',') !== false && strpos($s, '.') !== false) $s = str_replace(',', '', $s);
     elseif (strpos($s, ',') !== false) $s = str_replace(',', '.', $s);
     if (!is_numeric($s)) return null;
     $f = (float)$s;
-    return is_finite($f) && abs($f) < 10000000 ? $f : null;
+    if (is_nan($f) || is_infinite($f) || abs($f) >= 10000000) return null;
+    return $f;
 }
 
-function lnStamp($date, $hour) {
-    $d = trim((string)$date);
-    $h = trim((string)$hour);
-    if ($h !== '' && preg_match('/^\d{1,2}:\d{2}$/', $h)) $h .= ':00';
-    $zone = new DateTimeZone('America/Monterrey');
-    if (preg_match('/^(\d{1,2})[\/-](\d{1,2})$/', $d, $m) && $h !== '') {
-        $now = new DateTimeImmutable('now', $zone);
-        $dt = DateTimeImmutable::createFromFormat('!d/m/Y H:i:s', sprintf('%02d/%02d/%04d', (int)$m[1], (int)$m[2], (int)$now->format('Y')) . ' ' . $h, $zone);
-        if ($dt && $dt->getTimestamp() > $now->getTimestamp() + 300) $dt = $dt->modify('-1 year');
-        if ($dt) return $dt->getTimestamp();
-    }
-    foreach (array('Y-m-d', 'Y/m/d', 'y/m/d', 'd/m/Y', 'd-m-Y', 'y-m-d', 'd/m/y') as $f) {
-        if ($d === '' || $h === '') continue;
-        $dt = DateTimeImmutable::createFromFormat('!' . $f . ' H:i:s', $d . ' ' . $h, $zone);
-        if ($dt && $dt->format($f . ' H:i:s') === $d . ' ' . $h) return $dt->getTimestamp();
-    }
-    if ($d !== '') return null;
-    if (preg_match('/^(\d{1,2}):(\d{2})(?::\d{2})?$/', $h, $m)) {
-        $dt = new DateTimeImmutable('today', $zone);
-        $dt = $dt->setTime((int)$m[1], (int)$m[2]);
-        if ($dt->getTimestamp() > time() + 300) $dt = $dt->modify('-1 day');
-        return $dt->getTimestamp();
-    }
-    return null;
+function lnMinutes($hora) {
+    $p = explode(':', trim((string)$hora));
+    if (count($p) < 2 || !is_numeric($p[0]) || !is_numeric($p[1])) return null;
+    return ((int)$p[0]) * 60 + (int)$p[1];
+}
+
+function lnStatus($minutes) {
+    global $hhh, $hhs;
+    if ($minutes === null) return 'sin_datos';
+    return ($hhs < $minutes || $minutes < $hhh) ? 'sin_comunicacion' : 'operando';
 }
 
 function lnEmpty($code) {
-    return array('code' => $code, 'level' => null, 'flow' => null,
-        'updated' => null, 'status' => 'sin_datos', 'minimum' => null,
-        'maximum' => null, 'observation' => false, 'pumps' => null, 'extra' => array());
+    return array('code' => $code, 'level' => null, 'flow' => null, 'updated' => null,
+        'status' => 'sin_datos', 'minimum' => null, 'maximum' => null,
+        'observation' => false, 'pumps' => null, 'extra' => array());
 }
 
 function lnExtra(&$item, $label, $value, $unit) {
@@ -66,175 +73,130 @@ function lnExtra(&$item, $label, $value, $unit) {
     if ($v !== null) $item['extra'][] = array('label' => $label, 'value' => $v, 'unit' => $unit);
 }
 
-function lnDbRows($table, $codes) {
+function lnLevel($raw, $unit) {
+    $v = lnNumber($raw);
+    if ($v === null || $v <= 0 || $v >= 9000 || $unit === 'none') return null;
+    return $unit === 'cm' ? round($v / 100, 3) : round($v, 3);
+}
+
+/* Lee toda la tabla como sanroque.php */
+function lnTable($table) {
     $rows = array();
-    $query = "SELECT * FROM " . $table . " WHERE Codigo IN ('" . implode("','", $codes) . "')";
-    if (function_exists('mysql_query') && function_exists('mysql_fetch_assoc')) {
-        $result = @mysql_query($query);
-        if ($result) while ($row = @mysql_fetch_assoc($result)) $rows[strtoupper(trim((string)$row['Codigo']))] = $row;
+    if (function_exists('mysql_query')) {
+        $q = @mysql_query('select * from ' . $table);
+        if ($q) while ($r = @mysql_fetch_array($q)) $rows[strtoupper(trim((string)$r['Codigo']))] = $r;
         return $rows;
     }
-    foreach (array('mysqli', 'conn', 'conexion', 'connection', 'con', 'link') as $variable) {
-        if (!isset($GLOBALS[$variable]) || !($GLOBALS[$variable] instanceof mysqli)) continue;
-        $result = @$GLOBALS[$variable]->query($query);
-        if ($result) while ($row = @$result->fetch_assoc()) $rows[strtoupper(trim((string)$row['Codigo']))] = $row;
+    foreach (array('mysqli', 'conn', 'conexion', 'connection', 'con', 'link') as $var) {
+        if (!isset($GLOBALS[$var]) || !is_object($GLOBALS[$var]) || !($GLOBALS[$var] instanceof mysqli)) continue;
+        $q = @$GLOBALS[$var]->query('select * from ' . $table);
+        if ($q) while ($r = $q->fetch_assoc()) $rows[strtoupper(trim((string)$r['Codigo']))] = $r;
         break;
     }
     return $rows;
 }
 
-function lnRoots($sub) {
-    $bases = array(dirname(dirname(__DIR__)), dirname(__DIR__), realpath(getcwd() . '/../..'),
-        isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '');
+/* Carpetas posibles (igual que sanroque.php: ../../lecturas y ../../lab) */
+function lnDirs($sub) {
+    global $lnBase;
     $out = array();
-    foreach ($bases as $b) {
+    foreach (array($lnBase, dirname(dirname(getcwd() . '/x')) , realpath('../..')) as $b) {
         if (!$b) continue;
-        foreach (array($sub, ucfirst($sub)) as $s) $out[] = rtrim($b, '/\\') . '/' . $s;
+        foreach (array($sub, ucfirst($sub), strtoupper($sub)) as $s) {
+            $d = rtrim($b, '/\\') . '/' . $s;
+            if (is_dir($d) && !in_array($d, $out)) $out[] = $d;
+        }
     }
+    $rel = '../../' . $sub;
+    if (is_dir($rel) && !in_array($rel, $out)) $out[] = $rel;
     return $out;
 }
 
-function lnCsvRoot() {
-    foreach (lnRoots('lecturas') as $root) {
-        if (is_dir($root) && is_readable($root)) return $root;
-    }
-    return '';
-}
-
-function lnLastRow($file) {
-    if (!is_file($file) || !is_readable($file)) return null;
-    $f = @fopen($file, 'r');
-    if (!$f) return null;
-    $last = null;
-    while (($row = fgetcsv($f, 8192, ',')) !== false) {
-        foreach ($row as $cell) { if (trim((string)$cell) !== '') { $last = $row; break; } }
-    }
-    fclose($f);
-    return $last;
-}
-
-/* Presa Cerro Prieto: elevación (lecturas/ymd00_OBTO0002.CSV, ELEV0001 o columna 4)
-   y almacenamiento / porcentaje (lab/presas.CSV columnas 5 y 6), igual que presas.php y presamapa.php */
-function lnReadPresaCerroPrieto() {
-    $out = array('elevation' => null, 'timestamp' => null, 'storage' => null, 'percent' => null);
-    $root = lnCsvRoot();
-    if ($root !== '') {
-        $zone = new DateTimeZone('America/Monterrey');
-        for ($i = 0; $i <= 1 && $out['elevation'] === null; $i++) {
-            $day = (new DateTimeImmutable('today', $zone))->modify('-' . $i . ' day');
+/* Abre lecturas/AAMMDD00_CODIGO.CSV y devuelve encabezados + última fila con datos (como sanroque.php) */
+function lnReadCsv($code) {
+    global $S;
+    $days = array($S, date('ymd00', time() - 86400));
+    foreach ($days as $day) {
+        foreach (lnDirs('lecturas') as $dir) {
             foreach (array('.CSV', '.csv') as $ext) {
-                $file = $root . '/' . $day->format('ymd') . '00_OBTO0002' . $ext;
-                if (!is_readable($file)) continue;
-                $f = @fopen($file, 'r');
-                if (!$f) continue;
-                $headers = fgetcsv($f, 8192, ',');
-                $col = 4;
-                if (is_array($headers)) foreach ($headers as $k => $h) if (strtoupper(trim((string)preg_replace('/^\xEF\xBB\xBF/', '', $h))) === 'ELEV0001') $col = $k;
-                while (($row = fgetcsv($f, 8192, ',')) !== false) {
-                    $v = isset($row[$col]) ? lnNumber($row[$col]) : null;
-                    if ($v === null || $v <= 0) continue;
-                    $hour = isset($row[2], $row[3]) && is_numeric($row[2]) && is_numeric($row[3]) ? sprintf('%02d:%02d:00', (int)$row[2], (int)$row[3]) : (isset($row[1]) ? $row[1] : '');
-                    $ts = lnStamp(isset($row[0]) ? $row[0] : '', $hour);
-                    $out['elevation'] = $v;
-                    if ($ts !== null) $out['timestamp'] = $ts;
+                $file = $dir . '/' . $day . '_' . $code . $ext;
+                if (!is_file($file) || !is_readable($file)) continue;
+                $fp = @fopen($file, 'r');
+                if (!$fp) continue;
+                $keys = array(); $last = null; $i = 0;
+                while (($data = fgetcsv($fp, 8192, ',')) !== false) {
+                    if ($i == 0) {
+                        foreach ($data as $k => $h) {
+                            $h = strtoupper(trim(preg_replace('/^\xEF\xBB\xBF/', '', (string)$h)));
+                            if ($h !== '') $keys[$h] = $k;
+                        }
+                    } else {
+                        $has = false;
+                        foreach ($data as $c) { if (trim((string)$c) !== '') { $has = true; break; } }
+                        if ($has) $last = $data;
+                    }
+                    $i++;
                 }
-                fclose($f);
-                break;
+                fclose($fp);
+                if ($last !== null) return array('keys' => $keys, 'row' => $last, 'file' => $file);
             }
         }
-    }
-    foreach (lnRoots('lab') as $lab) {
-        $row = lnLastRow($lab . '/presas.CSV');
-        if ($row === null) $row = lnLastRow($lab . '/presas.csv');
-        if ($row === null) continue;
-        $out['storage'] = isset($row[5]) ? lnNumber($row[5]) : null;
-        $out['percent'] = isset($row[6]) ? lnNumber(str_replace('%', '', (string)$row[6])) : null;
-        break;
-    }
-    return $out;
-}
-
-function lnReadRompedor() {
-    $root = lnCsvRoot();
-    if ($root === '') return null;
-    $zone = new DateTimeZone('America/Monterrey');
-    for ($i = 0; $i <= 1; $i++) {
-        $day = (new DateTimeImmutable('today', $zone))->modify('-' . $i . ' day');
-        $file = null;
-        foreach (array('.CSV', '.csv') as $ext) {
-            $candidate = $root . '/' . $day->format('ymd') . '00_ROMPE001' . $ext;
-            if (is_readable($candidate)) { $file = $candidate; break; }
-        }
-        if ($file === null) continue;
-        $f = @fopen($file, 'r');
-        if (!$f) continue;
-        $headers = fgetcsv($f, 8192, ',');
-        if (!$headers) { fclose($f); continue; }
-        $keys = array();
-        foreach ($headers as $col => $h) $keys[strtoupper(trim((string)preg_replace('/^\xEF\xBB\xBF/', '', $h)))] = $col;
-        $latest = null;
-        while (($row = fgetcsv($f, 8192, ',')) !== false) {
-            $date = isset($row[0]) ? $row[0] : '';
-            $hour = isset($row[2], $row[3]) ? sprintf('%02d:%02d:00', (int)$row[2], (int)$row[3]) : (isset($row[1]) ? $row[1] : '');
-            $ts = lnStamp($date, $hour);
-            if ($ts === null || $ts > time() + 60) continue;
-            if ($latest === null || $ts >= $latest['timestamp']) {
-                $latest = array('timestamp' => $ts);
-                foreach (array('FL0000001', 'FL0000002', 'PRES001', 'PRES002') as $key)
-                    $latest[$key] = isset($keys[$key], $row[$keys[$key]]) ? lnNumber($row[$keys[$key]]) : null;
-            }
-        }
-        fclose($f);
-        if ($latest !== null) return $latest;
     }
     return null;
 }
 
+function lnCsvValue($csv, $column, $fallbackIndex) {
+    if ($csv === null) return null;
+    $idx = isset($csv['keys'][$column]) ? $csv['keys'][$column] : $fallbackIndex;
+    if ($idx === null || !isset($csv['row'][$idx])) return null;
+    return $csv['row'][$idx];
+}
+
+/* Fecha y hora de una fila CSV: "16/11 15:24" como en sanroque.php */
+function lnCsvTime($csv) {
+    if ($csv === null) return array(null, null);
+    $row = $csv['row'];
+    $min = (isset($row[2], $row[3]) && is_numeric($row[2]) && is_numeric($row[3])) ? ((int)$row[2] * 60 + (int)$row[3]) : null;
+    $fecha = explode('/', isset($row[0]) ? (string)$row[0] : '');
+    $label = (isset($fecha[2], $fecha[1]) ? $fecha[2] . '/' . $fecha[1] . ' ' : '') .
+        ($min !== null ? sprintf('%02d:%02d', (int)$row[2], (int)$row[3]) : '');
+    return array($min, trim($label) === '' ? null : trim($label));
+}
+
 $items = array();
-foreach ($definitions as $code => $definition) $items[$code] = lnEmpty($code);
-$connectionFile = __DIR__ . '/../../lol/includes/connection2.php';
-if (is_file($connectionFile)) { ob_start(); @include_once $connectionFile; ob_end_clean(); }
-$rowsByTable = array(
-    'linares' => lnDbRows('linares', array('LINPB001')),
-    'sanroque' => lnDbRows('sanroque', array('LINPB002', 'LINPB02A', 'LINPB003', 'LINPB004', 'PPLLN001', 'PBSRQ005', 'TACPSR01', 'TACPSR02', 'TGRP0001'))
-);
+foreach ($definitions as $code => $def) $items[$code] = lnEmpty($code);
+$tables = array('sanroque' => lnTable('sanroque'), 'linares' => lnTable('linares'));
 $readings = 0;
-foreach ($definitions as $code => $definition) {
-    if ($code === 'ROMPE001') continue;
-    $table = $definition['table'];
-    if (!isset($rowsByTable[$table][$code])) continue;
-    $row = $rowsByTable[$table][$code];
+
+foreach ($definitions as $code => $def) {
+    if ($def['table'] === 'csv') continue;
+    if (!isset($tables[$def['table']][$code])) continue;
+    $row = $tables[$def['table']][$code];
     $item = $items[$code];
-    $stamp = lnStamp(isset($row['Fecha']) ? $row['Fecha'] : '', isset($row['Hora']) ? $row['Hora'] : '');
-    if ($stamp !== null) {
-        $item['updated'] = date('Y-m-d H:i:s', $stamp);
-        $item['status'] = time() - $stamp > 1800 ? 'sin_comunicacion' : 'operando';
-    }
-    $rawLevel = isset($row['Nivel']) ? lnNumber($row['Nivel']) : null;
-    if ($rawLevel !== null && $rawLevel > 0 && $rawLevel < 9000)
-        $item['level'] = $code === 'LINPB002' ? round($rawLevel, 3) : round($rawLevel / 100, 3); // PB2 ya viene en metros (igual que sanroque.php)
-    $rawFlow = isset($row['Flujo']) ? lnNumber($row['Flujo']) : null;
-    $item['flow'] = $rawFlow;
-    $min = isset($row['Minimo']) ? lnNumber($row['Minimo']) : null;
-    $max = isset($row['Maximo']) ? lnNumber($row['Maximo']) : null;
-    $item['minimum'] = $min !== null && $min > 25 ? round($min / 100, 3) : $min;
-    $item['maximum'] = $max !== null && $max > 25 ? round($max / 100, 3) : $max;
+    $min = lnMinutes(isset($row['Hora']) ? $row['Hora'] : '');
+    $item['status'] = lnStatus($min);
+    $item['updated'] = trim((isset($row['Fecha']) ? $row['Fecha'] : '') . ' ' . (isset($row['Hora']) ? $row['Hora'] : ''));
+    if ($item['updated'] === '') $item['updated'] = null;
+    $item['level'] = lnLevel(isset($row['Nivel']) ? $row['Nivel'] : null, $def['level']);
+    $item['flow'] = lnNumber(isset($row['Flujo']) ? $row['Flujo'] : null);
+    $mn = lnNumber(isset($row['Minimo']) ? $row['Minimo'] : null);
+    $mx = lnNumber(isset($row['Maximo']) ? $row['Maximo'] : null);
+    $item['minimum'] = ($mn !== null && $mn > 25) ? round($mn / 100, 3) : $mn;
+    $item['maximum'] = ($mx !== null && $mx > 25) ? round($mx / 100, 3) : $mx;
     if ($item['status'] === 'operando' && $item['level'] !== null && $item['minimum'] !== null && $item['maximum'] !== null && $item['maximum'] > $item['minimum'])
-        $item['observation'] = $item['level'] < $item['minimum'] || $item['level'] > $item['maximum'];
-    if (isset($definition['pumps']) && isset($row['ED_SD']) && is_numeric($row['ED_SD'])) { // último estado recibido, igual que sanroque.php
+        $item['observation'] = ($item['level'] < $item['minimum'] || $item['level'] > $item['maximum']);
+    if (isset($def['pumps']) && isset($row['ED_SD']) && is_numeric($row['ED_SD'])) {
         $bits = (int)$row['ED_SD'];
         $item['pumps'] = array();
-        foreach ($definition['pumps'] as $i => $bit) {
-            $item['pumps'][] = array('name' => 'Equipo ' . ($i + 1), 'on' => (bool)($bits & $bit));
-        }
+        foreach ($def['pumps'] as $i => $bit) $item['pumps'][] = array('name' => 'Equipo ' . ($i + 1), 'on' => (($bits & $bit) ? true : false));
     }
     if ($code === 'LINPB002') {
-        if (isset($row['Presion'])) lnExtra($item, 'Presión succión', lnNumber($row['Presion']) === null ? null : (float)$row['Presion'] / 1000, 'kg/cm²');
-        if (isset($row['Disp_1'])) lnExtra($item, 'Presión descarga', lnNumber($row['Disp_1']) === null ? null : (float)$row['Disp_1'] / 1000, 'kg/cm²');
+        if (isset($row['Presion']) && lnNumber($row['Presion']) !== null) lnExtra($item, 'Presión succión', lnNumber($row['Presion']) / 1000, 'kg/cm²');
+        if (isset($row['Disp_1']) && lnNumber($row['Disp_1']) !== null) lnExtra($item, 'Presión descarga', lnNumber($row['Disp_1']) / 1000, 'kg/cm²');
     } elseif ($code === 'LINPB02A') {
-        if (isset($row['Presion'])) lnExtra($item, 'Presión descarga', lnNumber($row['Presion']) === null ? null : (float)$row['Presion'] / 1000, 'kg/cm²');
+        if (isset($row['Presion']) && lnNumber($row['Presion']) !== null) lnExtra($item, 'Presión descarga', lnNumber($row['Presion']) / 1000, 'kg/cm²');
     } elseif ($code === 'LINPB003') {
-        if (isset($row['Presion'])) lnExtra($item, 'Presión descarga', lnNumber($row['Presion']) === null ? null : (float)$row['Presion'] / 100, 'kg/cm²');
+        if (isset($row['Presion']) && lnNumber($row['Presion']) !== null) lnExtra($item, 'Presión descarga', lnNumber($row['Presion']) / 100, 'kg/cm²');
     } elseif ($code === 'LINPB004') {
         if (isset($row['Disp_3'])) lnExtra($item, 'Llegada Rompedor', $row['Disp_3'], 'LPS');
         if (isset($row['Disp_6'])) lnExtra($item, 'Extracción La Boca', $row['Disp_6'], 'LPS');
@@ -243,85 +205,73 @@ foreach ($definitions as $code => $definition) {
     $items[$code] = $item;
     $readings++;
 }
-function lnReadGarrapatasCsv() {
-    $root = lnCsvRoot();
-    if ($root === '') return null;
-    $zone = new DateTimeZone('America/Monterrey');
-    $now = new DateTimeImmutable('now', $zone);
-    for ($dayOffset = 0; $dayOffset <= 1; $dayOffset++) {
-        $day = $now->modify('-' . $dayOffset . ' day');
-        $file = null;
-        foreach (array('.CSV', '.csv') as $ext) {
-            $candidate = $root . '/' . $day->format('ymd') . '00_TGRP0001' . $ext;
-            if (is_file($candidate) && is_readable($candidate)) { $file = $candidate; break; }
-        }
-        if ($file === null) continue;
-        $handle = @fopen($file, 'r');
-        if (!$handle) continue;
-        $headers = fgetcsv($handle, 16384, ',');
-        if (!is_array($headers)) { fclose($handle); continue; }
-        $keys = array();
-        foreach ($headers as $i => $field) {
-            $key = strtoupper(trim((string)preg_replace('/^\xEF\xBB\xBF/', '', $field)));
-            if ($key !== '') $keys[$key] = $i;
-        }
-        if (!isset($keys['NI0000001'])) { fclose($handle); continue; }
-        $column = $keys['NI0000001'];
-        $latest = null;
-        while (($row = fgetcsv($handle, 16384, ',')) !== false) {
-            if (!isset($row[$column])) continue;
-            $raw = lnNumber($row[$column]);
-            if ($raw === null || $raw < 0 || $raw >= 9000) continue;
-            $date = isset($row[0]) ? $row[0] : '';
-            $hour = isset($row[2], $row[3]) && is_numeric($row[2]) && is_numeric($row[3])
-                ? sprintf('%02d:%02d:00', (int)$row[2], (int)$row[3])
-                : (isset($row[1]) ? trim((string)$row[1]) : '');
-            $stamp = lnStamp($date, $hour);
-            if ($stamp === null || $stamp > time() + 60) continue;
-            if ($latest === null || $stamp >= $latest['timestamp'])
-                $latest = array('timestamp' => $stamp, 'level' => round($raw / 100, 3));
-        }
-        fclose($handle);
-        if ($latest !== null) return $latest;
-    }
-    return null;
-}
 
-$garrapatasCsv = lnReadGarrapatasCsv();
-if ($garrapatasCsv !== null) {
+/* Tanque Garrapatas: igual que sanroque.php (CSV, NI0000001 en cm) */
+$csv = lnReadCsv('TGRP0001');
+if ($csv !== null) {
+    $lvl = lnLevel(lnCsvValue($csv, 'NI0000001', null), 'cm');
+    $t = lnCsvTime($csv);
     $item = $items['TGRP0001'];
-    $item['level'] = $garrapatasCsv['level'];
-    $item['updated'] = date('Y-m-d H:i:s', $garrapatasCsv['timestamp']);
-    $item['status'] = (time() - $garrapatasCsv['timestamp'] > 1800) ? 'sin_comunicacion' : 'operando';
+    if ($lvl !== null) $item['level'] = $lvl;
+    if ($t[1] !== null) $item['updated'] = $t[1];
+    if ($t[0] !== null) $item['status'] = lnStatus($t[0]);
     $item['source'] = 'CSV NI0000001';
     $items['TGRP0001'] = $item;
     $readings++;
 }
-$rompedor = lnReadRompedor();
-if ($rompedor !== null) {
+
+/* Rompedor de carga: igual que sanroque.php */
+$csv = lnReadCsv('ROMPE001');
+if ($csv !== null) {
+    $t = lnCsvTime($csv);
     $item = $items['ROMPE001'];
-    $item['flow'] = $rompedor['FL0000001'];
-    $item['updated'] = date('Y-m-d H:i:s', $rompedor['timestamp']);
-    $item['status'] = time() - $rompedor['timestamp'] > 1800 ? 'sin_comunicacion' : 'operando';
-    lnExtra($item, 'Conducción 42"', $rompedor['FL0000002'], 'LPS');
-    lnExtra($item, 'Presión entrada', $rompedor['PRES002'], 'kg/cm²');
-    lnExtra($item, 'Presión salida', $rompedor['PRES001'], 'kg/cm²');
+    $item['flow'] = lnNumber(lnCsvValue($csv, 'FL0000001', null));
+    if ($t[1] !== null) $item['updated'] = $t[1];
+    if ($t[0] !== null) $item['status'] = lnStatus($t[0]);
+    lnExtra($item, 'Conducción 42"', lnCsvValue($csv, 'FL0000002', null), 'LPS');
+    lnExtra($item, 'Presión entrada', lnCsvValue($csv, 'PRES002', null), 'kg/cm²');
+    lnExtra($item, 'Presión salida', lnCsvValue($csv, 'PRES001', null), 'kg/cm²');
     $items['ROMPE001'] = $item;
     $readings++;
 }
-$presa = lnReadPresaCerroPrieto();
-$item = lnEmpty('PRESACP');
-$item['level'] = $presa['elevation'];
-if ($presa['timestamp'] !== null) {
-    $item['updated'] = date('Y-m-d H:i:s', $presa['timestamp']);
-    $item['status'] = time() - $presa['timestamp'] > 1800 ? 'sin_comunicacion' : 'operando';
-} elseif ($presa['elevation'] !== null || $presa['percent'] !== null) {
-    $item['status'] = 'operando';
-}
-lnExtra($item, 'Almacenamiento', $presa['storage'], 'Mm³');
-lnExtra($item, 'Llenado', $presa['percent'], '%');
-$items['PRESACP'] = $item;
-if ($presa['elevation'] !== null || $presa['percent'] !== null) $readings++;
 
-echo json_encode(array('ok' => true, 'items' => $items, 'updated' => date('Y-m-d H:i:s'),
-    'available' => $readings > 0, 'source' => 'linares/sanroque/lecturas'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+/* Presa Cerro Prieto: igual que presas.php / presamapa.php */
+$item = lnEmpty('PRESACP');
+$csv = lnReadCsv('OBTO0002');
+if ($csv !== null) {
+    $elev = lnNumber(lnCsvValue($csv, 'ELEV0001', 4));
+    if ($elev !== null && $elev > 0) $item['level'] = $elev;
+    $t = lnCsvTime($csv);
+    if ($t[1] !== null) $item['updated'] = $t[1];
+    if ($t[0] !== null) $item['status'] = lnStatus($t[0]);
+}
+foreach (lnDirs('lab') as $dir) {
+    foreach (array('/presas.CSV', '/presas.csv') as $name) {
+        if (!is_file($dir . $name) || !is_readable($dir . $name)) continue;
+        $fp = @fopen($dir . $name, 'r');
+        if (!$fp) continue;
+        $last = null;
+        while (($data = fgetcsv($fp, 4000, ',')) !== false) {
+            foreach ($data as $c) { if (trim((string)$c) !== '') { $last = $data; break; } }
+        }
+        fclose($fp);
+        if ($last !== null) {
+            lnExtra($item, 'Almacenamiento', isset($last[5]) ? $last[5] : null, 'Mm³');
+            lnExtra($item, 'Llenado', isset($last[6]) ? $last[6] : null, '%');
+            if ($item['status'] === 'sin_datos') $item['status'] = 'operando';
+        }
+        break 2;
+    }
+}
+$items['PRESACP'] = $item;
+if ($item['level'] !== null || count($item['extra'])) $readings++;
+
+$out = array('ok' => true, 'items' => $items, 'updated' => date('Y-m-d H:i:s'),
+    'available' => $readings > 0, 'source' => 'linares/sanroque/lecturas');
+if (isset($_GET['debug'])) {
+    $out['debug'] = array('php' => PHP_VERSION, 'base' => $lnBase, 'cwd' => getcwd(), 'fecha' => $S,
+        'lecturas' => lnDirs('lecturas'), 'lab' => lnDirs('lab'),
+        'filas_sanroque' => count($tables['sanroque']), 'filas_linares' => count($tables['linares']),
+        'csv_garrapatas' => ($c = lnReadCsv('TGRP0001')) ? $c['file'] : null);
+}
+echo defined('JSON_UNESCAPED_UNICODE') ? json_encode($out, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : json_encode($out);
