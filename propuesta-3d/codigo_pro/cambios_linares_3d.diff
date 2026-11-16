@@ -718,9 +718,11 @@
      }
      details.hidden=!details.childElementCount;
    }
-   let historyRequest=0,history=[];
-   async function loadHistory(n){const request=++historyRequest;history=[];$('graphSection').hidden=true;const code=n[5];if(!code)return;try{const resp=await fetch('/Telemetria/php/linares_3d_historial.php?codigo='+encodeURIComponent(code)+'&horas=6',{cache:'no-store'});if(!resp.ok)return;const obj=await resp.json();if(request!==historyRequest||state.selected!==n[0])return;const key=n[2]==='tank'||n[2]==='reservoir'?'level':'flow';history=Array.isArray(obj[key])?obj[key]:[];if(history.length>=2){$('graphTitle').textContent=key==='flow'?'FLUJO':'NIVEL';$('graphValue').textContent=history.length?fmt(history[history.length-1][1])+(key==='flow'?' LPS':' m'):'';$('graphSection').hidden=false;drawChart();}}catch(e){}}
+-  let historyRequest=0,history=[];
+-  async function loadHistory(n){const request=++historyRequest;history=[];$('graphSection').hidden=true;const code=n[5];if(!code)return;try{const resp=await fetch('/Telemetria/php/linares_3d_historial.php?codigo='+encodeURIComponent(code)+'&horas=6',{cache:'no-store'});if(!resp.ok)return;const obj=await resp.json();if(request!==historyRequest||state.selected!==n[0])return;const key=n[2]==='tank'||n[2]==='reservoir'?'level':'flow';history=Array.isArray(obj[key])?obj[key]:[];if(history.length>=2){$('graphTitle').textContent=key==='flow'?'FLUJO':'NIVEL';$('graphValue').textContent=history.length?fmt(history[history.length-1][1])+(key==='flow'?' LPS':' m'):'';$('graphSection').hidden=false;drawChart();}}catch(e){}}
 -  function drawChart(){const el=$('graph');if($('graphSection').hidden||history.length<2)return;const rect=el.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),w=Math.max(230,rect.width),h=Math.max(150,rect.height);el.width=Math.round(w*dpr);el.height=Math.round(h*dpr);const ctx=el.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);const data=history.filter(v=>Number.isFinite(v[0])&&Number.isFinite(v[1]));if(data.length<2)return;const minX=data[0][0],maxX=data[data.length-1][0]||minX+1,vs=data.map(p=>p[1]),minY=Math.min(...vs),maxY=Math.max(...vs),span=Math.max(.1,maxY-minY),lo=minY-span*.18,hi=maxY+span*.19;const L=45,R=w-10,T=9,B=h-25;ctx.font='10px Arial';ctx.strokeStyle='#dce5e9';ctx.fillStyle='#516873';ctx.lineWidth=1;for(let i=0;i<=3;i++){const y=T+i*(B-T)/3;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(R,y);ctx.stroke();ctx.fillText(fmt(hi-(hi-lo)*i/3),1,y+3);}for(let i=0;i<=3;i++){const x=L+i*(R-L)/3;ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,B);ctx.stroke();const d=new Date(minX+i*(maxX-minX)/3);ctx.fillText(d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false}),x-13,B+15);}const px=p=>L+(p[0]-minX)/Math.max(1,maxX-minX)*(R-L),py=p=>B-(p[1]-lo)/(hi-lo)*(B-T);ctx.beginPath();ctx.moveTo(px(data[0]),B);for(const p of data)ctx.lineTo(px(p),py(p));ctx.lineTo(px(data[data.length-1]),B);ctx.closePath();ctx.fillStyle='#0058b7';ctx.fill();ctx.beginPath();for(let i=0;i<data.length;i++)i?ctx.lineTo(px(data[i]),py(data[i])):ctx.moveTo(px(data[i]),py(data[i]));ctx.strokeStyle='#0058b7';ctx.lineWidth=1.6;ctx.stroke();$('graphLatest').textContent='Última '+new Date(maxX).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false});}
++  let historyRequest=0,history=[],mvHistNode=null;
++  async function loadHistory(n){const request=++historyRequest;if(mvHistNode!==n[0]){history=[];$('graphSection').hidden=true;}mvHistNode=n[0];const code=n[5];if(!code)return;try{const resp=await fetch('/Telemetria/php/linares_3d_historial.php?codigo='+encodeURIComponent(code)+'&horas=6',{cache:'no-store'});if(!resp.ok)return;const obj=await resp.json();if(request!==historyRequest||state.selected!==n[0])return;const key=n[2]==='tank'||n[2]==='reservoir'?'level':'flow';history=Array.isArray(obj[key])?obj[key]:[];if(history.length>=2){$('graphTitle').textContent=key==='flow'?'FLUJO':'NIVEL';$('graphValue').textContent=history.length?fmt(history[history.length-1][1])+(key==='flow'?' LPS':' m'):'';$('graphSection').hidden=false;drawChart();}}catch(e){}}
 +  function drawChart(){
 +    /* MV PRO: gráfica estilo tendencia SCADA (igual que Monterrey V / Anillo TV) */
 +    const el=$('graph');if($('graphSection').hidden||history.length<2)return;
@@ -756,7 +758,7 @@
    function alertsRefresh(){const alerts=[];for(const n of config.nodes){const s=getData(n);if(!s)continue;if(s.status==='sin_comunicacion')alerts.push({id:n[0],name:n[1],type:'Sin comunicación'});else if(s.observation)alerts.push({id:n[0],name:n[1],type:'Nivel fuera de parámetros'});}const bar=$('alertBar');bar.hidden=!state.alerts||!alerts.length;$('alertCount').hidden=!alerts.length;$('alertCount').textContent=alerts.length;$('alertSummary').textContent=alerts.length?alerts[0].name+'   '+alerts[0].type:'';$('alertsList').replaceChildren();for(const a of alerts){const b=document.createElement('button');b.type='button';b.textContent=a.name+' · '+a.type;b.onclick=()=>{selectNode(a.id);$('alertsList').hidden=true};$('alertsList').appendChild(b);}}
    function updateData(){
      const g=live.get('TGRP0001');
-@@ -1868,6 +2345,7 @@
+@@ -1868,11 +2345,12 @@
        const f=flowLabels.get(n[0]);
        if(f){const s=getData(n);f.value.textContent=s&&s.flow!=null?fmt(s.flow,0)+' LPS':'N/D';}
      }
@@ -764,6 +766,12 @@
      if(state.selected)updatePanel(nodeById.get(state.selected).data);
      alertsRefresh();
    }
+   let retrieving=false;
+-  async function loadData(){if(retrieving)return;retrieving=true;try{const r=await fetch('/Telemetria/php/linares_3d_datos.php?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('Error HTTP');const obj=await r.json();if(!obj.items)throw Error('Datos incompletos');live.clear();for(const [code,item]of Object.entries(obj.items))live.set(code,item);updateData();$('notice').hidden=true;}catch(e){live.clear();updateData();$('notice').textContent='Sin conexión con lecturas de Linares';$('notice').hidden=false;}finally{retrieving=false;}}
++  async function loadData(){if(retrieving)return;retrieving=true;try{const mvCtl=new AbortController(),mvTo=setTimeout(()=>mvCtl.abort(),8000);const r=await fetch('/Telemetria/php/linares_3d_datos.php?t='+Date.now(),{cache:'no-store',signal:mvCtl.signal}).finally(()=>clearTimeout(mvTo));if(!r.ok)throw Error('Error HTTP');const obj=await r.json();if(!obj.items)throw Error('Datos incompletos');live.clear();for(const [code,item]of Object.entries(obj.items))live.set(code,item);updateData();$('notice').hidden=true;}catch(e){live.clear();updateData();$('notice').textContent='Sin conexión con lecturas de Linares';$('notice').hidden=false;}finally{retrieving=false;}}
+   function reset(){state.yaw=.75;state.pitch=.98;state.dist=79;state.target=[0,1.5,0];state.auto='';state.mode='orbit';state.selected=null;showPanel(false);syncButtons();}
+   function startPresentation(){state.auto='presentation';state.pt=0;state.presIndex=0;state.paused=false;state.showInfo=true;selectNode(config.nodes[0][0]);showPanel();syncButtons();}
+   function endPresentation(){state.auto='';state.paused=false;state.selected=null;showPanel(false);syncButtons();}
 @@ -1913,15 +2391,82 @@
    $('presentationNext').onclick=()=>jumpPresentation(1);
    $('presentationPause').onclick=()=>{state.paused=!state.paused;$('presentationPause').textContent=state.paused?'Continuar':'Pausar';};
@@ -889,3 +897,14 @@
      const sillaPosition=project([-84,30,10],mat,vw,vh);
      sillaLabel.hidden=!state.names||!sillaPosition||state.auto==='presentation';
      if(!sillaLabel.hidden){sillaLabel.style.left=sillaPosition[0]+'px';sillaLabel.style.top=sillaPosition[1]+'px';}
+@@ -1982,5 +2530,9 @@
+   setInterval(()=>{if(state.date)$('clockText').textContent=new Date().toLocaleString('es-MX',{timeZone:'America/Monterrey',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})},1000);
+   window.addEventListener('resize',resize,{passive:true});
+   window.addEventListener('visibilitychange',()=>{lastFrame=performance.now();});
+-  syncButtons();resize();loadData();setInterval(loadData,60000);requestAnimationFrame(render);
++  /* MV PRO: tiempo real (igual que Monterrey V: lecturas cada 10 s; gráfica de la instalación seleccionada cada 60 s) */
++  syncButtons();resize();loadData();setInterval(loadData,10000);
++  setInterval(()=>{if(state.selected&&!document.hidden){const e=nodeById.get(state.selected);if(e)loadHistory(e.data);}},60000);
++  document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadData();});
++  requestAnimationFrame(render);
+ })();

@@ -2301,8 +2301,8 @@ void main(){
     }
     details.hidden=!details.childElementCount;
   }
-  let historyRequest=0,history=[];
-  async function loadHistory(n){const request=++historyRequest;history=[];$('graphSection').hidden=true;const code=n[5];if(!code)return;try{const resp=await fetch('/Telemetria/php/linares_3d_historial.php?codigo='+encodeURIComponent(code)+'&horas=6',{cache:'no-store'});if(!resp.ok)return;const obj=await resp.json();if(request!==historyRequest||state.selected!==n[0])return;const key=n[2]==='tank'||n[2]==='reservoir'?'level':'flow';history=Array.isArray(obj[key])?obj[key]:[];if(history.length>=2){$('graphTitle').textContent=key==='flow'?'FLUJO':'NIVEL';$('graphValue').textContent=history.length?fmt(history[history.length-1][1])+(key==='flow'?' LPS':' m'):'';$('graphSection').hidden=false;drawChart();}}catch(e){}}
+  let historyRequest=0,history=[],mvHistNode=null;
+  async function loadHistory(n){const request=++historyRequest;if(mvHistNode!==n[0]){history=[];$('graphSection').hidden=true;}mvHistNode=n[0];const code=n[5];if(!code)return;try{const resp=await fetch('/Telemetria/php/linares_3d_historial.php?codigo='+encodeURIComponent(code)+'&horas=6',{cache:'no-store'});if(!resp.ok)return;const obj=await resp.json();if(request!==historyRequest||state.selected!==n[0])return;const key=n[2]==='tank'||n[2]==='reservoir'?'level':'flow';history=Array.isArray(obj[key])?obj[key]:[];if(history.length>=2){$('graphTitle').textContent=key==='flow'?'FLUJO':'NIVEL';$('graphValue').textContent=history.length?fmt(history[history.length-1][1])+(key==='flow'?' LPS':' m'):'';$('graphSection').hidden=false;drawChart();}}catch(e){}}
   function drawChart(){
     /* MV PRO: gráfica estilo tendencia SCADA (igual que Monterrey V / Anillo TV) */
     const el=$('graph');if($('graphSection').hidden||history.length<2)return;
@@ -2350,7 +2350,7 @@ void main(){
     alertsRefresh();
   }
   let retrieving=false;
-  async function loadData(){if(retrieving)return;retrieving=true;try{const r=await fetch('/Telemetria/php/linares_3d_datos.php?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('Error HTTP');const obj=await r.json();if(!obj.items)throw Error('Datos incompletos');live.clear();for(const [code,item]of Object.entries(obj.items))live.set(code,item);updateData();$('notice').hidden=true;}catch(e){live.clear();updateData();$('notice').textContent='Sin conexión con lecturas de Linares';$('notice').hidden=false;}finally{retrieving=false;}}
+  async function loadData(){if(retrieving)return;retrieving=true;try{const mvCtl=new AbortController(),mvTo=setTimeout(()=>mvCtl.abort(),8000);const r=await fetch('/Telemetria/php/linares_3d_datos.php?t='+Date.now(),{cache:'no-store',signal:mvCtl.signal}).finally(()=>clearTimeout(mvTo));if(!r.ok)throw Error('Error HTTP');const obj=await r.json();if(!obj.items)throw Error('Datos incompletos');live.clear();for(const [code,item]of Object.entries(obj.items))live.set(code,item);updateData();$('notice').hidden=true;}catch(e){live.clear();updateData();$('notice').textContent='Sin conexión con lecturas de Linares';$('notice').hidden=false;}finally{retrieving=false;}}
   function reset(){state.yaw=.75;state.pitch=.98;state.dist=79;state.target=[0,1.5,0];state.auto='';state.mode='orbit';state.selected=null;showPanel(false);syncButtons();}
   function startPresentation(){state.auto='presentation';state.pt=0;state.presIndex=0;state.paused=false;state.showInfo=true;selectNode(config.nodes[0][0]);showPanel();syncButtons();}
   function endPresentation(){state.auto='';state.paused=false;state.selected=null;showPanel(false);syncButtons();}
@@ -2530,5 +2530,9 @@ void main(){
   setInterval(()=>{if(state.date)$('clockText').textContent=new Date().toLocaleString('es-MX',{timeZone:'America/Monterrey',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})},1000);
   window.addEventListener('resize',resize,{passive:true});
   window.addEventListener('visibilitychange',()=>{lastFrame=performance.now();});
-  syncButtons();resize();loadData();setInterval(loadData,60000);requestAnimationFrame(render);
+  /* MV PRO: tiempo real (igual que Monterrey V: lecturas cada 10 s; gráfica de la instalación seleccionada cada 60 s) */
+  syncButtons();resize();loadData();setInterval(loadData,10000);
+  setInterval(()=>{if(state.selected&&!document.hidden){const e=nodeById.get(state.selected);if(e)loadHistory(e.data);}},60000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadData();});
+  requestAnimationFrame(render);
 })();
