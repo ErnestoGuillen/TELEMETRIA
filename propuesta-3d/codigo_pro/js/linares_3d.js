@@ -23,7 +23,7 @@
   /* MV PRO: acomodo como el mapa SCADA: presa -> PB1, línea a PB2/PB2A/PB3, baja a Garrapatas, diagonal al rompedor y PB4 */
   const mvNodeAngle=new Map(), MV_PUMP_LANE=6.2, MV_PIPE_LANE=5.45;
   (()=>{
-    const layout={li01:[23.2,5.4],li02:[11.2,4.0],li02a:[-1.2,3.0],li03:[-13.6,2.3],li04a:[-22.6,4.6],li05:[-31.8,-3.9],li04:[-43.2,-5.6]};
+    const layout={li01:[23.0,5.2],li02:[6.8,3.6],li02a:[-9.4,2.6],li03:[-25.6,2.0],li04a:[-34.4,6.2],li05:[-37.6,-6.8],li04:[-40.0,-21.5]};
     for(const n of config.nodes){const q=layout[n[0]];if(q){n[3]=q[0];n[4]=q[1];}}
     const order=['li00','li01','li02','li02a','li03','li04a','li05','li04'].map(id=>config.nodes.find(n=>n[0]===id)).filter(Boolean);
     order.forEach((n,i)=>{const a=order[Math.max(0,i-1)],b=order[Math.min(order.length-1,i+1)];const tx=b[3]-a[3],tz=b[4]-a[4],l=Math.hypot(tx,tz)||1;mvNodeAngle.set(n[0],n[0]==='li00'?0:Math.atan2(-tz/l,-tx/l));});
@@ -2006,7 +2006,7 @@ void main(){
     let acc = 99;
     for (let i = 1; i < road.length; i++) {
       acc += Math.hypot(road[i].x - road[i - 1].x, road[i].z - road[i - 1].z);
-      if (acc >= 10.5 && ground(road[i].x + road[i].nx * poleOff, road[i].z + road[i].nz * poleOff) < 1.2) { acc = 0; const r = road[i]; poles.push({ x: r.x + r.nx * poleOff, z: r.z + r.nz * poleOff, nx: r.nx, nz: r.nz }); }
+      if (acc >= 10.5 && ground(road[i].x + road[i].nx * poleOff, road[i].z + road[i].nz * poleOff) < 1.2 && lakeDistance(road[i].x + road[i].nx * poleOff, road[i].z + road[i].nz * poleOff) > 5) { acc = 0; const r = road[i]; poles.push({ x: r.x + r.nx * poleOff, z: r.z + r.nz * poleOff, nx: r.nx, nz: r.nz }); }
     }
     for (const p of poles) {
       const g = ground(p.x, p.z);
@@ -2017,6 +2017,7 @@ void main(){
     }
     for (let i = 1; i < poles.length; i++) {
       const a = poles[i - 1], b = poles[i];
+      if (Math.hypot(b.x - a.x, b.z - a.z) > 16) continue;
       for (const o of [-.8, 0, .8]) {
         const pts = [];
         for (let k = 0; k <= 8; k++) {
@@ -2100,7 +2101,7 @@ void main(){
       if (lakeDistance(x, z) < 3.5) return true;
       if (distToPoly(x, z, route) < 6.5 + margin) return true;
       if (distToPoly(x, z, polePts) < 2.2 + margin) return true;
-      if (casetas.some(n => inBox(n, x, z, 8 + margin, (n[2] === 'pump' ? 10.5 : 7) + margin))) return true;
+      if (casetas.some(n => n[2] === 'pump' ? (() => { const l = toLocal(n, x, z); return Math.abs(l[0]) < 12.5 + margin && l[1] > -10 - margin && l[1] < 15 + margin; })() : inBox(n, x, z, 11 + margin, 11 + margin))) return true;
       return false;
     };
     const tree = (x, z, s) => {
