@@ -1,0 +1,499 @@
+--- original/anillo_tv_3d.js
++++ pro/anillo_tv_3d.js
+@@ -1,6 +1,16 @@
+ 'use strict';
+ (function () {
+   const canvas = document.getElementById('scene');
++  /* MV PRO: ?cielo=foto usa la imagen anterior; por defecto cielo procedural realista */
++  const mvSkyPhoto = /[?&]cielo=foto/i.test(location.search);
++  let mvMotionScale = 1, mvMotionTimer = 0, mvMotionResize = null;
++  function mvMotionStart() {
++    clearTimeout(mvMotionTimer);
++    if (mvMotionScale !== .68) { mvMotionScale = .68; if (mvMotionResize) mvMotionResize(); }
++    mvMotionTimer = setTimeout(() => { mvMotionScale = 1; if (mvMotionResize) mvMotionResize(); }, 260);
++  }
++  /* MV PRO: ?calidad=ultra (o ?4k) fuerza máxima resolución para videowall / pantallas 4K */
++  const mvUltra = /[?&](calidad=ultra|4k)(&|$|=)/i.test(location.search) || (window.screen && window.screen.width * (window.devicePixelRatio || 1) >= 3800);
+   console.info('ANILLOTV3D-LPS-PROFUNDIDAD-Y-ANCLAJE-20261111');
+   const gl = canvas.getContext('webgl2', { antialias: true, alpha: true, powerPreference: 'high-performance' }) || canvas.getContext('webgl', { antialias: true, alpha: true, powerPreference: 'high-performance' });
+   if (!gl) { const notice = document.getElementById('notice'); notice.querySelector('.notice-title').textContent = 'No se pudo iniciar WebGL'; notice.querySelector('.notice-text').textContent = 'El navegador no pudo crear un contexto WebGL. Verifica la aceleración por hardware y chrome://gpu. Si la versión anterior abre, revisa la consola con F12.'; notice.style.display = 'block'; document.documentElement.classList.add('mv-scene-ready'); return; }
+@@ -10,6 +20,7 @@
+   const vert = `
+ attribute vec3 aPos; attribute vec3 aNormal; attribute vec3 aColor; attribute vec4 aData;
+ uniform mat4 uVP; uniform float uTime; uniform float uAnimate; uniform float uLevels[36];
++uniform mat4 uLightVP; varying vec4 vShadowPos;
+ varying vec3 vNormal; varying vec3 vColor; varying vec3 vPos; varying vec4 vData;
+ varying float vTankFill;
+ float getLevel(float id){
+@@ -77,6 +88,7 @@
+     }
+   }
+   vPos=p;vNormal=aNormal;vColor=aColor;vData=aData;gl_Position=uVP*vec4(p,1.0);
++  vShadowPos=uLightVP*vec4(p,1.0);
+ }`;
+   const frag = `
+ precision highp float;
+@@ -84,6 +96,50 @@
+ varying float vTankFill;
+ uniform vec3 uCamera; uniform float uTime; uniform float uAnimate; uniform float uTerrainDetail; uniform float uEvening;
+ uniform sampler2D uTurfTex; uniform sampler2D uForestTex;
++/* MV PRO: sombras del sol, oclusión de contacto y reflejos del cielo */
++uniform sampler2D uShadowMap; uniform float uShadowOn; uniform vec2 uShadowTexel; varying vec4 vShadowPos;
++uniform vec4 uTankAO[1]; uniform float uAOOn;
++uniform sampler2D uSkyRefl; uniform float uSkyReflReady; uniform float uProGrade;
++float mvShadow(vec3 N, vec3 L){
++  if(uShadowOn<.5) return 1.0;
++  vec3 s=vShadowPos.xyz/vShadowPos.w*.5+.5;
++  if(s.x<=.001||s.x>=.999||s.y<=.001||s.y>=.999||s.z>=1.0) return 1.0;
++  float ndl=clamp(dot(N,L),0.0,1.0);
++  float bias=.00045+.0016*(1.0-ndl);
++  vec2 t=uShadowTexel*1.35;
++  float sum=step(s.z-bias,texture2D(uShadowMap,s.xy+vec2(-.5,-1.5)*t).r)
++           +step(s.z-bias,texture2D(uShadowMap,s.xy+vec2(1.5,-.5)*t).r)
++           +step(s.z-bias,texture2D(uShadowMap,s.xy+vec2(.5,1.5)*t).r)
++           +step(s.z-bias,texture2D(uShadowMap,s.xy+vec2(-1.5,.5)*t).r);
++  float edge=smoothstep(.0,.04,min(min(s.x,1.0-s.x),min(s.y,1.0-s.y)));
++  return mix(1.0,sum*.25,edge);
++}
++float mvContactAO(){
++  float ao=1.0;
++  for(int i=0;i<1;i++){
++    vec4 t=uTankAO[i];
++    if(t.z<.001) continue;
++    float dd=max(length(vPos.xz-t.xy)-t.z,0.0);
++    ao*=1.0-.34*exp(-dd*1.45);
++  }
++  return ao;
++}
++vec3 mvSky(vec3 dir){
++  dir=normalize(vec3(dir.x,max(dir.y,.03),dir.z));
++  float az=atan(dir.z,dir.x);
++  float el=asin(clamp(dir.y,-1.0,1.0));
++  vec3 sky=mix(vec3(.78,.86,.93),vec3(.24,.48,.82),pow(clamp(dir.y,0.0,1.0),.55));
++  sky+=vec3(.25,.22,.16)*pow(max(dot(dir,normalize(vec3(-.42,.95,.56))),0.0),12.0);
++  return sky*mix(vec3(1.0),vec3(.45,.52,.66),uEvening);
++}
++vec3 mvGrade(vec3 c){
++  c=max(c,vec3(0.0));
++  float l=dot(c,vec3(.2126,.7152,.0722));
++  vec3 g=mix(vec3(l),c,1.07);
++  g=(g-.5)*1.055+.5+.006;
++  g*=vec3(1.012,1.0,.985);
++  return mix(c,clamp(g,0.0,1.0),uProGrade);
++}
+ float hash2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
+ float noise2(vec2 p){
+   vec2 i=floor(p),f=fract(p); f=f*f*(3.0-2.0*f);
+@@ -150,8 +206,9 @@
+ void main(){
+ vec3 N=normalize(vNormal);vec3 L=normalize(vec3(-.42,.95,.56));vec3 L2=normalize(vec3(.7,.8,-.4));
+ float d=max(dot(N,L),0.0), d2=max(dot(N,L2),0.0);
++float mvSh=mix(1.0,mvShadow(N,L),1.0-.55*uEvening); d*=mvSh; d2*=mix(1.0,mvSh,.30);
+ vec3 V=normalize(uCamera-vPos), H=normalize(L+V);
+-float spec=pow(max(dot(N,H),0.0),29.0);
++float spec=pow(max(dot(N,H),0.0),29.0)*mvSh;
+ float fres=pow(1.0-max(dot(N,V),0.0),2.0);
+ float shine=vData.x, kind=vData.z;
+ if(((kind>4.5&&kind<6.5)||(kind>8.5&&kind<10.5)) && vTankFill<.018) discard;
+@@ -257,6 +314,20 @@
+   outAlpha*=lit;
+ }
+ if((kind>3.5&&kind<4.5)||(kind>7.5&&kind<8.5)) c+=vec3(.08,.12,.14)*fres*(.60+.40*d);
++{
++  vec3 R=reflect(-V,N);
++  if(kind>3.5&&kind<4.5){
++    c=mix(c,mvSky(R)*.92,clamp(.04+fres*.30,0.0,.26)*(.35+.65*max(N.y,0.0)+.35*(1.0-abs(N.y))*(1.0-fres)));
++    c+=vec3(1.0,.97,.90)*pow(max(dot(N,H),0.0),220.0)*1.15*mvSh;
++  } else if((kind>1.5&&kind<2.5)||(kind>4.5&&kind<6.5)){
++    c=mix(c,mvSky(R)*.80,clamp(fres*.30,0.0,.24));
++    c+=vec3(1.0,.97,.90)*pow(max(dot(N,H),0.0),160.0)*.65*mvSh;
++  } else if(kind>7.5&&kind<8.5){
++    c+=mvSky(R)*fres*.10;
++  }
++  if(!((kind>.5&&kind<2.5)||(kind>2.5&&kind<3.5)||(kind>4.5&&kind<6.5)||(kind>8.5&&kind<10.5)||kind>11.5)) c*=1.0-(1.0-mvSh)*.34;
++  if(uAOOn>.5 && N.y>.55 && vPos.y<.62 && (kind<.5||(kind>6.5&&kind<7.5)||(kind>10.5&&kind<11.5))) c*=mvContactAO();
++}
+ c*=mix(vec3(1.0),vec3(.66,.72,.83),uEvening);
+ if(kind>14.5&&kind<15.5){
+   c=vec3(.028,.047,.033);
+@@ -268,7 +339,7 @@
+ c+=vColor*shine*.28*(1.0+uEvening*.82);
+ float dist=length(vPos-uCamera);
+ c=mix(c,mix(vec3(.37,.46,.48),vec3(.21,.27,.32),uEvening),clamp((dist-105.0)/155.0,0.,.10));
+-gl_FragColor=vec4(c,outAlpha);
++gl_FragColor=vec4(mvGrade(c),outAlpha);
+ }`;
+   const fallbackVert = `
+ attribute vec3 aPos; attribute vec3 aNormal; attribute vec3 aColor; attribute vec4 aData;
+@@ -589,6 +660,105 @@
+   gl.useProgram(program);
+   if (loc.turf !== null) gl.uniform1i(loc.turf, 1);
+   if (loc.forest !== null) gl.uniform1i(loc.forest, 2);
++  /* ===== MV PRO: sombras del sol (shadow map), oclusión de contacto y reflejos ===== */
++  const mvLoc = {
++    lightVP: gl.getUniformLocation(program, 'uLightVP'), shadowMap: gl.getUniformLocation(program, 'uShadowMap'),
++    shadowOn: gl.getUniformLocation(program, 'uShadowOn'), shadowTexel: gl.getUniformLocation(program, 'uShadowTexel'),
++    tankAO: gl.getUniformLocation(program, 'uTankAO[0]'), aoOn: gl.getUniformLocation(program, 'uAOOn'),
++    skyRefl: gl.getUniformLocation(program, 'uSkyRefl'), skyReflReady: gl.getUniformLocation(program, 'uSkyReflReady'),
++    grade: gl.getUniformLocation(program, 'uProGrade')
++  };
++  if (mvLoc.shadowMap) gl.uniform1i(mvLoc.shadowMap, 3);
++  if (mvLoc.skyRefl) gl.uniform1i(mvLoc.skyRefl, 4);
++  if (mvLoc.grade) gl.uniform1f(mvLoc.grade, 1);
++  let mvShadowDirty = true, mvShadowNext = 0, mvShadowTopView = null, mvAOReady = true;
++  const mvShadow = (() => {
++    if (!enhancedWaterShader || !mvLoc.lightVP || /[?&]sombras=0/i.test(location.search)) return null;
++    const isGL2 = typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext;
++    const depthExt = isGL2 ? null : gl.getExtension('WEBGL_depth_texture');
++    if (!isGL2 && !depthExt) return null;
++    const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE);
++    const size = Math.min(maxTex, 4096);
++    try {
++      const depth = gl.createTexture();
++      gl.bindTexture(gl.TEXTURE_2D, depth);
++      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
++      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
++      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
++      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
++      if (isGL2) gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, size, size, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
++      else gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, size, size, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
++      const color = gl.createRenderbuffer();
++      gl.bindRenderbuffer(gl.RENDERBUFFER, color);
++      gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA4, size, size);
++      const fbo = gl.createFramebuffer();
++      gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
++      gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, color);
++      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depth, 0);
++      const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
++      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
++      gl.bindTexture(gl.TEXTURE_2D, null);
++      if (!ok) return null;
++      const sp = gl.createProgram();
++      gl.attachShader(sp, shader(gl.VERTEX_SHADER, vert));
++      gl.attachShader(sp, shader(gl.FRAGMENT_SHADER, 'precision mediump float;varying vec4 vData;varying float vTankFill;void main(){float k=vData.z;if(vData.w<.10||(k>8.5&&k<10.5)||(k>.5&&k<1.5)||(k>2.5&&k<3.5)||(k>11.5&&k<13.5))discard;if(((k>4.5&&k<6.5))&&vTankFill<.018)discard;gl_FragColor=vec4(1.0);}'));
++      for (const [name, index] of [['aPos', loc.pos], ['aNormal', loc.normal], ['aColor', loc.color], ['aData', loc.data]]) if (index >= 0) gl.bindAttribLocation(sp, index, name);
++      gl.linkProgram(sp);
++      if (!gl.getProgramParameter(sp, gl.LINK_STATUS)) return null;
++      const Ll = Math.hypot(-.42, .95, .56), L = [-.42 / Ll, .95 / Ll, .56 / Ll], center = [0, 0, 0], half = 58;
++      const eye = [center[0] + L[0] * 160, center[1] + L[1] * 160, center[2] + L[2] * 160];
++      const ortho = [1 / half, 0, 0, 0, 0, 1 / half, 0, 0, 0, 0, -2 / 319, 0, 0, 0, -321 / 319, 1];
++      return {
++        fbo, depth, size, lightVP: null, makeLightVP: () => new Float32Array(matMul(ortho, lookAt(eye, center, [0, 1, 0]))), program: sp,
++        vp: gl.getUniformLocation(sp, 'uVP'), time: gl.getUniformLocation(sp, 'uTime'),
++        levels: gl.getUniformLocation(sp, 'uLevels[0]'), anim: gl.getUniformLocation(sp, 'uAnimate'),
++        lvp: gl.getUniformLocation(sp, 'uLightVP')
++      };
++    } catch (error) {
++      console.warn('MTYV 3D: sombras no disponibles en este equipo:', error && error.message);
++      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
++      return null;
++    }
++  })();
++  function mvRenderShadowMap(now, drawShadowCasters) {
++    if (!mvShadow) return;
++    if (!mvShadow.lightVP) mvShadow.lightVP = mvShadow.makeLightVP();
++    const top = isTopViewMode();
++    if (top !== mvShadowTopView) { mvShadowTopView = top; mvShadowDirty = true; }
++    let levelKey = 0; for (let i = 0; i < levelsUniform.length; i++) levelKey += levelsUniform[i] * (i + 1);
++    if (Math.abs(levelKey - mvShadowNext) > .0005) { mvShadowNext = levelKey; mvShadowDirty = true; }
++    if (!mvShadowDirty) return;
++    mvShadowDirty = false;
++    gl.bindFramebuffer(gl.FRAMEBUFFER, mvShadow.fbo);
++    gl.viewport(0, 0, mvShadow.size, mvShadow.size);
++    gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.depthMask(true); gl.disable(gl.BLEND);
++    gl.colorMask(false, false, false, false);
++    gl.clear(gl.DEPTH_BUFFER_BIT);
++    gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.6, 3.0);
++    gl.useProgram(mvShadow.program);
++    gl.uniformMatrix4fv(mvShadow.vp, false, mvShadow.lightVP);
++    gl.uniformMatrix4fv(mvShadow.lvp, false, mvShadow.lightVP);
++    gl.uniform1f(mvShadow.time, elapsed); gl.uniform1fv(mvShadow.levels, levelsUniform); gl.uniform1f(mvShadow.anim, 0);
++    drawShadowCasters();
++    gl.disable(gl.POLYGON_OFFSET_FILL);
++    gl.colorMask(true, true, true, true);
++    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
++    gl.viewport(0, 0, canvas.width, canvas.height);
++  }
++  function mvBindProUniforms() {
++    if (!enhancedWaterShader) return;
++    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, mvShadow ? mvShadow.depth : null);
++    gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, skyTexture);
++    gl.activeTexture(gl.TEXTURE0);
++    if (mvLoc.shadowOn) gl.uniform1f(mvLoc.shadowOn, mvShadow ? 1 : 0);
++    if (mvShadow && mvShadow.lightVP) { gl.uniformMatrix4fv(mvLoc.lightVP, false, mvShadow.lightVP); gl.uniform2f(mvLoc.shadowTexel, 1 / mvShadow.size, 1 / mvShadow.size); }
++    if (mvLoc.skyReflReady) gl.uniform1f(mvLoc.skyReflReady, skyReady ? 1 : 0);
++    if (!mvAOReady && mvLoc.tankAO && tankLabels.length) {
++      const ao = new Float32Array(56);
++      tankLabels.slice(0, 14).forEach((p, i) => { ao[i * 4] = p.x; ao[i * 4 + 1] = p.z; ao[i * 4 + 2] = (p.radius || 1) * 1.04; });
++      gl.uniform4fv(mvLoc.tankAO, ao); gl.uniform1f(mvLoc.aoOn, 1); mvAOReady = true;
++    }
++  }
+   gl.activeTexture(gl.TEXTURE0);
+   const skyVertex = `
+ attribute vec2 aSkyPosition;
+@@ -609,8 +779,40 @@
+ uniform float uSkySeconds;
+ uniform float uSkyReady;
+ uniform float uEvening;
++uniform float uSkyProcedural;
++float mvH(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
++float mvN(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(mvH(i),mvH(i+vec2(1,0)),f.x),mix(mvH(i+vec2(0,1)),mvH(i+vec2(1,1)),f.x),f.y);}
++float mvFbm(vec2 p){float a=.5,s=0.0;for(int i=0;i<5;i++){s+=a*mvN(p);p=p*2.03+vec2(17.3,-9.1);a*=.5;}return s;}
++vec3 mvProceduralSky(vec3 d,float t,float ev){
++  vec3 sunDir=normalize(vec3(-.42,.95,.56));
++  vec3 sunEve=normalize(vec3(-.80,.10,.58));
++  vec3 S=normalize(mix(sunDir,sunEve,ev));
++  float y=max(d.y,0.0);
++  float mu=max(dot(d,S),0.0);
++  vec3 zen=mix(vec3(.16,.40,.80),vec3(.10,.14,.30),ev);
++  vec3 hor=mix(vec3(.72,.83,.93),vec3(.95,.58,.36),ev);
++  vec3 sky=mix(hor,zen,pow(y,.48));
++  sky=mix(sky,hor*1.05,exp(-y*14.0)*.55);
++  sky+=mix(vec3(1.0,.93,.80),vec3(1.0,.55,.25),ev)*(pow(mu,6.0)*.22+pow(mu,48.0)*.35);
++  sky+=vec3(1.0,.96,.88)*smoothstep(.9994,.9998,mu)*3.0;
++  vec2 uv=d.xz/(y+.085)*.55+vec2(t*.010,t*.004);
++  float base=mvFbm(uv*1.15);
++  float detail=mvFbm(uv*3.4+vec2(base*1.6,-t*.006));
++  float cov=smoothstep(.50,.80,base*.78+detail*.32);
++  float shade=mvFbm(uv*1.15+S.xz*.18)-base;
++  vec3 lit=mix(vec3(1.0,.99,.97),vec3(1.0,.72,.50),ev);
++  vec3 dark=mix(vec3(.58,.64,.74),vec3(.36,.30,.40),ev);
++  vec3 cloud=mix(lit,dark,clamp(.45+shade*2.4+(1.0-detail)*.35,0.0,1.0));
++  cloud+=lit*pow(mu,10.0)*.25;
++  float fade=smoothstep(.0,.16,d.y);
++  sky=mix(sky,cloud,cov*fade*.92);
++  sky=mix(sky,hor*vec3(.94,.96,.98),exp(-max(d.y,0.0)*22.0)*.45);
++  if(d.y<0.0) sky=mix(hor*.86,vec3(.36,.42,.40),clamp(-d.y*6.0,0.0,1.0));
++  return sky;
++}
+ void main(){
+   vec3 direction=normalize(uSkyForward+uSkyRight*(vSkyNdc.x*uSkyAspect*.404026)+uSkyUp*(vSkyNdc.y*.404026));
++  if(uSkyProcedural>.5){gl_FragColor=vec4(mvProceduralSky(direction,uSkySeconds,uEvening),1.0);return;}
+   float azimuth=atan(direction.z,direction.x);
+   float elevation=asin(clamp(direction.y,-1.0,1.0));
+   vec2 uv=vec2(fract(azimuth*.1591549431+uSkySeconds*.00120),clamp(.27+elevation*.68,.008,.992));
+@@ -633,7 +835,8 @@
+       aspect: gl.getUniformLocation(skyProgram, 'uSkyAspect'),
+       seconds: gl.getUniformLocation(skyProgram, 'uSkySeconds'),
+       ready: gl.getUniformLocation(skyProgram, 'uSkyReady'),
+-      evening: gl.getUniformLocation(skyProgram, 'uEvening')
++      evening: gl.getUniformLocation(skyProgram, 'uEvening'),
++      procedural: gl.getUniformLocation(skyProgram, 'uSkyProcedural')
+     };
+     skyBuffer = gl.createBuffer();
+     gl.bindBuffer(gl.ARRAY_BUFFER, skyBuffer);
+@@ -702,6 +905,7 @@
+     gl.uniform1f(skyLoc.seconds, seconds);
+     gl.uniform1f(skyLoc.ready, skyReady ? 1 : 0);
+     if (skyLoc.evening !== null) gl.uniform1f(skyLoc.evening, eveningBlend);
++    if (skyLoc.procedural) gl.uniform1f(skyLoc.procedural, mvSkyPhoto ? 0 : 1);
+     gl.drawArrays(gl.TRIANGLES, 0, 3);
+     gl.depthMask(true);
+     gl.enable(gl.DEPTH_TEST);
+@@ -1592,6 +1796,7 @@
+   const superiorPumpBuffers = [0, 1, 2].map(() => ({ buf: gl.createBuffer(), count: 0 }));
+ 
+   function rebuildPumpBatches() {
++    mvShadowDirty = true;
+     for (let g = 0; g < 3; g++) {
+       let total = 0;
+       for (const p of pumpMeshes) total += (p.active === true ? p.on : p.off)[g].length;
+@@ -1612,6 +1817,7 @@
+   rebuildPumpBatches();
+   const pipeBuffers = [0, 1, 2].map(() => ({ buf: gl.createBuffer(), count: 0 }));
+   function rebuildPipeBuffers() {
++    mvShadowDirty = true;
+     const saved = A; A = [[], [], []];
+     for (const def of pipeDefs) pipe(def.nodes, def.r, def);
+     for (let group = 0; group < 3; group++) {
+@@ -2309,14 +2515,14 @@
+     #presentationPanel .mv-dh-value small{color:#111111;font-size:10px;font-weight:500;letter-spacing:0}
+     #presentationPanel .mv-dh-flow-choice{display:block;width:100%;margin:3px 0 6px;min-height:26px;padding:3px 7px;border:1px solid #c6d4dc;border-radius:2px;background:#f8fafb;color:#314c5d;font:500 11px 'Segoe UI',Tahoma,Arial,sans-serif}
+     #presentationPanel .mv-dh-flow-choice[hidden]{display:none}
+-    #presentationPanel .mv-dh-plot{position:relative;width:100%;height:137px;min-width:0;overflow:visible;background:#ffffff}
++    #presentationPanel .mv-dh-plot{position:relative;width:100%;height:137px;min-width:0;overflow:visible;background:transparent}
+     #presentationPanel .mv-dh-plot svg{width:100%;height:100%;display:block;overflow:hidden}
+     #presentationPanel .mv-dh-plot svg .mv-dh-solid-area{fill-opacity:1!important;opacity:1!important;mix-blend-mode:normal!important}
+     #presentationPanel .mv-dh-foot{display:flex;align-items:center;justify-content:flex-end;gap:7px;padding:5px 1px 0;border-top:1px solid #e4e4e4;color:#111111;font-size:10px;line-height:1.3}
+     #presentationPanel .mv-dh-foot span:first-child{display:none!important}
+     #presentationPanel .mv-dh-foot span:last-child{font-weight:500;text-align:right}
+     #presentationPanel .mv-dh-empty{display:flex;align-items:center;justify-content:center;min-height:100px;height:100%;padding:9px;text-align:center;color:#6b7c86;font-size:11px;line-height:1.5}
+-    #presentationPanel .mv-dh-tooltip{position:absolute;z-index:5;pointer-events:none;background:#ffffff;border:1px solid #b6bec6;color:#111111;padding:5px 7px;border-radius:2px;font-size:10.5px;line-height:1.35;box-shadow:none;white-space:nowrap;transform:translate(-50%,-105%)}
++    #presentationPanel .mv-dh-tooltip{position:absolute;z-index:5;pointer-events:none;background:#274455;border:0;color:#fff;padding:4px 7px;border-radius:2px;font-weight:600;font-size:10.5px;line-height:1.35;box-shadow:none;white-space:nowrap;transform:translate(-50%,-105%)}
+     #presentationPanel .mv-dh-tooltip[hidden]{display:none}
+     #presentationPanel .mv-dh-cursor{pointer-events:none}
+     #presentationPanel .mv-dh-message{margin:0 11px 10px;padding:7px 0;border:0;border-top:1px solid #e0e7ed;border-radius:0;background:#fff;color:#667b88;font-size:10px;line-height:1.45}
+@@ -2688,43 +2894,48 @@
+   }
+ 
+   function mvHistoryChart(plot, samples, unit, hue) {
++    /* MV PRO: gráfica estilo tendencia SCADA (línea por lectura, rejilla técnica, valor actual en el eje) */
+     const endTime = Date.now();
+     const startTime = endTime - MV_HISTORY_WINDOW_MS;
+     const recent = samples.filter(item => Array.isArray(item) && Number.isFinite(item[0]) && Number.isFinite(item[1]) && item[0] >= startTime && item[0] <= endTime + 60000).sort((a, b) => a[0] - b[0]);
+     if (!recent.length) return null;
++    const isFlow = hue === 'flow';
++    const fmt = v => unit === 'm' ? v.toFixed(2) : mvHistoryNumber.format(v);
+     const values = recent.map(point => point[1]);
+     const minValue = Math.min(...values), maxValue = Math.max(...values);
+     const spread = Math.max(unit === 'm' ? .11 : 2, (maxValue - minValue) * .20);
+     const low = Math.max(0, minValue - spread), high = Math.max(maxValue + spread, low + (unit === 'm' ? .2 : 3));
+-    const W = Math.max(200, Math.round(plot.clientWidth || 380)), H = Math.max(128, Math.round(plot.clientHeight || 165)), L = 43, R = 11, T = 11, B = 24;
+-    const pw = W - L - R, ph = H - T - B;
++    const W = Math.max(200, Math.round(plot.clientWidth || 380)), H = Math.max(128, Math.round(plot.clientHeight || 145)), L = 42, R = 48, T = 10, B = 22;
++    const pw = W - L - R, ph = H - T - B, base = T + ph;
+     const xAt = t => L + (t - startTime) / (endTime - startTime) * pw;
+     const yAt = v => T + (high - v) / (high - low) * ph;
+     const coords = recent.map(point => [xAt(point[0]), yAt(point[1])]);
+-    let grid = '';
+-    const color = hue === 'flow' ? '#626c75' : '#0058b7';
+-    for (let i = 0; i <= 3; i++) {
+-      const y = T + ph * i / 3;
+-      const value = high - (high - low) * i / 3;
+-      grid += `<line x1="${L}" x2="${W - R}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}" stroke="#dce0e3" stroke-width=".7"/>`;
+-      grid += `<text x="${L - 6}" y="${(y + 3.6).toFixed(2)}" text-anchor="end" fill="#111111" font-size="10" font-family="Segoe UI,Arial">${unit === 'm' ? value.toFixed(2) : mvHistoryNumber.format(value)}</text>`;
+-    }
+-    for (let i = 0; i <= 3; i++) {
+-      const x = L + pw * i / 3;
+-      grid += `<line x1="${x.toFixed(2)}" x2="${x.toFixed(2)}" y1="${T}" y2="${T + ph}" stroke="#eef0f1" stroke-width=".65"/>`;
+-      const when = startTime + (endTime - startTime) * i / 3;
+-      grid += `<text x="${x.toFixed(2)}" y="${H - 5}" text-anchor="${i === 0 ? 'start' : i === 3 ? 'end' : 'middle'}" fill="#111111" font-size="10" font-family="Segoe UI,Arial">${mvHistoryFormatTime(when)}</text>`;
++    const color = isFlow ? '#4f5b66' : '#0058b7';
++    const font = 'font-family="Segoe UI,Arial" font-size="10" style="font-variant-numeric:tabular-nums"';
++    let grid = `<rect x="${L}" y="${T}" width="${pw}" height="${ph}" fill="#ffffff" stroke="#c3ccd4" stroke-width="1"/>`;
++    for (let i = 0; i <= 4; i++) {
++      const y = T + ph * i / 4;
++      const value = high - (high - low) * i / 4;
++      if (i > 0 && i < 4) grid += `<line x1="${L}" x2="${L + pw}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}" stroke="#e9eef2" stroke-width="1"/>`;
++      grid += `<line x1="${L - 4}" x2="${L}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}" stroke="#8a98a5" stroke-width="1"/>`;
++      grid += `<text x="${L - 7}" y="${(y + 3.5).toFixed(2)}" text-anchor="end" fill="#3d4852" ${font}>${unit === 'm' ? value.toFixed(2) : mvHistoryNumber.format(Math.round(value))}</text>`;
++    }
++    for (let i = 0; i <= 6; i++) {
++      const x = L + pw * i / 6;
++      const when = startTime + (endTime - startTime) * i / 6;
++      if (i > 0 && i < 6) grid += `<line x1="${x.toFixed(2)}" x2="${x.toFixed(2)}" y1="${T}" y2="${base}" stroke="#f0f3f6" stroke-width="1"/>`;
++      grid += `<line x1="${x.toFixed(2)}" x2="${x.toFixed(2)}" y1="${base}" y2="${base + 4}" stroke="#8a98a5" stroke-width="1"/>`;
++      if (i % 2 === 0) grid += `<text x="${x.toFixed(2)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : i === 6 ? 'end' : 'middle'}" fill="#3d4852" ${font}>${mvHistoryFormatTime(when)}</text>`;
+     }
+-    let fills = '', strokes = '', segment = [];
++    let strokes = '', dots = '', segment = [];
+     const flush = () => {
+       if (!segment.length) return;
+-      const path = segment.map((point, index) => (index ? 'L' : 'M') + point[0].toFixed(2) + ',' + point[1].toFixed(2)).join(' ');
++      const path = segment.map((pt, index) => (index ? 'L' : 'M') + pt[0].toFixed(2) + ',' + pt[1].toFixed(2)).join(' ');
+       if (segment.length > 1) {
+-        const baseline = (T + ph).toFixed(2);
+-        const area = `${path} L${segment[segment.length - 1][0].toFixed(2)},${baseline} L${segment[0][0].toFixed(2)},${baseline} Z`;
+-        fills += `<path class="mv-dh-solid-area" d="${area}" fill="${color}" fill-opacity="1" opacity="1" style="fill:${color}!important;fill-opacity:1!important;opacity:1!important;mix-blend-mode:normal!important" stroke="none"/>`;
+-        strokes += `<path d="${path}" fill="none" stroke="${color}" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
+-      } else strokes += `<circle cx="${segment[0][0].toFixed(2)}" cy="${segment[0][1].toFixed(2)}" r="1.5" fill="${color}"/>`;
++        strokes += `<path d="${path} L${segment[segment.length - 1][0].toFixed(2)},${base} L${segment[0][0].toFixed(2)},${base} Z" fill="${color}" fill-opacity=".07"/>`;
++        strokes += `<path d="${path}" fill="none" stroke="${color}" stroke-width="1.7" stroke-linejoin="miter"/>`;
++      }
++      for (const pt of segment) dots += `<rect x="${(pt[0] - 2).toFixed(2)}" y="${(pt[1] - 2).toFixed(2)}" width="4" height="4" fill="#ffffff" stroke="${color}" stroke-width="1.2"/>`;
+       segment = [];
+     };
+     for (let i = 0; i < coords.length; i++) {
+@@ -2733,7 +2944,14 @@
+     }
+     flush();
+     const last = coords[coords.length - 1];
+-    plot.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="presentation" data-graficas-version="RELLENO-100-OPACO-20261109">${grid}${fills}${strokes}<circle cx="${last[0].toFixed(2)}" cy="${last[1].toFixed(2)}" r="1.7" fill="${color}"/><g class="mv-dh-cursor" visibility="hidden"><line x1="0" x2="0" y1="${T}" y2="${T + ph}" stroke="${color}" stroke-dasharray="3 3" stroke-opacity=".5" stroke-width=".85"/><circle cx="0" cy="0" r="3.2" fill="white" stroke="${color}" stroke-width="1.2"/></g></svg><div class="mv-dh-tooltip" hidden></div>`;
++    const tagText = fmt(recent[recent.length - 1][1]);
++    const tagW = Math.max(R - 4, tagText.length * 6.2 + 10);
++    const tagY = Math.min(base - 8, Math.max(T + 8, last[1]));
++    const lastDot = `<line x1="${last[0].toFixed(2)}" x2="${(L + pw).toFixed(2)}" y1="${last[1].toFixed(2)}" y2="${last[1].toFixed(2)}" stroke="${color}" stroke-width="1" stroke-dasharray="3 2"/>
++      <path d="M${(L + pw).toFixed(2)},${tagY.toFixed(2)} l5,-8 h${tagW.toFixed(2)} v16 h-${tagW.toFixed(2)} z" fill="${color}"/>
++      <text x="${(L + pw + 5 + tagW / 2).toFixed(2)}" y="${(tagY + 3.6).toFixed(2)}" text-anchor="middle" fill="#ffffff" font-family="Segoe UI,Arial" font-size="10" font-weight="700" style="font-variant-numeric:tabular-nums">${tagText}</text>
++      <rect x="${(last[0] - 3).toFixed(2)}" y="${(last[1] - 3).toFixed(2)}" width="6" height="6" fill="${color}"/>`;
++    plot.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="presentation">${grid}${strokes}${dots}${lastDot}<g class="mv-dh-cursor" visibility="hidden"><line x1="0" x2="0" y1="${T}" y2="${base}" stroke="#1f2a33" stroke-width="1" stroke-dasharray="2 2"/><circle cx="0" cy="0" r="4" fill="white" stroke="${color}" stroke-width="2"/></g></svg><div class="mv-dh-tooltip" hidden></div>`;
+     plot.dataset.mvChartSize = W + 'x' + H;
+     const svg = plot.querySelector('svg');
+     const cursor = svg.querySelector('.mv-dh-cursor');
+@@ -2761,7 +2979,7 @@
+       guide.setAttribute('x2', point[0].toFixed(2));
+       circle.setAttribute('cx', point[0].toFixed(2));
+       circle.setAttribute('cy', point[1].toFixed(2));
+-      tooltip.textContent = mvHistoryFormatTime(recent[index][0]) + ' · ' + (unit === 'm' ? recent[index][1].toFixed(2) : mvHistoryNumber.format(recent[index][1])) + ' ' + unit;
++      tooltip.textContent = mvHistoryFormatTime(recent[index][0]) + ' · ' + fmt(recent[index][1]) + ' ' + unit;
+       const px = point[0] / W * bounds.width;
+       tooltip.style.left = Math.min(bounds.width - 40, Math.max(40, px)) + 'px';
+       tooltip.style.top = Math.max(28, point[1] / H * bounds.height) + 'px';
+@@ -4431,7 +4649,9 @@
+     for (const card of flowPlateStates) {
+       if (card.opacity < .045) continue;
+       const bucket = Math.max(0, Math.min(7, Math.floor(card.opacity * 7.999)));
+-      addCameraPlate(groups[bucket], tankSpecs.length + card.index, card.x, card.y, card.z, card.width, card.height, .015);
++      const mvCardDist = Math.max(.001, Math.hypot(camera[0] - card.x, camera[1] - card.y, camera[2] - card.z));
++      const mvCardPull = Math.min(1.6, mvCardDist * .35), mvCardScale = (mvCardDist - mvCardPull) / mvCardDist;
++      addCameraPlate(groups[bucket], tankSpecs.length + card.index, card.x, card.y, card.z, card.width * mvCardScale, card.height * mvCardScale, mvCardPull);
+     }
+     for (let bucket = 0; bucket < groups.length; bucket++) {
+       if (groups[bucket].length) drawWorldText(groups[bucket], texture, true, null, 0, false, false, (bucket + 1) / 8);
+@@ -5123,6 +5343,17 @@
+   const levelsUniform = new Float32Array(tankSpecs.length);
+   const cameraUniform = new Float32Array(3);
+   let dynamicQuality = 1, qualityElapsed = 0, qualityFrames = 0, qualityRecovery = 0, currentMeanFrame = 16.7;
++  function mvResizeUltra() {
++    const width = Math.max(1, canvas.clientWidth), height = Math.max(1, canvas.clientHeight);
++    const nativeDensity = Math.max(1, window.devicePixelRatio || 1);
++    const pixels = width * height;
++    const maximumDensity = Math.min(3, Math.sqrt(36000000 / pixels), maximumViewportDimensions[0] / width, maximumViewportDimensions[1] / height, maximumRenderbufferDimension / width, maximumRenderbufferDimension / height);
++    const preferred = Math.max(nativeDensity, pixels >= 7000000 ? 1.5 : pixels >= 3000000 ? 1.8 : 2.0);
++    const dpr = Math.max(.6, Math.max(.75, Math.min(maximumDensity, preferred * Math.max(.82, dynamicQuality))) * mvMotionScale);
++    const w = Math.max(1, Math.round(width * dpr)), h = Math.max(1, Math.round(height * dpr));
++    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
++    lastDisplayDensity = window.devicePixelRatio || 1; vw = width; vh = height;
++  }
+   function adaptQuality(frameMs) {
+     if (frameMs <= 0 || frameMs > 1000) return;
+     qualityElapsed += Math.min(frameMs, 200);
+@@ -5160,6 +5391,7 @@
+   const maximumViewportDimensions = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+   const maximumRenderbufferDimension = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE);
+   function resize() {
++    if (mvUltra) return mvResizeUltra();
+     const width = Math.max(1, canvas.clientWidth);
+     const height = Math.max(1, canvas.clientHeight);
+     const mobile = Math.min(width, height) <= 600 && (window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 600);
+@@ -5178,7 +5410,7 @@
+     );
+     const preferredDensity = mobile ? nativeDensity : Math.max(nativeDensity, pixels >= 5500000 ? 1.21 : pixels >= 3000000 ? 1.48 : 1.80);
+     const minimumDensity = mobile ? .65 : Math.min(maximumDensity, Math.max(.76, nativeDensity * .74));
+-    const dpr = Math.min(maximumDensity, Math.max(minimumDensity, preferredDensity * dynamicQuality));
++    const dpr = Math.max(.6, Math.min(maximumDensity, Math.max(minimumDensity, preferredDensity * dynamicQuality)) * mvMotionScale);
+     const w = Math.max(1, Math.round(width * dpr));
+     const h = Math.max(1, Math.round(height * dpr));
+     if (canvas.width !== w || canvas.height !== h) {
+@@ -5262,12 +5494,19 @@
+       viewTarget = [...guidedTour.look];
+     }
+     vp.set(matMul(perspective(44 * Math.PI / 180, vw / vh, .15, 4000), lookAt(camera, viewTarget, [0, 1, 0])));
++    mvRenderShadowMap(now, () => {
++      const pumpMesh = isTopViewMode() ? superiorPumpBuffers[0] : livePumpBuffers[0];
++      bindBuffer(buffers[0]); gl.drawArrays(gl.TRIANGLES, 0, buffers[0].count);
++      if (pumpMesh.count) { bindBuffer(pumpMesh); gl.drawArrays(gl.TRIANGLES, 0, pumpMesh.count); }
++      bindBuffer(pipeBuffers[0]); gl.drawArrays(gl.TRIANGLES, 0, pipeBuffers[0].count);
++      bindBuffer(buffers[1]); gl.drawArrays(gl.TRIANGLES, 0, buffers[1].count);
++    });
+     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.disable(gl.CULL_FACE); gl.clearColor(.63, .74, .82, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+     renderSky(camera, viewTarget, now * .001, vw / vh);
+     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, turfTexture);
+     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, forestTexture);
+     gl.activeTexture(gl.TEXTURE0);
+-    gl.useProgram(program); gl.uniformMatrix4fv(loc.vp, false, vp); cameraUniform.set(camera); gl.uniform3fv(loc.cam, cameraUniform); gl.uniform1f(loc.time, elapsed); gl.uniform1fv(loc.levels, levelsUniform); gl.uniform1f(loc.anim, 1); if (loc.evening !== null) gl.uniform1f(loc.evening, eveningBlend); if (loc.terrainDetail !== null) gl.uniform1f(loc.terrainDetail, dynamicQuality >= .70 && currentMeanFrame < 29 ? 1 : 0);
++    gl.useProgram(program); gl.uniformMatrix4fv(loc.vp, false, vp); cameraUniform.set(camera); gl.uniform3fv(loc.cam, cameraUniform); gl.uniform1f(loc.time, elapsed); gl.uniform1fv(loc.levels, levelsUniform); gl.uniform1f(loc.anim, 1); if (loc.evening !== null) gl.uniform1f(loc.evening, eveningBlend); mvBindProUniforms(); if (loc.terrainDetail !== null) gl.uniform1f(loc.terrainDetail, dynamicQuality >= .70 && currentMeanFrame < 29 ? 1 : 0);
+     function drawPumps(part) {
+ 
+       const mesh = isTopViewMode() ? superiorPumpBuffers[part] : livePumpBuffers[part];
+@@ -5313,6 +5552,10 @@
+     const alternative = e.button === 2 || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey;
+     return (freeNavigationMode === 'rotate') !== alternative ? 'orbit' : 'free-pan';
+   }
++  mvMotionResize = resize;
++  canvas.addEventListener('pointermove', e => { if (e.buttons) mvMotionStart(); }, { passive: true });
++  canvas.addEventListener('wheel', mvMotionStart, { passive: true });
++  canvas.addEventListener('touchmove', mvMotionStart, { passive: true });
+   canvas.addEventListener('pointerdown', e => {
+     if (presentation.active) stopPresentation();
+     if (guidedTour.active) stopGuidedTour(true);
