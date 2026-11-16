@@ -1,0 +1,298 @@
+--- original/monterreyv_3d.js
++++ pro/monterreyv_3d.js
+@@ -1,6 +1,8 @@
+ 'use strict';
+ (function () {
+   const canvas = document.getElementById('scene');
++  /* MV PRO: ?calidad=ultra (o ?4k) fuerza máxima resolución para videowall / pantallas 4K */
++  const mvUltra = /[?&](calidad=ultra|4k)(&|$|=)/i.test(location.search) || (window.screen && window.screen.width * (window.devicePixelRatio || 1) >= 3800);
+   const returnToAnillo = document.createElement('a');
+   returnToAnillo.id = 'mvReturnAnillo';
+   returnToAnillo.href = '/ANILLOTV3D';
+@@ -26,6 +28,7 @@
+   const vert = `
+ attribute vec3 aPos; attribute vec3 aNormal; attribute vec3 aColor; attribute vec4 aData;
+ uniform mat4 uVP; uniform float uTime; uniform float uAnimate; uniform float uLevels[14];
++uniform mat4 uLightVP; varying vec4 vShadowPos;
+ varying vec3 vNormal; varying vec3 vColor; varying vec3 vPos; varying vec4 vData;
+ varying float vTankFill;
+ float getLevel(float id){
+@@ -71,6 +74,7 @@
+     }
+   }
+   vPos=p;vNormal=aNormal;vColor=aColor;vData=aData;gl_Position=uVP*vec4(p,1.0);
++  vShadowPos=uLightVP*vec4(p,1.0);
+ }`;
+   const frag = `
+ precision highp float;
+@@ -78,6 +82,53 @@
+ varying float vTankFill;
+ uniform vec3 uCamera; uniform float uTime; uniform float uAnimate; uniform float uEvening;
+ uniform sampler2D uTurfTex; uniform sampler2D uForestTex;
++/* MV PRO: sombras del sol, oclusión de contacto y reflejos del cielo */
++uniform sampler2D uShadowMap; uniform float uShadowOn; uniform vec2 uShadowTexel; varying vec4 vShadowPos;
++uniform vec4 uTankAO[14]; uniform float uAOOn;
++uniform sampler2D uSkyRefl; uniform float uSkyReflReady; uniform float uProGrade;
++float mvShadow(vec3 N, vec3 L){
++  if(uShadowOn<.5) return 1.0;
++  vec3 s=vShadowPos.xyz/vShadowPos.w*.5+.5;
++  if(s.x<=.001||s.x>=.999||s.y<=.001||s.y>=.999||s.z>=1.0) return 1.0;
++  float ndl=clamp(dot(N,L),0.0,1.0);
++  float bias=.00045+.0016*(1.0-ndl);
++  float sum=0.0;
++  for(int x=0;x<4;x++){
++    for(int y=0;y<4;y++){
++      vec2 o=(vec2(float(x),float(y))-1.5)*uShadowTexel*1.15;
++      sum+=step(s.z-bias,texture2D(uShadowMap,s.xy+o).r);
++    }
++  }
++  float edge=smoothstep(.0,.04,min(min(s.x,1.0-s.x),min(s.y,1.0-s.y)));
++  return mix(1.0,sum/16.0,edge);
++}
++float mvContactAO(){
++  float ao=1.0;
++  for(int i=0;i<14;i++){
++    vec4 t=uTankAO[i];
++    if(t.z<.001) continue;
++    float dd=max(length(vPos.xz-t.xy)-t.z,0.0);
++    ao*=1.0-.34*exp(-dd*1.45);
++  }
++  return ao;
++}
++vec3 mvSky(vec3 dir){
++  dir=normalize(vec3(dir.x,max(dir.y,.03),dir.z));
++  float az=atan(dir.z,dir.x);
++  float el=asin(clamp(dir.y,-1.0,1.0));
++  vec2 uv=vec2(fract(az*.1591549431),clamp(.27+el*.68,.008,.992));
++  vec3 clearSky=mix(vec3(.76,.88,.95),vec3(.27,.56,.79),smoothstep(-.24,.82,dir.y));
++  vec3 sky=mix(clearSky,texture2D(uSkyRefl,uv).rgb,uSkyReflReady);
++  return sky*mix(vec3(1.0),vec3(.45,.52,.66),uEvening);
++}
++vec3 mvGrade(vec3 c){
++  c=max(c,vec3(0.0));
++  float l=dot(c,vec3(.2126,.7152,.0722));
++  vec3 g=mix(vec3(l),c,1.07);
++  g=(g-.5)*1.055+.5+.006;
++  g*=vec3(1.012,1.0,.985);
++  return mix(c,clamp(g,0.0,1.0),uProGrade);
++}
+ float hash2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
+ float noise2(vec2 p){
+   vec2 i=floor(p),f=fract(p); f=f*f*(3.0-2.0*f);
+@@ -126,8 +177,9 @@
+ void main(){
+ vec3 N=normalize(vNormal);vec3 L=normalize(vec3(-.42,.95,.56));vec3 L2=normalize(vec3(.7,.8,-.4));
+ float d=max(dot(N,L),0.0), d2=max(dot(N,L2),0.0);
++float mvSh=mix(1.0,mvShadow(N,L),1.0-.55*uEvening); d*=mvSh; d2*=mix(1.0,mvSh,.30);
+ vec3 V=normalize(uCamera-vPos), H=normalize(L+V);
+-float spec=pow(max(dot(N,H),0.0),29.0);
++float spec=pow(max(dot(N,H),0.0),29.0)*mvSh;
+ float fres=pow(1.0-max(dot(N,V),0.0),2.0);
+ float shine=vData.x, kind=vData.z;
+ if(((kind>4.5&&kind<6.5)||(kind>8.5&&kind<10.5)) && vTankFill<.018) discard;
+@@ -222,6 +274,20 @@
+   c+=vec3(.018,.028,.012)*grassGlint;
+ }
+ if((kind>3.5&&kind<4.5)||(kind>7.5&&kind<8.5)) c+=vec3(.08,.12,.14)*fres*(.60+.40*d);
++{
++  vec3 R=reflect(-V,N);
++  if(kind>3.5&&kind<4.5){
++    c=mix(c,mvSky(R)*.92,clamp(.10+fres*.62,0.0,.62));
++    c+=vec3(1.0,.97,.90)*pow(max(dot(N,H),0.0),220.0)*1.15*mvSh;
++  } else if((kind>1.5&&kind<2.5)||(kind>4.5&&kind<6.5)){
++    c=mix(c,mvSky(R)*.80,clamp(fres*.45,0.0,.40));
++    c+=vec3(1.0,.97,.90)*pow(max(dot(N,H),0.0),160.0)*.65*mvSh;
++  } else if(kind>7.5&&kind<8.5){
++    c+=mvSky(R)*fres*.10;
++  }
++  if(!((kind>.5&&kind<2.5)||(kind>2.5&&kind<3.5)||(kind>4.5&&kind<6.5)||(kind>8.5&&kind<10.5)||kind>11.5)) c*=1.0-(1.0-mvSh)*.34;
++  if(uAOOn>.5 && N.y>.55 && vPos.y<.62 && (kind<.5||(kind>6.5&&kind<7.5)||(kind>10.5&&kind<11.5))) c*=mvContactAO();
++}
+ c*=mix(vec3(1.0),vec3(.66,.72,.83),uEvening);
+ if(kind>11.5&&kind<12.5){
+   c=vec3(.98,.77,.46);
+@@ -230,7 +296,7 @@
+ c+=vColor*shine*.28*(1.0+uEvening*.82);
+ float dist=length(vPos-uCamera);
+ c=mix(c,mix(vec3(.37,.46,.48),vec3(.21,.27,.32),uEvening),clamp((dist-105.0)/155.0,0.,.10));
+-gl_FragColor=vec4(c,outAlpha);
++gl_FragColor=vec4(mvGrade(c),outAlpha);
+ }`;
+   const fallbackVert = `
+ attribute vec3 aPos; attribute vec3 aNormal; attribute vec3 aColor; attribute vec4 aData;
+@@ -512,6 +578,103 @@
+   gl.useProgram(program);
+   gl.uniform1i(loc.turf, 1);
+   gl.uniform1i(loc.forest, 2);
++  /* ===== MV PRO: sombras del sol (shadow map), oclusión de contacto y reflejos ===== */
++  const mvLoc = {
++    lightVP: gl.getUniformLocation(program, 'uLightVP'), shadowMap: gl.getUniformLocation(program, 'uShadowMap'),
++    shadowOn: gl.getUniformLocation(program, 'uShadowOn'), shadowTexel: gl.getUniformLocation(program, 'uShadowTexel'),
++    tankAO: gl.getUniformLocation(program, 'uTankAO[0]'), aoOn: gl.getUniformLocation(program, 'uAOOn'),
++    skyRefl: gl.getUniformLocation(program, 'uSkyRefl'), skyReflReady: gl.getUniformLocation(program, 'uSkyReflReady'),
++    grade: gl.getUniformLocation(program, 'uProGrade')
++  };
++  if (mvLoc.shadowMap) gl.uniform1i(mvLoc.shadowMap, 3);
++  if (mvLoc.skyRefl) gl.uniform1i(mvLoc.skyRefl, 4);
++  if (mvLoc.grade) gl.uniform1f(mvLoc.grade, 1);
++  let mvShadowDirty = true, mvShadowNext = 0, mvShadowTopView = null, mvAOReady = false;
++  const mvShadow = (() => {
++    if (!enhancedWaterShader || !mvLoc.lightVP || /[?&]sombras=0/i.test(location.search)) return null;
++    const isGL2 = typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext;
++    const depthExt = isGL2 ? null : gl.getExtension('WEBGL_depth_texture');
++    if (!isGL2 && !depthExt) return null;
++    const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE);
++    const size = Math.min(maxTex, mvUltra ? 8192 : 4096);
++    try {
++      const depth = gl.createTexture();
++      gl.bindTexture(gl.TEXTURE_2D, depth);
++      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
++      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
++      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
++      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
++      if (isGL2) gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, size, size, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
++      else gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, size, size, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
++      const color = gl.createRenderbuffer();
++      gl.bindRenderbuffer(gl.RENDERBUFFER, color);
++      gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA4, size, size);
++      const fbo = gl.createFramebuffer();
++      gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
++      gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, color);
++      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depth, 0);
++      const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
++      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
++      gl.bindTexture(gl.TEXTURE_2D, null);
++      if (!ok) return null;
++      const sp = gl.createProgram();
++      gl.attachShader(sp, shader(gl.VERTEX_SHADER, vert));
++      gl.attachShader(sp, shader(gl.FRAGMENT_SHADER, 'precision mediump float;varying vec4 vData;varying float vTankFill;void main(){float k=vData.z;if(vData.w<.10||(k>8.5&&k<10.5)||(k>.5&&k<1.5)||(k>2.5&&k<3.5)||(k>11.5))discard;if(((k>4.5&&k<6.5))&&vTankFill<.018)discard;gl_FragColor=vec4(1.0);}'));
++      for (const [name, index] of [['aPos', loc.pos], ['aNormal', loc.normal], ['aColor', loc.color], ['aData', loc.data]]) if (index >= 0) gl.bindAttribLocation(sp, index, name);
++      gl.linkProgram(sp);
++      if (!gl.getProgramParameter(sp, gl.LINK_STATUS)) return null;
++      const Ll = Math.hypot(-.42, .95, .56), L = [-.42 / Ll, .95 / Ll, .56 / Ll], center = [0, 0, 0], half = 47;
++      const eye = [center[0] + L[0] * 160, center[1] + L[1] * 160, center[2] + L[2] * 160];
++      const ortho = [1 / half, 0, 0, 0, 0, 1 / half, 0, 0, 0, 0, -2 / 319, 0, 0, 0, -321 / 319, 1];
++      return {
++        fbo, depth, size, lightVP: null, makeLightVP: () => new Float32Array(matMul(ortho, lookAt(eye, center, [0, 1, 0]))), program: sp,
++        vp: gl.getUniformLocation(sp, 'uVP'), time: gl.getUniformLocation(sp, 'uTime'),
++        levels: gl.getUniformLocation(sp, 'uLevels[0]'), anim: gl.getUniformLocation(sp, 'uAnimate'),
++        lvp: gl.getUniformLocation(sp, 'uLightVP')
++      };
++    } catch (error) {
++      console.warn('MTYV 3D: sombras no disponibles en este equipo:', error && error.message);
++      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
++      return null;
++    }
++  })();
++  function mvRenderShadowMap(now, drawShadowCasters) {
++    if (!mvShadow) return;
++    if (!mvShadow.lightVP) mvShadow.lightVP = mvShadow.makeLightVP();
++    const top = isTopViewMode();
++    if (top !== mvShadowTopView) { mvShadowTopView = top; mvShadowDirty = true; }
++    if (!mvShadowDirty && now < mvShadowNext) return;
++    mvShadowDirty = false; mvShadowNext = now + 5000;
++    gl.bindFramebuffer(gl.FRAMEBUFFER, mvShadow.fbo);
++    gl.viewport(0, 0, mvShadow.size, mvShadow.size);
++    gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.depthMask(true); gl.disable(gl.BLEND);
++    gl.colorMask(false, false, false, false);
++    gl.clear(gl.DEPTH_BUFFER_BIT);
++    gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.6, 3.0);
++    gl.useProgram(mvShadow.program);
++    gl.uniformMatrix4fv(mvShadow.vp, false, mvShadow.lightVP);
++    gl.uniformMatrix4fv(mvShadow.lvp, false, mvShadow.lightVP);
++    gl.uniform1f(mvShadow.time, elapsed); gl.uniform1fv(mvShadow.levels, levelsUniform); gl.uniform1f(mvShadow.anim, 0);
++    drawShadowCasters();
++    gl.disable(gl.POLYGON_OFFSET_FILL);
++    gl.colorMask(true, true, true, true);
++    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
++    gl.viewport(0, 0, canvas.width, canvas.height);
++  }
++  function mvBindProUniforms() {
++    if (!enhancedWaterShader) return;
++    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, mvShadow ? mvShadow.depth : null);
++    gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, skyTexture);
++    gl.activeTexture(gl.TEXTURE0);
++    if (mvLoc.shadowOn) gl.uniform1f(mvLoc.shadowOn, mvShadow ? 1 : 0);
++    if (mvShadow && mvShadow.lightVP) { gl.uniformMatrix4fv(mvLoc.lightVP, false, mvShadow.lightVP); gl.uniform2f(mvLoc.shadowTexel, 1 / mvShadow.size, 1 / mvShadow.size); }
++    if (mvLoc.skyReflReady) gl.uniform1f(mvLoc.skyReflReady, skyReady ? 1 : 0);
++    if (!mvAOReady && mvLoc.tankAO && tankLabels.length) {
++      const ao = new Float32Array(56);
++      tankLabels.slice(0, 14).forEach((p, i) => { ao[i * 4] = p.x; ao[i * 4 + 1] = p.z; ao[i * 4 + 2] = (p.radius || 1) * 1.04; });
++      gl.uniform4fv(mvLoc.tankAO, ao); gl.uniform1f(mvLoc.aoOn, 1); mvAOReady = true;
++    }
++  }
+   gl.activeTexture(gl.TEXTURE0);
+   const skyVertex = `
+ attribute vec2 aSkyPosition;
+@@ -1263,6 +1426,7 @@
+   const superiorPumpBuffers = [0, 1, 2].map(() => ({ buf: gl.createBuffer(), count: 0 }));
+ 
+   function rebuildPumpBatches() {
++    mvShadowDirty = true;
+     for (let g = 0; g < 3; g++) {
+       let total = 0;
+       for (const p of pumpMeshes) total += (p.active === true ? p.on : p.off)[g].length;
+@@ -1283,6 +1447,7 @@
+   rebuildPumpBatches();
+   const pipeBuffers = [0, 1, 2].map(() => ({ buf: gl.createBuffer(), count: 0 }));
+   function rebuildPipeBuffers() {
++    mvShadowDirty = true;
+     const saved = A; A = [[], [], []];
+     for (const def of pipeDefs) pipe(def.nodes, def.r, def);
+     for (let group = 0; group < 3; group++) {
+@@ -3132,7 +3297,7 @@
+     'LA CRUZ': 'LA CRUZ'
+   };
+   const LABEL_TILE_W = 512, LABEL_TILE_H = 128, LABEL_COLS = 4, LABEL_ROWS = 16;
+-  const mvAtlasHD = gl.getParameter(gl.MAX_TEXTURE_SIZE) >= 4096 && (typeof navigator.deviceMemory !== 'number' || navigator.deviceMemory >= 4) ? 2 : 1;
++  const mvAtlasHD = mvUltra && gl.getParameter(gl.MAX_TEXTURE_SIZE) >= 8192 ? 3 : gl.getParameter(gl.MAX_TEXTURE_SIZE) >= 4096 && (typeof navigator.deviceMemory !== 'number' || navigator.deviceMemory >= 4) ? 2 : 1;
+   const mvTextureAnisotropy = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
+   const mvApplyTextureQuality = () => {
+     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+@@ -4189,6 +4354,17 @@
+   const levelsUniform = new Float32Array(tankSpecs.length);
+   const cameraUniform = new Float32Array(3);
+   let dynamicQuality = 1, qualityElapsed = 0, qualityFrames = 0, qualityRecovery = 0, currentMeanFrame = 16.7;
++  function mvResizeUltra() {
++    const width = Math.max(1, canvas.clientWidth), height = Math.max(1, canvas.clientHeight);
++    const nativeDensity = Math.max(1, window.devicePixelRatio || 1);
++    const pixels = width * height;
++    const maximumDensity = Math.min(3, Math.sqrt(36000000 / pixels), maximumViewportDimensions[0] / width, maximumViewportDimensions[1] / height, maximumRenderbufferDimension / width, maximumRenderbufferDimension / height);
++    const preferred = Math.max(nativeDensity, pixels >= 7000000 ? 1.5 : pixels >= 3000000 ? 1.8 : 2.0);
++    const dpr = Math.max(.75, Math.min(maximumDensity, preferred * Math.max(.82, dynamicQuality)));
++    const w = Math.max(1, Math.round(width * dpr)), h = Math.max(1, Math.round(height * dpr));
++    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
++    lastDisplayDensity = window.devicePixelRatio || 1; vw = width; vh = height;
++  }
+   function adaptQuality(frameMs) {
+     if (frameMs <= 0 || frameMs > 1000) return;
+     qualityElapsed += Math.min(frameMs, 200);
+@@ -4226,6 +4402,7 @@
+   const maximumViewportDimensions = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+   const maximumRenderbufferDimension = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE);
+   function resize() {
++    if (mvUltra) return mvResizeUltra();
+     const width = Math.max(1, canvas.clientWidth);
+     const height = Math.max(1, canvas.clientHeight);
+     const mobile = Math.min(width, height) <= 600 && (window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 600);
+@@ -4328,12 +4505,19 @@
+       viewTarget = [...guidedTour.look];
+     }
+     vp.set(matMul(perspective(44 * Math.PI / 180, vw / vh, .15, 4000), lookAt(camera, viewTarget, [0, 1, 0])));
++    mvRenderShadowMap(now, () => {
++      const pumpMesh = isTopViewMode() ? superiorPumpBuffers[0] : livePumpBuffers[0];
++      bindBuffer(buffers[0]); gl.drawArrays(gl.TRIANGLES, 0, buffers[0].count);
++      if (pumpMesh.count) { bindBuffer(pumpMesh); gl.drawArrays(gl.TRIANGLES, 0, pumpMesh.count); }
++      bindBuffer(pipeBuffers[0]); gl.drawArrays(gl.TRIANGLES, 0, pipeBuffers[0].count);
++      bindBuffer(buffers[1]); gl.drawArrays(gl.TRIANGLES, 0, buffers[1].count);
++    });
+     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.disable(gl.CULL_FACE); gl.clearColor(.63, .74, .82, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+     renderSky(camera, viewTarget, now * .001, vw / vh);
+     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, turfTexture);
+     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, forestTexture);
+     gl.activeTexture(gl.TEXTURE0);
+-    gl.useProgram(program); gl.uniformMatrix4fv(loc.vp, false, vp); cameraUniform.set(camera); gl.uniform3fv(loc.cam, cameraUniform); gl.uniform1f(loc.time, elapsed); gl.uniform1fv(loc.levels, levelsUniform); gl.uniform1f(loc.anim, 1); gl.uniform1f(loc.evening, eveningBlend);
++    gl.useProgram(program); gl.uniformMatrix4fv(loc.vp, false, vp); cameraUniform.set(camera); gl.uniform3fv(loc.cam, cameraUniform); gl.uniform1f(loc.time, elapsed); gl.uniform1fv(loc.levels, levelsUniform); gl.uniform1f(loc.anim, 1); gl.uniform1f(loc.evening, eveningBlend); mvBindProUniforms();
+     function drawPumps(part) {
+ 
+       const mesh = isTopViewMode() ? superiorPumpBuffers[part] : livePumpBuffers[part];
