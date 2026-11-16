@@ -212,7 +212,7 @@ foreach ($definitions as $code => $definition) {
     }
     $rawLevel = isset($row['Nivel']) ? lnNumber($row['Nivel']) : null;
     if ($rawLevel !== null && $rawLevel > 0 && $rawLevel < 9000)
-        $item['level'] = round($rawLevel / 100, 3);
+        $item['level'] = $code === 'LINPB002' ? round($rawLevel, 3) : round($rawLevel / 100, 3); // PB2 ya viene en metros (igual que sanroque.php)
     $rawFlow = isset($row['Flujo']) ? lnNumber($row['Flujo']) : null;
     $item['flow'] = $rawFlow;
     $min = isset($row['Minimo']) ? lnNumber($row['Minimo']) : null;
@@ -221,7 +221,7 @@ foreach ($definitions as $code => $definition) {
     $item['maximum'] = $max !== null && $max > 25 ? round($max / 100, 3) : $max;
     if ($item['status'] === 'operando' && $item['level'] !== null && $item['minimum'] !== null && $item['maximum'] !== null && $item['maximum'] > $item['minimum'])
         $item['observation'] = $item['level'] < $item['minimum'] || $item['level'] > $item['maximum'];
-    if ($item['status'] === 'operando' && isset($definition['pumps']) && isset($row['ED_SD']) && is_numeric($row['ED_SD'])) {
+    if (isset($definition['pumps']) && isset($row['ED_SD']) && is_numeric($row['ED_SD'])) { // último estado recibido, igual que sanroque.php
         $bits = (int)$row['ED_SD'];
         $item['pumps'] = array();
         foreach ($definition['pumps'] as $i => $bit) {

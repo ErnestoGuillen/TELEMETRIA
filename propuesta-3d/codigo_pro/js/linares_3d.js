@@ -2283,7 +2283,7 @@ void main(){
     const isReference=!n[5];
     $('primaryLabel').textContent=isTank||hasLevel?'Nivel actual':kind==='pump'?'Flujo de salida':kind==='meter'?'Flujo medido':'Referencia';
     $('primaryValue').textContent=isTank||hasLevel?(hasLevel?fmt(s.level)+(kind==='reservoir'?' msnm':' m'):'N/D'):(hasFlow?fmt(s.flow,0)+' LPS':'N/D');
-    if(kind==='reservoir')$('primaryLabel').textContent='Elevación';
+    if(kind==='reservoir'){const pc=s&&Array.isArray(s.extra)?s.extra.find(q=>q&&q.unit==='%'):null;if(hasLevel)$('primaryLabel').textContent='Elevación';else if(pc){$('primaryLabel').textContent='Llenado';$('primaryValue').textContent=fmt(pc.value,2)+' %';}}
     $('flowValue').textContent=hasFlow?fmt(s.flow,0)+' LPS':'N/D';
     $('stateValue').textContent=isReference?'Sin lectura':!s||s.status==='sin_datos'?'Sin datos':s.status==='sin_comunicacion'?'Sin comunicación':s.observation?'Observación':'Actual';
     $('lastReading').textContent=s&&s.updated?'Actualización: '+s.updated:isReference?'Referencia hidráulica · sin sensor asociado':'Sin actualización';
