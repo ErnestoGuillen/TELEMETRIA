@@ -1379,6 +1379,13 @@ void main(){
       height += roundedRelief + naturalFolds + ridgeLift + localTexture;
     }
     height+=sillaRelief(x,z);
+    /* MV PRO: corte del cerro (cañón de piso plano por donde pasa la tubería) */
+    if(x<-36){
+      const d=Math.abs(z+20.6), entry=smoothTerrain(36,43,-x);
+      const floor=-.05+Math.max(0,-x-60)*.02;
+      const open=1-smoothTerrain(4.5,9.5,d);
+      if(height>floor) height=floor+(height-floor)*(1-open*entry);
+    }
     if(x>28&&x<128&&z>-32&&z<72){
       const shore=lakeDistance(x,z);
       if(shore<=0)return .43-.89*smoothTerrain(0,3.7,-shore);
@@ -1513,16 +1520,12 @@ void main(){
     if(cur.length>1)parts.push(cur);
     for(const part of parts)pipe(part,.28,def);
   }
-  const mountainPipePath = [
-    [-98, terrainHeight(-98, 8) + 1.38, 8],
-    [-90, terrainHeight(-90, 8) + 1.22, 8],
-    [-80, terrainHeight(-80, 8) + .98, 8],
-    [-70, terrainHeight(-70, 8) + .84, 8],
-    [-60, terrainHeight(-60, 7) + .60, 7],
-    [-52, Math.max(terrainHeight(-52, 5.8) + .38, 1.18), 5.8],
-    [-48.8, 1.08, 3.7],
-    [pointNodes.get('li04')[3], 1.03, pointNodes.get('li04')[4]]
-  ];
+  /* MV PRO: tubería de PB4 que sale por el corte del cerro */
+  const mvPB4=pointNodes.get('li04'),mvG4=mvNodeAngle.get('li04')||0,mvP4=[mvPB4[3]-Math.sin(mvG4)*MV_PIPE_LANE,mvPB4[4]+Math.cos(mvG4)*MV_PIPE_LANE];
+  const mvCutY=x=>terrainHeight(x,mvP4[1])+1.03;
+  const mountainPipePath=[[mvP4[0],1.03,mvP4[1]]];
+  for(let x=Math.floor(mvP4[0])-2;x>=-190;x-=4)mountainPipePath.push([x,mvCutY(x),mvP4[1]]);
+  for(let x=-56;x>=-150;x-=7){const g=terrainHeight(x,mvP4[1]),y=mvCutY(x);box(x,(g+y-.31)/2,mvP4[1],.5,Math.max(.05,y-.31-g),.9,'#b7b2a6');}
   pipe(mountainPipePath, .31, { source: 'PB4 Linares', target: 'PB4 Linares' });
   function pumpStationScene(x,z){pumpUnit(x,z,4);}
   function facilityScene(x,z,type){
@@ -2097,6 +2100,7 @@ void main(){
     const polePts = poles.map(p => [p.x, 0, p.z]);
     const keepOut = (x, z, margin) => {
       if (Math.hypot(x, z) > 93) return true;
+      if (x < -40 && Math.abs(z + 20.6) < 15) return true;
       if (ground(x, z) > 1.2) return true;
       if (lakeDistance(x, z) < 3.5) return true;
       if (distToPoly(x, z, route) < 6.5 + margin) return true;
