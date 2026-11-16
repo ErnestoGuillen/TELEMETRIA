@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Monterrey V · Gemelo Digital</title>
+<style>
+  :root{--or:#ff8a1f;--cy:#3ec8ff;--gr:#35f08a;--rd:#ff3b4e;--pn:rgba(8,14,24,.82);--ln:rgba(120,170,220,.22);--tx:#cfe3f5;--mu:#6f8aa3}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1280px;height:720px;overflow:hidden;background:#03060c;font-family:"DejaVu Sans Mono",monospace;color:var(--tx)}
+  canvas#gl{position:absolute;inset:0}
+  #hud{position:absolute;inset:0;pointer-events:none}
+  .panel{position:absolute;background:var(--pn);border:1px solid var(--ln);border-radius:4px;backdrop-filter:blur(4px);font-size:10px;letter-spacing:.04em}
+  .ph{display:flex;justify-content:space-between;padding:5px 8px;border-bottom:1px solid var(--ln);color:var(--mu);font-size:9px}
+  .ph b{color:var(--or);font-weight:normal}
+  #topbar{position:absolute;left:0;right:0;top:0;height:26px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:linear-gradient(#060b14ee,#060b1400);font-size:10px;color:var(--mu)}
+  #topbar .c{color:var(--or);letter-spacing:.35em;font-size:10px}
+  #topbar .r span{margin-left:14px}
+  #kpi{left:12px;top:36px;width:206px}
+  .krow{display:grid;grid-template-columns:1fr auto;padding:5px 8px;border-bottom:1px solid #ffffff08}
+  .krow .v{color:#fff;font-size:13px;text-align:right}
+  .krow .l{color:var(--mu);font-size:9px;align-self:center}
+  .bar{grid-column:1/3;height:3px;background:#ffffff10;margin-top:4px;border-radius:2px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--cy)}
+  #tanks{left:12px;top:292px;width:206px}
+  .trow{display:grid;grid-template-columns:8px 1fr 46px 40px;gap:5px;padding:3px 8px;align-items:center;font-size:9px}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--gr);box-shadow:0 0 6px var(--gr)}
+  .trow .n{color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .trow .m{color:#fff;text-align:right}
+  .trow .tr{text-align:right;color:var(--rd)}
+  .trow.alert .dot{background:var(--rd);box-shadow:0 0 8px var(--rd)}
+  .trow.alert{background:#ff3b4e18}
+  #ops{right:12px;top:36px;width:190px}
+  .opgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:6px}
+  .op{border:1px solid var(--ln);padding:5px 4px;text-align:center;font-size:8.5px;color:var(--mu);border-radius:3px}
+  .op.on{border-color:var(--or);color:var(--or);background:#ff8a1f14}
+  #ops .sl{padding:4px 8px 8px;font-size:9px;color:var(--mu)}
+  #ops .sl .track{height:3px;background:#ffffff15;margin-top:4px;position:relative}
+  #ops .sl .track i{position:absolute;left:0;top:0;bottom:0;background:var(--or)}
+  #log{left:12px;bottom:12px;width:330px;height:118px;overflow:hidden}
+  #log .lines{padding:4px 8px;font-size:9px;line-height:1.55}
+  #log .lines div{white-space:nowrap;overflow:hidden}
+  #log .t{color:var(--mu)} #log .ok{color:var(--gr)} #log .wa{color:var(--rd)} #log .in{color:var(--cy)}
+  #map{right:12px;bottom:12px;width:214px;height:168px}
+  #map canvas{display:block;margin:4px auto}
+  #detail{right:214px;top:36px;width:330px;transform:translateX(30px);opacity:0}
+  #detail .hd{padding:8px 10px 2px;font-size:8.5px;color:var(--mu)}
+  #detail .tt{padding:0 10px;font-size:15px;color:#fff;letter-spacing:.06em}
+  #detail .two{display:grid;grid-template-columns:1fr 1fr;padding:8px 10px;gap:8px}
+  #detail .big{font-size:20px;color:#fff} #detail .big.neg{color:var(--rd)}
+  #detail .lab{font-size:8.5px;color:var(--mu)}
+  #detail .flows{padding:0 10px 6px;font-size:9px}
+  #detail .flows div{display:flex;justify-content:space-between;border-bottom:1px solid #ffffff08;padding:2px 0}
+  #detail svg{display:block}
+  #detail .charts{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px 10px 8px}
+  #detail .ch{border:1px solid var(--ln);border-radius:3px;padding:4px}
+  #detail .pumps{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:0 10px 10px;font-size:8.5px}
+  #detail .pumps div{border:1px solid var(--ln);padding:3px 5px;border-radius:3px}
+  #detail .pumps i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gr);margin-right:4px;box-shadow:0 0 5px var(--gr)}
+  #toast{position:absolute;left:50%;top:40px;transform:translateX(-50%);background:var(--pn);border:1px solid var(--or);padding:6px 14px;font-size:10px;color:var(--or);opacity:0;letter-spacing:.08em;border-radius:3px;text-align:center}
+  #toast small{display:block;color:var(--tx);font-size:9px;margin-top:2px;letter-spacing:.02em}
+  #toast.alert{border-color:var(--rd);color:var(--rd);box-shadow:0 0 22px #ff3b4e55}
+  #labels{position:absolute;inset:0}
+  .lbl{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;text-align:center;font-size:9px;letter-spacing:.06em}
+  .lbl .nm{background:rgba(6,12,22,.85);border:1px solid rgba(62,200,255,.5);padding:2px 6px;color:#fff;border-radius:2px}
+  .lbl .lv{color:var(--cy);font-size:10px;margin-top:2px;text-shadow:0 0 6px #3ec8ff}
+  .lbl::after{content:"";display:block;width:1px;height:14px;margin:0 auto;background:linear-gradient(rgba(62,200,255,.8),transparent)}
+  .lbl.alert .nm{border-color:var(--rd);color:var(--rd);box-shadow:0 0 12px #ff3b4e88}
+  .lbl.alert .lv{color:var(--rd);text-shadow:0 0 6px var(--rd)}
+  .flbl{position:absolute;transform:translate(-50%,-50%);font-size:8.5px;color:var(--cy);background:rgba(6,12,22,.7);padding:1px 5px;border-left:2px solid var(--cy);white-space:nowrap}
+  #mode{position:absolute;left:230px;top:36px;font-size:9px;color:var(--mu)}
+  #mode b{color:var(--or);font-weight:normal;font-size:11px;letter-spacing:.2em;display:block}
+  #intro{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#03060c;}
+  #intro .a{font-size:11px;letter-spacing:.6em;color:var(--or)}
+  #intro .b{font-family:Inter,sans-serif;font-weight:700;font-size:44px;letter-spacing:.12em;color:#fff;margin-top:10px}
+  #intro .c{font-size:10px;letter-spacing:.3em;color:var(--mu);margin-top:10px}
+  #intro .ln{width:0;height:1px;background:var(--or);margin-top:16px}
+  #outro{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:0;background:radial-gradient(#03060c99,#03060cee)}
+  #outro .b{font-family:Inter,sans-serif;font-weight:700;font-size:38px;letter-spacing:.14em;color:#fff}
+  #outro .a{font-size:11px;letter-spacing:.5em;color:var(--or);margin-bottom:10px}
+  #outro .c{font-size:10px;letter-spacing:.25em;color:var(--mu);margin-top:12px}
+  #scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,#ffffff03 0 1px,transparent 1px 3px);pointer-events:none}
+  #vign{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,#000a 100%);pointer-events:none}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="hud">
+  <div id="labels"></div>
+  <div id="vign"></div>
+  <div id="topbar"><div>AGUA Y DRENAJE · TELEMETRÍA</div><div class="c">SISTEMA MONTERREY V // GEMELO DIGITAL // OPERACIÓN</div><div class="r"><span id="clk">--</span><span style="color:#35f08a">● EN LÍNEA</span></div></div>
+  <div id="mode"><b id="modeT">VISTA GENERAL</b><span id="modeS">14 tanques · 26 bombas · 4 estaciones</span></div>
+  <div class="panel" id="kpi">
+    <div class="ph"><span>[01] RESUMEN DEL SISTEMA</span><b>LIVE</b></div>
+    <div class="krow"><span class="l">CONSUMO TOTAL</span><span class="v" id="k1">0 L/S</span><div class="bar"><i id="b1" style="width:0"></i></div></div>
+    <div class="krow"><span class="l">FLUJO A MTY V</span><span class="v" id="k2">0 LPS</span><div class="bar"><i id="b2" style="width:0"></i></div></div>
+    <div class="krow"><span class="l">BOMBAS OPERANDO</span><span class="v" id="k3" style="color:#35f08a">0</span><div class="bar"><i id="b3" style="width:0;background:#35f08a"></i></div></div>
+    <div class="krow"><span class="l">BOMBAS INESTABLES</span><span class="v" id="k4" style="color:#ff8a1f">0</span><div class="bar"><i id="b4" style="width:0;background:#ff8a1f"></i></div></div>
+    <div class="krow"><span class="l">NIVEL PROMEDIO</span><span class="v" id="k5">0.00 m</span><div class="bar"><i id="b5" style="width:0"></i></div></div>
+    <div class="krow" style="border:0"><span class="l">ALERTAS ACTIVAS</span><span class="v" id="k6" style="color:#ff3b4e">0</span></div>
+  </div>
+  <div class="panel" id="tanks"><div class="ph"><span>[02] TANQUES</span><b>NIVEL · TEND.</b></div><div id="tlist"></div></div>
+  <div class="panel" id="ops">
+    <div class="ph"><span>[03] CONTROL DE OPERACIONES</span><b>AUTO</b></div>
+    <div class="opgrid">
+      <div class="op" data-k="general">VISTA GENERAL</div><div class="op" data-k="aereo">AÉREO</div>
+      <div class="op" data-k="tanque">TANQUE</div><div class="op" data-k="corte">CORTE / RAYOS X</div>
+      <div class="op" data-k="alerta">ALERTAS</div><div class="op" data-k="planta">VISTA PLANTA</div>
+      <div class="op on">FLUJOS LPS</div><div class="op on">MODO NOCHE</div>
+    </div>
+    <div class="sl">VELOCIDAD VISUAL ×3<div class="track"><i style="width:60%"></i></div></div>
+    <div class="sl">ALTURA DE CÁMARA<div class="track"><i id="alt" style="width:60%"></i></div></div>
+  </div>
+  <div class="panel" id="detail">
+    <div class="hd">TANQUE 1 DE 14 · ACTUALIZADO <span id="dclk"></span></div>
+    <div class="tt" id="dname">SANTA ROSA 2</div>
+    <div class="two"><div><div class="lab">NIVEL ACTUAL</div><div class="big" id="dlvl">3.41 m</div></div><div><div class="lab">TENDENCIA 24 H</div><div class="big neg" id="dtr">▼ −0.24 m</div></div></div>
+    <div class="flows"><div><span>Llegada · Tanque Castilla 3</span><span id="dfin">1,894 LPS</span></div><div><span>Salida · Garcia 2 a red 24</span><span id="dfout">2,056 LPS</span></div></div>
+    <div class="charts"><div class="ch"><div class="lab">NIVEL (m)</div><svg id="c1" width="140" height="62"></svg></div><div class="ch"><div class="lab">FLUJO (LPS)</div><svg id="c2" width="140" height="62"></svg></div></div>
+    <div class="lab" style="padding:0 10px 4px">EQUIPOS DE BOMBEO</div>
+    <div class="pumps"><div><i></i>EQ-01 OPER.</div><div><i></i>EQ-02 OPER.</div><div><i></i>EQ-03 OPER.</div><div><i></i>EQ-04 OPER.</div><div><i style="background:#ff8a1f;box-shadow:0 0 5px #ff8a1f"></i>EQ-05 RESP.</div><div><i></i>EQ-06 OPER.</div></div>
+  </div>
+  <div class="panel" id="log"><div class="ph"><span>[04] BITÁCORA DE EVENTOS</span><b>SCADA</b></div><div class="lines" id="loglines"></div></div>
+  <div class="panel" id="map"><div class="ph"><span>[05] MAPA DEL SISTEMA</span><b>MTY V</b></div><canvas id="mapc" width="200" height="136"></canvas></div>
+  <div id="toast"></div>
+  <div id="scan"></div>
+  <div id="outro"><div class="a">AGUA Y DRENAJE DE MONTERREY</div><div class="b">TELEMETRÍA 3D</div><div class="c">GEMELO DIGITAL · SISTEMA MONTERREY V · ENLACE E INNOVACIÓN</div></div>
+  <div id="intro"><div class="a">AGUA Y DRENAJE · ENLACE E INNOVACIÓN</div><div class="b" id="introT"></div><div class="ln" id="introL"></div><div class="c" id="introC">INICIALIZANDO GEMELO DIGITAL…</div></div>
+</div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
