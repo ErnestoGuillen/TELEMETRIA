@@ -605,6 +605,15 @@
    for (const segment of siteRoadSegments) siteRoad(segment);
    const buffers=[];
    for(let group=0;group<3;group++){
+@@ -1799,7 +2226,7 @@
+   const mul=(a,b)=>{const m=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+r]*b[c*4+k];m[c*4+r]=s;}return m};
+   const project=(p,m,w,h)=>{const x=p[0],y=p[1],z=p[2],q=m[3]*x+m[7]*y+m[11]*z+m[15];if(q<=.05)return null;const px=(m[0]*x+m[4]*y+m[8]*z+m[12])/q,py=(m[1]*x+m[5]*y+m[9]*z+m[13])/q;if(Math.abs(px)>1.13||Math.abs(py)>1.13)return null;return [(px*.5+.5)*w,(-py*.5+.5)*h,q]};
+   const presentation=$('presentationPanel');
+-  const syncButtons=()=>{for(const id of ['spin','around','free','presentationToggle'])$(id).classList.toggle('active',id==='presentationToggle'?state.auto==='presentation':id==='free'?state.mode==='pan':state.auto===id);for(const [id,value] of [['water',state.water],['flowLabelsToggle',state.flowNames],['levelsToggle',state.levels],['labelsToggle',state.names],['alertsToggle',state.alerts],['dateToggle',state.date]])$(id).classList.toggle('active',value);$('modeToggle').textContent=state.night?'Modo noche':'Modo día';$('spinSpeed').textContent=state.spinFast?'Giro: Rápido':'Giro: Normal';$('flowSpeed').textContent='Velocidad visual ×'+state.speed;$('hideInfo').textContent=state.showInfo?'Ocultar información':'Mostrar información';document.body.classList.toggle('night',state.night);document.body.classList.toggle('presentation-on',state.auto==='presentation');};
++  const syncButtons=()=>{for(const id of ['spin','around','free','presentationToggle'])$(id).classList.toggle('active',id==='presentationToggle'?state.auto==='presentation':id==='free'?state.mode==='pan':state.auto===id);for(const [id,value] of [['water',state.water],['flowLabelsToggle',state.flowNames],['levelsToggle',state.levels],['labelsToggle',state.names],['alertsToggle',state.alerts],['dateToggle',state.date]])$(id).classList.toggle('active',value);$('modeToggle').textContent=state.night?'Modo noche':'Modo día';$('flowSpeed').textContent='Velocidad visual ×'+state.speed;$('hideInfo').textContent=state.showInfo?'Ocultar información':'Mostrar información';document.body.classList.toggle('night',state.night);document.body.classList.toggle('presentation-on',state.auto==='presentation');};
+   const showPanel=(show=true)=>{presentation.hidden=!show||!state.showInfo;};
+   function selectNode(id){const entry=nodeById.get(id);if(!entry)return;state.selected=id;const n=entry.data;updatePanel(n);showPanel();for(const [key,val]of labels)val.el.classList.toggle('selected',key===id);loadHistory(n);}
+   const casetaControl=document.createElement('div');
 @@ -1857,7 +2284,38 @@
    }
    let historyRequest=0,history=[];
@@ -645,18 +654,87 @@
    function alertsRefresh(){const alerts=[];for(const n of config.nodes){const s=getData(n);if(!s)continue;if(s.status==='sin_comunicacion')alerts.push({id:n[0],name:n[1],type:'Sin comunicación'});else if(s.observation)alerts.push({id:n[0],name:n[1],type:'Nivel fuera de parámetros'});}const bar=$('alertBar');bar.hidden=!state.alerts||!alerts.length;$('alertCount').hidden=!alerts.length;$('alertCount').textContent=alerts.length;$('alertSummary').textContent=alerts.length?alerts[0].name+'   '+alerts[0].type:'';$('alertsList').replaceChildren();for(const a of alerts){const b=document.createElement('button');b.type='button';b.textContent=a.name+' · '+a.type;b.onclick=()=>{selectNode(a.id);$('alertsList').hidden=true};$('alertsList').appendChild(b);}}
    function updateData(){
      const g=live.get('TGRP0001');
-@@ -1914,6 +2372,10 @@
+@@ -1913,15 +2371,82 @@
+   $('presentationNext').onclick=()=>jumpPresentation(1);
    $('presentationPause').onclick=()=>{state.paused=!state.paused;$('presentationPause').textContent=state.paused?'Continuar':'Pausar';};
    $('alertsAll').onclick=()=>{$('alertsList').hidden=!$('alertsList').hidden;$('alertsAll').setAttribute('aria-expanded',String(!$('alertsList').hidden));};
-   let pointer=null;
+-  let pointer=null;
+-  canvas.addEventListener('pointerdown',e=>{pointer={x:e.clientX,y:e.clientY,button:e.button};try{canvas.setPointerCapture(e.pointerId);}catch(x){}if(state.auto!=='presentation')state.auto='';syncButtons();});
+-  canvas.addEventListener('pointerup',()=>pointer=null);canvas.addEventListener('pointercancel',()=>pointer=null);
+-  canvas.addEventListener('pointermove',e=>{if(!pointer)return;const dx=e.clientX-pointer.x,dy=e.clientY-pointer.y;pointer.x=e.clientX;pointer.y=e.clientY;if(state.mode==='pan'||e.button===2||pointer.button===2||e.shiftKey){const speed=state.dist*.0012;state.target[0]=Math.max(CAMERA_LIMITS.panXMin,Math.min(CAMERA_LIMITS.panXMax,state.target[0]+Math.sin(state.yaw)*dx*speed));state.target[2]=Math.max(CAMERA_LIMITS.panZMin,Math.min(CAMERA_LIMITS.panZMax,state.target[2]-Math.cos(state.yaw)*dx*speed+dy*speed));}else{state.yaw-=dx*.005;state.pitch=Math.max(.18,Math.min(CAMERA_LIMITS.maxPitch,state.pitch-dy*.005));}});
+-  canvas.addEventListener('wheel',e=>{e.preventDefault();state.dist=Math.max(CAMERA_LIMITS.minDist,Math.min(CAMERA_LIMITS.maxDist,state.dist*Math.exp(e.deltaY*.001)));},{passive:false});canvas.addEventListener('contextmenu',e=>e.preventDefault());
++  /* ===== MV PRO: navegación igual que Monterrey V / Anillo TV ===== */
++  let mvZoomGoal=null,mvFree=false,mvFreeMode='move';
++  const mvTour={rate:1,speed:3.7,samples:[],total:0,d:0,phase:'route',clock:0,eye:null,look:null,entry:0};
++  const mvAround={angle:0,pitch:1.10,elapsed:0,zoom:1.0,rps:Math.PI*2/72};
++  const MV_CENTER=[-8,1.5,-2];
++  const mvMix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
++  const mvSetPose=(eye,look)=>{const dx=eye[0]-look[0],dy=eye[1]-look[1],dz=eye[2]-look[2],d=Math.max(.5,Math.hypot(dx,dy,dz));state.target=[...look];state.dist=d;state.yaw=Math.atan2(dz,dx);state.pitch=Math.acos(Math.max(-1,Math.min(1,dy/d)));};
++  function mvBuildRoute(){
++    const ids=['li00','li01','li02','li02a','li03','li04a','li05','li04'],pts=[];
++    for(let i=0;i<ids.length-1;i++){const def=pipeDefs.find(d=>d.source===(pointNodes.get(ids[i])||[])[1]&&d.target===(pointNodes.get(ids[i+1])||[])[1]);const nodes=def?def.nodes:[[pointNodes.get(ids[i])[3],1.03,pointNodes.get(ids[i])[4]],[pointNodes.get(ids[i+1])[3],1.03,pointNodes.get(ids[i+1])[4]]];for(const p of nodes){const l=pts[pts.length-1];if(!l||Math.hypot(p[0]-l[0],p[2]-l[2])>.05)pts.push([p[0],1.03,p[2]]);}}
++    const s=[{p:pts[0],d:0}];for(let i=1;i<pts.length;i++)s.push({p:pts[i],d:s[i-1].d+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][2]-pts[i-1][2])});
++    mvTour.samples=s;mvTour.total=s[s.length-1].d;
++  }
++  function mvRouteAt(d){const s=mvTour.samples;d=Math.max(0,Math.min(mvTour.total,d));let i=1;while(i<s.length-1&&s[i].d<d)i++;const a=s[i-1],b=s[i],t=(d-a.d)/Math.max(1e-6,b.d-a.d);return [a.p[0]+(b.p[0]-a.p[0])*t,a.p[1],a.p[2]+(b.p[2]-a.p[2])*t];}
++  function mvTourPose(d){const p=mvRouteAt(d),ah=mvRouteAt(d+4.8),bh=mvRouteAt(d-2.1);let dx=ah[0]-bh[0],dz=ah[2]-bh[2];const l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;return {eye:[p[0]-dz*13.5-dx*6,13.5,p[2]+dx*13.5-dz*6],look:[ah[0]+dx*.5,2.2,ah[2]+dz*.5]};}
++  function mvPanoPose(a){const d=74;return {eye:[MV_CENTER[0]+Math.cos(a)*d*Math.sin(.95),MV_CENTER[1]+d*Math.cos(.95),MV_CENTER[2]+Math.sin(a)*d*Math.sin(.95)],look:[...MV_CENTER]};}
++  function mvStopAll(){if(state.auto==='presentation')endPresentation();state.auto='';syncButtons();mvSyncNav();}
++  function mvStartTour(){mvSetFree(false);if(state.auto==='presentation')endPresentation();if(!mvTour.samples.length)mvBuildRoute();mvTour.d=0;mvTour.phase='route';mvTour.clock=0;mvTour.entry=0;const sn=Math.sin(state.pitch);mvTour.eye=[state.target[0]+Math.cos(state.yaw)*state.dist*sn,state.target[1]+state.dist*Math.cos(state.pitch),state.target[2]+Math.sin(state.yaw)*state.dist*sn];mvTour.look=[...state.target];state.auto='spin';syncButtons();mvSyncNav();}
++  function mvStartAround(){mvSetFree(false);if(state.auto==='presentation')endPresentation();mvAround.angle=state.yaw;mvAround.elapsed=0;mvAround.zoom=1;state.auto='around';syncButtons();mvSyncNav();}
++  function mvTickNav(dt){
++    if(state.auto==='spin'&&mvTour.samples.length){
++      const t=dt*mvTour.rate;let pose,ease;
++      if(mvTour.phase==='route'){
++        if(mvTour.entry<2.3)mvTour.entry+=t;else mvTour.d=Math.min(mvTour.total,mvTour.d+mvTour.speed*t);
++        pose=mvTourPose(mvTour.d);ease=1-Math.exp(-t*(mvTour.entry<2.3?1.5:2.6));
++        if(mvTour.d>=mvTour.total){mvTour.phase='panorama';mvTour.clock=0;const e=mvTour.eye;mvTour.panoA=Math.atan2(e[2]-MV_CENTER[2],e[0]-MV_CENTER[0]);}
++      }else{
++        mvTour.clock+=t;pose=mvPanoPose(mvTour.panoA+mvTour.clock*Math.PI*2/34);ease=1-Math.exp(-t*(mvTour.clock<4.6?1.0:2.4));
++        if(mvTour.clock>=34){mvTour.phase='route';mvTour.d=0;mvTour.entry=0;}
++      }
++      mvTour.eye=mvMix(mvTour.eye,pose.eye,ease);mvTour.look=mvMix(mvTour.look,pose.look,ease);mvTour.eye[1]=Math.max(mvTour.eye[1],7.7);
++      mvSetPose(mvTour.eye,mvTour.look);
++    }else if(state.auto==='around'){
++      mvAround.elapsed+=dt;const acc=Math.min(1,mvAround.elapsed/2);
++      mvAround.angle=(mvAround.angle+dt*mvAround.rps*mvTour.rate*acc)%(Math.PI*2);state.yaw=mvAround.angle;
++      state.pitch+=(mvAround.pitch-state.pitch)*(1-Math.exp(-dt*2.2));
++      const cm=1-Math.exp(-dt*2.4);for(let i=0;i<3;i++)state.target[i]+=(MV_CENTER[i]-state.target[i])*cm;
++      state.dist+=(78*mvAround.zoom-state.dist)*(1-Math.exp(-dt*2.7));
++    }
++    if(mvZoomGoal!==null){state.dist+=(mvZoomGoal-state.dist)*Math.min(1,dt*7);if(Math.abs(mvZoomGoal-state.dist)<.05)mvZoomGoal=null;}
++  }
++  function mvSetFree(on){mvFree=!!on;mvFreeMode='move';state.mode=mvFree?'pan':'orbit';CAMERA_LIMITS.minDist=mvFree?4:10;if(mvFree){if(state.auto==='presentation')endPresentation();state.auto='';}syncButtons();mvSyncNav();}
++  function mvSyncNav(){const b=$('free');if(!b)return;const label=!mvFree?'Manos libres':mvFreeMode==='rotate'?'Manos libres: Girar':'Manos libres: Mover';const svg=b.querySelector('svg');b.textContent='';if(svg)b.appendChild(svg);b.appendChild(document.createTextNode((svg?' ':'')+label));b.title=!mvFree?'Clic: Mover · Segundo clic: Girar · Tercer clic: Salir':mvFreeMode==='move'?'Clic izquierdo: mover · Derecho o Mayús: girar · Clic otra vez: girar':'Clic izquierdo: girar · Derecho o Mayús: mover · Clic otra vez: salir';canvas.style.cursor=!mvFree?'':mvFreeMode==='rotate'?'move':'grab';$('spinSpeed').textContent=mvTour.rate>1?'Giro: Rápida':'Giro: Normal';}
++  const mvZoom=f=>{if(state.auto==='around'){mvAround.zoom=Math.max(.68,Math.min(2.5,mvAround.zoom*f));return;}if(state.auto==='spin')mvStopAll();if(state.auto==='presentation')endPresentation();mvZoomGoal=Math.max(CAMERA_LIMITS.minDist,Math.min(CAMERA_LIMITS.maxDist,(mvZoomGoal??state.dist)*f));};
++  $('zoomIn').onclick=()=>mvZoom(.84);
++  $('zoomOut').onclick=()=>mvZoom(1.19);
++  $('spin').onclick=()=>state.auto==='spin'?mvStopAll():mvStartTour();
++  $('spinSpeed').onclick=()=>{mvTour.rate=mvTour.rate===1?1.8:1;mvSyncNav();};
++  $('around').onclick=()=>state.auto==='around'?mvStopAll():mvStartAround();
++  $('free').onclick=()=>{if(!mvFree)mvSetFree(true);else if(mvFreeMode==='move'){mvFreeMode='rotate';mvSyncNav();}else mvSetFree(false);};
++  {const r=$('reset').onclick,tp=$('top').onclick;$('reset').onclick=()=>{mvSetFree(false);mvZoomGoal=null;r();};$('top').onclick=()=>{mvSetFree(false);mvZoomGoal=null;tp();};}
++  {const sp=$('presentationToggle').onclick;$('presentationToggle').onclick=()=>{mvSetFree(false);sp();};}
++  const mvOrbit=(dx,dy)=>{state.yaw-=dx*.006;state.pitch=Math.max(.18,Math.min(CAMERA_LIMITS.maxPitch,state.pitch-dy*.006));};
++  const mvPan=(dx,dy)=>{const s=state.dist*.00125,sy=Math.sin(state.yaw),cy=Math.cos(state.yaw);state.target[0]=Math.max(CAMERA_LIMITS.panXMin,Math.min(CAMERA_LIMITS.panXMax,state.target[0]+sy*dx*s+cy*dy*s));state.target[2]=Math.max(CAMERA_LIMITS.panZMin,Math.min(CAMERA_LIMITS.panZMax,state.target[2]-cy*dx*s+sy*dy*s));};
++  const mvFreeMove=(dx,dy)=>{const ds=Math.max(3.5,state.dist)*.0013,vs=Math.max(.35,Math.abs(Math.cos(state.pitch))),h=dx*ds,dp=dy*ds/vs,y=state.yaw;state.target[0]=Math.max(CAMERA_LIMITS.panXMin-16,Math.min(CAMERA_LIMITS.panXMax+16,state.target[0]-Math.sin(y)*h-Math.cos(y)*dp));state.target[2]=Math.max(CAMERA_LIMITS.panZMin-16,Math.min(CAMERA_LIMITS.panZMax+16,state.target[2]+Math.cos(y)*h-Math.sin(y)*dp));};
++  const mvFreeHeight=dy=>{state.target[1]=Math.max(.6,Math.min(35,state.target[1]+dy*Math.max(3.5,state.dist)*.0013));};
++  const mvPointers=new Map();let mvMode='orbit',mvPrevTouch=null;
++  const mvModeFor=e=>{if(!mvFree)return e.button===2||e.shiftKey?'pan':'orbit';if(e.button===1)return 'height';const alt=e.button===2||e.shiftKey||e.altKey||e.ctrlKey||e.metaKey;return (mvFreeMode==='rotate')!==alt?'orbit':'free-pan';};
++  canvas.addEventListener('pointerdown',e=>{if(state.auto==='presentation')endPresentation();if(state.auto==='spin'){state.auto='';syncButtons();}if(mvFree&&(e.button===2||e.button===1))e.preventDefault();try{canvas.setPointerCapture(e.pointerId);}catch(x){}mvPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});mvMode=mvModeFor(e);mvPrevTouch=null;if(mvFree)canvas.style.cursor=mvMode==='orbit'?'move':'grabbing';});
++  canvas.addEventListener('pointermove',e=>{if(!mvPointers.has(e.pointerId))return;const old=mvPointers.get(e.pointerId);mvPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});const arr=[...mvPointers.values()],dx=e.clientX-old.x,dy=e.clientY-old.y;
++    if(state.auto==='around'){if(arr.length>=2){const d=Math.hypot(arr[0].x-arr[1].x,arr[0].y-arr[1].y);if(mvPrevTouch)mvAround.zoom=Math.max(.68,Math.min(2.5,mvAround.zoom*Math.exp((mvPrevTouch.d-d)*.007)));mvPrevTouch={d};}else if(mvMode==='pan'||e.shiftKey)mvPan(dx,dy);else mvAround.pitch=Math.max(.35,Math.min(CAMERA_LIMITS.maxPitch,mvAround.pitch-dy*.004));return;}
++    if(arr.length>=2){const d=Math.hypot(arr[0].x-arr[1].x,arr[0].y-arr[1].y),cx=(arr[0].x+arr[1].x)/2,cy=(arr[0].y+arr[1].y)/2;if(mvPrevTouch){state.dist=Math.max(CAMERA_LIMITS.minDist,Math.min(CAMERA_LIMITS.maxDist,state.dist*Math.exp((mvPrevTouch.d-d)*.007)));(mvFree?mvFreeMove:mvPan)(cx-mvPrevTouch.cx,cy-mvPrevTouch.cy);}mvPrevTouch={d,cx,cy};return;}
++    if(mvFree){if(mvMode==='orbit')mvOrbit(dx,dy);else if(mvMode==='height')mvFreeHeight(dy);else mvFreeMove(dx,dy);}else if(mvMode==='pan'||e.shiftKey)mvPan(dx,dy);else mvOrbit(dx,dy);});
++  const mvUp=e=>{mvPointers.delete(e.pointerId);mvPrevTouch=null;if(!mvPointers.size)mvSyncNav();};
++  canvas.addEventListener('pointerup',mvUp);canvas.addEventListener('pointercancel',mvUp);canvas.addEventListener('lostpointercapture',mvUp);
++  canvas.addEventListener('wheel',e=>{e.preventDefault();mvZoom(Math.exp(e.deltaY*.001));},{passive:false});
++  canvas.addEventListener('contextmenu',e=>e.preventDefault());
 +  mvMotionResize = resize;
 +  canvas.addEventListener('pointermove', e => { if (e.buttons) mvMotionStart(); }, { passive: true });
 +  canvas.addEventListener('wheel', mvMotionStart, { passive: true });
 +  canvas.addEventListener('touchmove', mvMotionStart, { passive: true });
-   canvas.addEventListener('pointerdown',e=>{pointer={x:e.clientX,y:e.clientY,button:e.button};try{canvas.setPointerCapture(e.pointerId);}catch(x){}if(state.auto!=='presentation')state.auto='';syncButtons();});
-   canvas.addEventListener('pointerup',()=>pointer=null);canvas.addEventListener('pointercancel',()=>pointer=null);
-   canvas.addEventListener('pointermove',e=>{if(!pointer)return;const dx=e.clientX-pointer.x,dy=e.clientY-pointer.y;pointer.x=e.clientX;pointer.y=e.clientY;if(state.mode==='pan'||e.button===2||pointer.button===2||e.shiftKey){const speed=state.dist*.0012;state.target[0]=Math.max(CAMERA_LIMITS.panXMin,Math.min(CAMERA_LIMITS.panXMax,state.target[0]+Math.sin(state.yaw)*dx*speed));state.target[2]=Math.max(CAMERA_LIMITS.panZMin,Math.min(CAMERA_LIMITS.panZMax,state.target[2]-Math.cos(state.yaw)*dx*speed+dy*speed));}else{state.yaw-=dx*.005;state.pitch=Math.max(.18,Math.min(CAMERA_LIMITS.maxPitch,state.pitch-dy*.005));}});
-@@ -1921,7 +2383,7 @@
++  mvSyncNav();
    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.auto==='presentation')endPresentation();else if(e.key==='ArrowLeft')state.yaw-=.1;else if(e.key==='ArrowRight')state.yaw+=.1;});
    let vw=0,vh=0,density=0,lastFrame=performance.now(),qualityFrames=0,qualityMs=0;
    const maxSize=Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE)||4096,gl.getParameter(gl.MAX_TEXTURE_SIZE)||4096);
@@ -665,7 +743,19 @@
    function drawLabels(mat,eye){
      const tankInfo=tankLabels[0];
      const direction=tankInfo?Math.hypot(eye[0]-tankInfo.x,eye[2]-tankInfo.z)||1:1;
-@@ -1955,6 +2417,7 @@
+@@ -1945,9 +2470,9 @@
+     eye[1]=Math.max(eye[1],safeHeight);
+   }
+   function render(now){const dt=Math.min(.06,Math.max(.001,(now-lastFrame)/1000));lastFrame=now;qualityFrames++;qualityMs+=dt*1000;if(qualityFrames>=90){const avg=qualityMs/qualityFrames,old=state.quality;if(avg>29)state.quality=Math.max(.75,state.quality-.08);else if(avg<18)state.quality=Math.min(1.24,state.quality+.03);qualityFrames=0;qualityMs=0;if(Math.abs(state.quality-old)>.005)resize();}if(vw!==canvas.clientWidth||vh!==canvas.clientHeight||density!==(window.devicePixelRatio||1))resize();
+-    if(state.auto==='spin'||state.auto==='around')state.yaw+=dt*(state.spinFast?.33:.20)*(state.auto==='spin'?1:.68);
++    mvTickNav(dt);
+     if(state.auto==='presentation') {if(!state.paused){state.pt+=dt;if(state.pt>=state.presDuration)jumpPresentation(1);}const n=config.nodes[state.presIndex],t=Math.min(1,dt*1.8),pump=n[2]==='pump',reservoir=n[2]==='reservoir',tank=n[2]==='tank';const lateral=pump&&vw>1020&&state.showInfo?2.8:0;state.target[0]+=(n[3]+Math.sin(state.yaw)*lateral-state.target[0])*t;state.target[2]+=(n[4]-Math.cos(state.yaw)*lateral-state.target[2])*t;state.target[1]+=((pump?2.8:tank?2.3:1.4)-state.target[1])*t;state.dist+=((pump?23.0:tank?15.6:reservoir?27:20)-state.dist)*t;state.pitch+=((pump?1.06:tank?1.04:1.03)-state.pitch)*t;state.yaw+=dt*(pump?.075:.035);$('presentationProgress').style.width=(state.pt/state.presDuration*100).toFixed(2)+'%';}
+-    if(state.auto==='spin'&&state.selected){const n=nodeById.get(state.selected).data;if(n[2]==='pump'){const t=Math.min(1,dt*1.25);state.target[0]+=(n[3]-state.target[0])*t;state.target[2]+=(n[4]-state.target[2])*t;state.target[1]+=(2.8-state.target[1])*t;state.dist+=(24.0-state.dist)*t;}}
++    if(false){const n=nodeById.get(state.selected).data;if(n[2]==='pump'){const t=Math.min(1,dt*1.25);state.target[0]+=(n[3]-state.target[0])*t;state.target[2]+=(n[4]-state.target[2])*t;state.target[1]+=(2.8-state.target[1])*t;state.dist+=(24.0-state.dist)*t;}}
+     state.dist=Math.max(CAMERA_LIMITS.minDist,Math.min(CAMERA_LIMITS.maxDist,state.dist));
+     state.pitch=Math.max(.18,Math.min(CAMERA_LIMITS.maxPitch,state.pitch));
+     const sn=Math.sin(state.pitch),cs=Math.cos(state.pitch),eye=[state.target[0]+Math.cos(state.yaw)*state.dist*sn,Math.max(2.1,state.target[1]+state.dist*cs),state.target[2]+Math.sin(state.yaw)*state.dist*sn];
+@@ -1955,6 +2480,7 @@
      eye[2]=Math.max(-64,Math.min(58,eye[2]));
      keepCameraAboveTerrain(eye,state.target);
      const mat=mul(proj(Math.PI/3.45,canvas.width/Math.max(canvas.height,1),.12,600),view(eye,state.target));
@@ -673,7 +763,7 @@
      gl.clearColor(.60,.78,.88,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
      eveningBlend+=(Number(state.night)-eveningBlend)*Math.min(1,dt*2.6);
      renderSky(eye,state.target,now*.001,canvas.width/Math.max(1,canvas.height));
-@@ -1963,6 +2426,7 @@
+@@ -1963,6 +2489,7 @@
      if(loc.time!==null)gl.uniform1f(loc.time,now*.001*state.speed);
      if(loc.anim!==null)gl.uniform1f(loc.anim,state.water?1:0);
      if(loc.evening!==null)gl.uniform1f(loc.evening,eveningBlend);
@@ -681,3 +771,11 @@
      if(loc.casetaLights!==null)gl.uniform1fv(loc.casetaLights,casetaLightState);
      if(loc.terrainDetail!==null)gl.uniform1f(loc.terrainDetail,state.quality>.80?1:0);
      updateWaterLevels();if(loc.levels!==null)gl.uniform1fv(loc.levels,levelsUniform);
+@@ -1974,6 +2501,7 @@
+     drawGroup(1);drawGroup(2);
+     gl.depthMask(true);gl.disable(gl.BLEND);
+     drawLabels(mat,eye);
++    for(const n of config.nodes){const l=labels.get(n[0]);if(!l||l.el.hidden)continue;const d=Math.hypot(eye[0]-n[3],eye[1]-5,eye[2]-n[4]);l.el.style.setProperty('--mv-s',Math.max(.8,Math.min(1.45,44/d)).toFixed(3));}
+     const sillaPosition=project([-84,30,10],mat,vw,vh);
+     sillaLabel.hidden=!state.names||!sillaPosition||state.auto==='presentation';
+     if(!sillaLabel.hidden){sillaLabel.style.left=sillaPosition[0]+'px';sillaLabel.style.top=sillaPosition[1]+'px';}

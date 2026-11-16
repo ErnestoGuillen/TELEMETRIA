@@ -46,7 +46,7 @@
  #presentationPanel #presentationOptions{font-size:20px}
  #presentationPanel #presentationMore{position:absolute;right:9px;bottom:48px;background:#fff;box-shadow:0 4px 15px #0003;padding:8px;border:1px solid #c9d6de;border-radius:7px;display:flex;gap:6px}
  #presentationPanel #presentationMore[hidden]{display:none!important}
-@@ -4706,18 +4690,11 @@
+@@ -4706,18 +4690,17 @@
  #labels .linares-equipment-strip{display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:center!important;gap:3px!important;margin-top:4px!important;white-space:normal!important}
  #labels .linares-mtyv-equipment-chip{display:inline-block;border:1px solid #9eafb7;border-radius:4px;background:#748590;color:white!important;font:400 10px/1.2 Arial,sans-serif!important;padding:3px 5px;letter-spacing:0}
  #presentationPanel{width:min(390px,calc(100vw - 24px))!important;border:1px solid #d2dce2!important;border-radius:9px!important;box-shadow:0 8px 28px #0003!important;background:#fff!important;color:#24333c!important}
@@ -65,3 +65,9 @@
  #presentationPanel .presentation-actions{background:#fff!important}
 -#presentationPanel .presentation-actions>button{border-radius:5px!important}
  @media(max-width:670px){#labels .world-sign{min-width:90px!important;max-width:152px!important;padding:5px 6px!important}#labels .world-sign strong{font-size:10px!important}#labels .linares-mtyv-equipment-chip{padding:2px 4px;font-size:9px!important}#presentationPanel{width:min(360px,calc(100vw - 14px))!important}}
++
++/* MV PRO: tarjetas de nombre con el diseño de Monterrey V */
++#labels .world-sign{transform:translate(-50%,-100%) scale(var(--mv-s,1))!important;transform-origin:50% 100%!important;min-width:0!important;max-width:none!important;padding:6px 14px 6px 17px!important;border-radius:6px!important;background:linear-gradient(#668894,#456775)!important;border:1.5px solid #c2d3d8!important;box-shadow:0 3px 8px rgba(0,0,0,.28)!important;outline:0!important;position:absolute}
++#labels .world-sign::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:#c7e3e7;border-radius:1px}
++#labels .world-sign strong{font:800 13px/1.15 "Segoe UI",Arial,sans-serif!important;color:#fff!important;text-transform:uppercase!important;letter-spacing:.03em!important;white-space:nowrap!important;text-shadow:0 1px 1px rgba(0,0,0,.14)!important}
++#labels .world-sign.selected{background:linear-gradient(#6f93a0,#4a6d7b)!important;border-color:#fff!important}
