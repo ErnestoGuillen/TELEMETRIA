@@ -1852,7 +1852,11 @@ void main(){
       box(px,1.15,front+.38,1.03,.07,.48,'#c2d1d0');
       cylinder(px,1.34,front+.35,.15,.18,'#34c34b',{seg:13,kind:19,levelId:dataId,em:.34});
       cylinder(px,1.53,front+.35,.11,.06,'#cededd',{seg:12});
-      tube([[px,1.34,pz+1.12],[px,1.34,front-.60]],.085,'#168ab6',{seg:10});
+      /* MV PRO: salidas de tubería de las casetas */
+      tube([[px,1.34,pz+1.12],[px,1.34,front+1.05]],.13,'#1d78c4',{seg:14});
+      orientedCylinder([px,1.34,front-.08],[px,1.34,front+.14],.24,'#7d8c94',{seg:16});
+      orientedCylinder([px,1.34,front+.52],[px,1.34,front+.60],.21,'#6f7f88',{seg:16});
+      cylinder(px,1.34,front+1.18,.27,.40,'#1d6fb8',{seg:16});
     }
     tube([[left+.50,1.35,z+1.48],[right-.50,1.35,z+1.48]],.18,'#1486b9',{seg:14});
     tube([[left+.50,1.01,z-1.35],[right-.50,1.01,z-1.35]],.13,'#4194b2',{seg:12});
@@ -1882,8 +1886,19 @@ void main(){
       cylinder(xx,4.42,front+.38,.24,.14,'#f3e5c6',{seg:14,kind:16,levelId:index,em:1.1});
       casetaGlowDisk(xx,.36,front+.62,.95,.95,index,.20);
     }
-    bar([left,1.31,z-.80],[left-.62,1.31,z-.80],.18,'#147db6',{seg:11,kind:1});
-    bar([right,1.29,z+.78],[right+.62,1.29,z+.78],.18,'#147db6',{seg:11,kind:1});
+    {
+      const hz=front+1.18, hy=1.34;
+      tube([[left+.55,hy,hz],[right-.55,hy,hz]],.26,'#1d6fb8',{seg:18});
+      for(const ex of [left+.55,right-.55]) orientedCylinder([ex-.06,hy,hz],[ex+.06,hy,hz],.36,'#6f7f88',{seg:18});
+      for(let sx=left+1.6;sx<right-1.0;sx+=2.6){ box(sx,(hy-.26)/2+.05,hz,.42,hy-.26,.62,'#b7b2a6'); orientedCylinder([sx-.04,hy,hz],[sx+.04,hy,hz],.33,'#6f7f88',{seg:18}); }
+      tube([[left+.55,hy,hz],[left-.35,hy,hz],[left-.95,hy,hz-.6],[left-.95,1.31,z-.80]],.24,'#1d6fb8',{seg:16});
+    }
+    bar([left,1.31,z-.80],[left-1.30,1.31,z-.80],.26,'#1d6fb8',{seg:16});
+    orientedCylinder([left-.05,1.31,z-.80],[left-.22,1.31,z-.80],.38,'#7d8c94',{seg:18});
+    orientedCylinder([left-1.00,1.31,z-.80],[left-1.10,1.31,z-.80],.36,'#6f7f88',{seg:18});
+    bar([right,1.29,z+.78],[right+1.30,1.29,z+.78],.26,'#1d6fb8',{seg:16});
+    orientedCylinder([right+.05,1.29,z+.78],[right+.22,1.29,z+.78],.38,'#7d8c94',{seg:18});
+    orientedCylinder([right+1.00,1.29,z+.78],[right+1.10,1.29,z+.78],.36,'#6f7f88',{seg:18});
     box(x,.39,front+.60,3.38,.14,1.30,'#a7b3b2');
     box(x,.46,front+.66,3.14,.10,1.20,'#d1d8d5');
   }
@@ -1940,20 +1955,9 @@ void main(){
         quad(0, [a.x + a.nx * off0, ya, a.z + a.nz * off0], [b.x + b.nx * off0, yb, b.z + b.nz * off0], [b.x + b.nx * off1, yb, b.z + b.nz * off1], [a.x + a.nx * off1, ya, a.z + a.nz * off1], UP, col);
       }
     };
-    strip(road, -2.55, 2.55, .022, '#8f8a78');
-    strip(road, -1.75, 1.75, .040, '#3c4246');
-    strip(road, -1.62, -1.52, .046, '#e8ece8');
-    strip(road, 1.52, 1.62, .046, '#e8ece8');
-    for (let i = 2; i < road.length - 1; i += 3) strip(road.slice(i, i + 2), -.05, .05, .047, '#e7c23a');
-    // ramales a cada caseta
+    // cercas de cada caseta
     for (const n of casetas) {
       const x = n[3], z = n[4];
-      let best = road[0], bd = 1e9; for (const r of road) { const d = Math.hypot(r.x - x, r.z - z); if (d < bd) { bd = d; best = r; } }
-      const frontZ = z + (n[2] === 'pump' ? 4.6 : 3.2);
-      const a = { x: best.x, z: best.z }, b = { x, z: frontZ };
-      const dx = b.x - a.x, dz = b.z - a.z, L = Math.hypot(dx, dz) || 1, px = -dz / L * 1.45, pz = dx / L * 1.45;
-      const ya = ground(a.x, a.z) + .041, yb = ground(b.x, b.z) + .041;
-      quad(0, [a.x + px, ya, a.z + pz], [b.x + px, yb, b.z + pz], [b.x - px, yb, b.z - pz], [a.x - px, ya, a.z - pz], UP, '#43494d');
       // cerca perimetral con portón
       if (n[2] === 'pump') {
         const hw = 6.9, hd = 5.6, posts = [];
@@ -1999,6 +2003,7 @@ void main(){
         tube(pts, .016, '#2b3034', { seg: 4 });
       }
     }
+
     // soportes de concreto bajo la tubería y señalización de ducto
     const nearCaseta = (x, z) => casetas.some(n => Math.abs(x - n[3]) < 6.2 && Math.abs(z - n[4]) < 5.0);
     for (const def of pipeDefs) {
@@ -2024,13 +2029,13 @@ void main(){
     // vegetación del llano (mezquites, huizaches y matorral)
     const crownCols = ['#3f5f2a', '#4a6b2f', '#55743a', '#5f7c3c', '#466332', '#6b8341'];
     const shrubCols = ['#5b6f38', '#6d7d42', '#4f6634', '#7a8549'];
-    const roadPts = road.map(r => [r.x, 0, r.z]);
+    const polePts = poles.map(p => [p.x, 0, p.z]);
     const keepOut = (x, z, margin) => {
       if (Math.hypot(x, z) > 93) return true;
       if (ground(x, z) > 1.2) return true;
       if (lakeDistance(x, z) < 3.5) return true;
       if (distToPoly(x, z, route) < 6.5 + margin) return true;
-      if (distToPoly(x, z, roadPts) < 3.4 + margin) return true;
+      if (distToPoly(x, z, polePts) < 2.2 + margin) return true;
       if (casetas.some(n => Math.abs(x - n[3]) < 8 + margin && Math.abs(z - n[4]) < 7 + margin)) return true;
       return false;
     };
@@ -2210,7 +2215,38 @@ void main(){
   }
   let historyRequest=0,history=[];
   async function loadHistory(n){const request=++historyRequest;history=[];$('graphSection').hidden=true;const code=n[5];if(!code)return;try{const resp=await fetch('/Telemetria/php/linares_3d_historial.php?codigo='+encodeURIComponent(code)+'&horas=6',{cache:'no-store'});if(!resp.ok)return;const obj=await resp.json();if(request!==historyRequest||state.selected!==n[0])return;const key=n[2]==='tank'||n[2]==='reservoir'?'level':'flow';history=Array.isArray(obj[key])?obj[key]:[];if(history.length>=2){$('graphTitle').textContent=key==='flow'?'FLUJO':'NIVEL';$('graphValue').textContent=history.length?fmt(history[history.length-1][1])+(key==='flow'?' LPS':' m'):'';$('graphSection').hidden=false;drawChart();}}catch(e){}}
-  function drawChart(){const el=$('graph');if($('graphSection').hidden||history.length<2)return;const rect=el.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),w=Math.max(230,rect.width),h=Math.max(150,rect.height);el.width=Math.round(w*dpr);el.height=Math.round(h*dpr);const ctx=el.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);const data=history.filter(v=>Number.isFinite(v[0])&&Number.isFinite(v[1]));if(data.length<2)return;const minX=data[0][0],maxX=data[data.length-1][0]||minX+1,vs=data.map(p=>p[1]),minY=Math.min(...vs),maxY=Math.max(...vs),span=Math.max(.1,maxY-minY),lo=minY-span*.18,hi=maxY+span*.19;const L=45,R=w-10,T=9,B=h-25;ctx.font='10px Arial';ctx.strokeStyle='#dce5e9';ctx.fillStyle='#516873';ctx.lineWidth=1;for(let i=0;i<=3;i++){const y=T+i*(B-T)/3;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(R,y);ctx.stroke();ctx.fillText(fmt(hi-(hi-lo)*i/3),1,y+3);}for(let i=0;i<=3;i++){const x=L+i*(R-L)/3;ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,B);ctx.stroke();const d=new Date(minX+i*(maxX-minX)/3);ctx.fillText(d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false}),x-13,B+15);}const px=p=>L+(p[0]-minX)/Math.max(1,maxX-minX)*(R-L),py=p=>B-(p[1]-lo)/(hi-lo)*(B-T);ctx.beginPath();ctx.moveTo(px(data[0]),B);for(const p of data)ctx.lineTo(px(p),py(p));ctx.lineTo(px(data[data.length-1]),B);ctx.closePath();ctx.fillStyle='#0058b7';ctx.fill();ctx.beginPath();for(let i=0;i<data.length;i++)i?ctx.lineTo(px(data[i]),py(data[i])):ctx.moveTo(px(data[i]),py(data[i]));ctx.strokeStyle='#0058b7';ctx.lineWidth=1.6;ctx.stroke();$('graphLatest').textContent='Última '+new Date(maxX).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false});}
+  function drawChart(){
+    /* MV PRO: gráfica estilo tendencia SCADA (igual que Monterrey V / Anillo TV) */
+    const el=$('graph');if($('graphSection').hidden||history.length<2)return;
+    const rect=el.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),w=Math.max(230,rect.width),h=Math.max(150,rect.height);
+    el.width=Math.round(w*dpr);el.height=Math.round(h*dpr);
+    const ctx=el.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+    const data=history.filter(v=>Number.isFinite(v[0])&&Number.isFinite(v[1]));if(data.length<2)return;
+    const isFlow=$('graphTitle').textContent==='FLUJO',color=isFlow?'#4f5b66':'#0058b7',dec=isFlow?0:2;
+    const minX=data[0][0],maxX=data[data.length-1][0]||minX+1,vs=data.map(p=>p[1]),minY=Math.min(...vs),maxY=Math.max(...vs);
+    const span=Math.max(isFlow?4:.1,maxY-minY),lo=Math.max(0,minY-span*.20),hi=maxY+span*.20;
+    const L=46,R=w-50,T=8,B=h-24;
+    const px=p=>L+(p[0]-minX)/Math.max(1,maxX-minX)*(R-L),py=p=>B-(p[1]-lo)/Math.max(1e-6,hi-lo)*(B-T);
+    ctx.fillStyle='#ffffff';ctx.fillRect(L,T,R-L,B-T);
+    ctx.font='10px "Segoe UI",Arial';ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){const y=Math.round(T+i*(B-T)/4)+.5;if(i>0&&i<4){ctx.strokeStyle='#e9eef2';ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(R,y);ctx.stroke();}
+      ctx.strokeStyle='#8a98a5';ctx.beginPath();ctx.moveTo(L-4,y);ctx.lineTo(L,y);ctx.stroke();
+      ctx.fillStyle='#3d4852';ctx.textAlign='right';ctx.fillText(fmt(hi-(hi-lo)*i/4,dec),L-7,y+3.5);}
+    for(let i=0;i<=6;i++){const x=Math.round(L+i*(R-L)/6)+.5;if(i>0&&i<6){ctx.strokeStyle='#f0f3f6';ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,B);ctx.stroke();}
+      ctx.strokeStyle='#8a98a5';ctx.beginPath();ctx.moveTo(x,B);ctx.lineTo(x,B+4);ctx.stroke();
+      if(i%2===0){const d=new Date(minX+i*(maxX-minX)/6);ctx.fillStyle='#3d4852';ctx.textAlign=i===0?'left':i===6?'right':'center';ctx.fillText(d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false}),x,h-6);}}
+    ctx.strokeStyle='#c3ccd4';ctx.strokeRect(L+.5,T+.5,R-L-1,B-T-1);
+    ctx.beginPath();ctx.moveTo(px(data[0]),B);for(const p of data)ctx.lineTo(px(p),py(p));ctx.lineTo(px(data[data.length-1]),B);ctx.closePath();
+    ctx.globalAlpha=.07;ctx.fillStyle=color;ctx.fill();ctx.globalAlpha=1;
+    ctx.beginPath();data.forEach((p,i)=>i?ctx.lineTo(px(p),py(p)):ctx.moveTo(px(p),py(p)));ctx.strokeStyle=color;ctx.lineWidth=1.7;ctx.lineJoin='miter';ctx.stroke();
+    if(data.length<=90){ctx.lineWidth=1.2;for(const p of data){ctx.fillStyle='#ffffff';ctx.fillRect(px(p)-2,py(p)-2,4,4);ctx.strokeStyle=color;ctx.strokeRect(px(p)-2,py(p)-2,4,4);}}
+    const last=data[data.length-1],lx=px(last),ly=py(last),tag=fmt(last[1],dec),tw=Math.max(40,ctx.measureText(tag).width+12),ty=Math.min(B-8,Math.max(T+8,ly));
+    ctx.setLineDash([3,2]);ctx.strokeStyle=color;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(R,ly);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(R,ty);ctx.lineTo(R+5,ty-8);ctx.lineTo(R+5+tw,ty-8);ctx.lineTo(R+5+tw,ty+8);ctx.lineTo(R+5,ty+8);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#ffffff';ctx.font='700 10px "Segoe UI",Arial';ctx.textAlign='center';ctx.fillText(tag,R+5+tw/2,ty+3.6);
+    ctx.fillStyle=color;ctx.fillRect(lx-3,ly-3,6,6);ctx.textAlign='left';
+    $('graphLatest').textContent='Última '+new Date(maxX).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false});
+  }
   function alertsRefresh(){const alerts=[];for(const n of config.nodes){const s=getData(n);if(!s)continue;if(s.status==='sin_comunicacion')alerts.push({id:n[0],name:n[1],type:'Sin comunicación'});else if(s.observation)alerts.push({id:n[0],name:n[1],type:'Nivel fuera de parámetros'});}const bar=$('alertBar');bar.hidden=!state.alerts||!alerts.length;$('alertCount').hidden=!alerts.length;$('alertCount').textContent=alerts.length;$('alertSummary').textContent=alerts.length?alerts[0].name+'   '+alerts[0].type:'';$('alertsList').replaceChildren();for(const a of alerts){const b=document.createElement('button');b.type='button';b.textContent=a.name+' · '+a.type;b.onclick=()=>{selectNode(a.id);$('alertsList').hidden=true};$('alertsList').appendChild(b);}}
   function updateData(){
     const g=live.get('TGRP0001');
