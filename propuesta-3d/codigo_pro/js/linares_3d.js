@@ -21,7 +21,7 @@
   const separateCasetaX=x=>x>=22?x:22+(x-22)*1.105;
   for(const node of config.nodes){if(node[0]!=='li00')node[3]=separateCasetaX(node[3]);}
   /* MV PRO: acomodo como el mapa SCADA: presa -> PB1, línea a PB2/PB2A/PB3, baja a Garrapatas, diagonal al rompedor y PB4 */
-  const mvNodeAngle=new Map();
+  const mvNodeAngle=new Map(), MV_PUMP_LANE=6.2, MV_PIPE_LANE=5.45;
   (()=>{
     const layout={li01:[23.2,5.4],li02:[11.2,4.0],li02a:[-1.2,3.0],li03:[-13.6,2.3],li04a:[-22.6,4.6],li05:[-31.8,-3.9],li04:[-43.2,-5.6]};
     for(const n of config.nodes){const q=layout[n[0]];if(q){n[3]=q[0];n[4]=q[1];}}
@@ -1495,7 +1495,8 @@ void main(){
     const a=pointNodes.get(start),b=pointNodes.get(end);
     if(!a||!b)continue;
     const key=start+'|'+end;
-    const path=key==='li00|li01'?[[a[3],1.03,a[4]],[a[3]+1.2,1.03,a[4]-4.6],[b[3]+5.2,1.03,b[4]+.4],[b[3],1.03,b[4]]]:key==='li03|li04a'?[[a[3],1.03,a[4]],[a[3]-4.4,1.03,a[4]+1.4],[b[3],1.03,b[4]]]:[[a[3],1.03,a[4]],[b[3],1.03,b[4]]];
+    const mvAnchor=n=>{if(n[2]!=='pump')return [n[3],n[4]];const g=mvNodeAngle.get(n[0])||0;return [n[3]-Math.sin(g)*MV_PIPE_LANE,n[4]+Math.cos(g)*MV_PIPE_LANE];};const A0=mvAnchor(a),B0=mvAnchor(b);const aa=[a[0],a[1],a[2],A0[0],A0[1]],bb=[b[0],b[1],b[2],B0[0],B0[1]];
+    const path=((a,b)=>key==='li00|li01'?[[a[3],1.03,a[4]],[a[3]+1.2,1.03,a[4]-4.6],[b[3]+5.2,1.03,b[4]+.4],[b[3],1.03,b[4]]]:key==='li03|li04a'?[[a[3],1.03,a[4]],[a[3]-4.4,1.03,a[4]+1.4],[b[3],1.03,b[4]]]:[[a[3],1.03,a[4]],[b[3],1.03,b[4]]])(aa,bb);
     const meta={nodes:path,source:a[1],target:b[1]};
     pipeDefs.push(meta);
   }
@@ -1868,12 +1869,13 @@ void main(){
       const px=x+(i-centerOffset)*1.75;
       const pz=z+.30;
       const dataId=8+start+i;
-      linaresMotor3D(px,pz,dataId);
-      orientedCylinder([px-.05,1.03,z-1.35],[px+.05,1.03,z-1.35],.42,'#6f7f88',{seg:20});
-      tube([[px,1.03,z-1.35],[px,1.03,pz-.95],[px,.86,pz-.62]],.13,'#1d78c4',{seg:12});
-      box(px,1.03,pz-1.08,.30,.34,.30,'#2c5f8f');
-      cylinder(px,1.36,pz-1.08,.03,.34,'#b9c2c7',{seg:6});
-      ring(px,1.55,pz-1.08,.16,'#c62828',.025,{seg:6});
+      /* MV PRO: equipo afuera, girado hacia la tubería y conectado con su válvula */
+      const ez=z+MV_PUMP_LANE+.75;
+      mvRotateBuild(px,ez,Math.PI,()=>linaresMotor3D(px,ez,dataId));
+      box(px,1.05,ez-1.32,.30,.34,.30,'#2c5f8f');
+      cylinder(px,1.38,ez-1.32,.03,.34,'#b9c2c7',{seg:6});
+      ring(px,1.57,ez-1.32,.16,'#c62828',.025,{seg:6});
+      orientedCylinder([px,1.03,ez-1.50],[px,1.03,ez-1.62],.22,'#6f7f88',{seg:16});
       box(px,.375,z-1.58,1.28,.012,.075,'#dce3e0');
       box(px,1.01,front+.38,1.23,.20,.63,'#61747b');
       box(px,1.15,front+.38,1.03,.07,.48,'#c2d1d0');
@@ -1881,15 +1883,10 @@ void main(){
       cylinder(px,1.53,front+.35,.11,.06,'#cededd',{seg:12});
       /* MV PRO: sin tubo de descarga visible; sólo el equipo */
     }
-    tube([[left+.50,1.35,z+1.48],[right-.50,1.35,z+1.48]],.18,'#1486b9',{seg:14});
-    /* MV PRO: tubería principal por en medio de la caseta; los equipos se conectan a ella */
-    {
-      const mz=z-1.35, my=1.03, r=.31;
-      tube([[left-1.12,my,z],[left-.78,my,z-.28],[left-.42,my,mz+.12],[left-.10,my,mz],[right+.10,my,mz],[right+.42,my,mz+.12],[right+.78,my,z-.28],[right+1.12,my,z]],r,'#1d6fb8',{seg:20});
-      for(const wx of [left,right]){ orientedCylinder([wx-.16,my,mz],[wx+.16,my,mz],r+.20,'#a7aea8',{seg:22}); }
-      for(const fx of [left+.55,right-.55]) orientedCylinder([fx-.05,my,mz],[fx+.05,my,mz],r+.12,'#6f7f88',{seg:22});
-      for(const sx of [left+1.2,x,right-1.2]){ box(sx,(my-r)/2+.2,mz,.34,my-r-.2,.62,'#9aa3a0'); }
-    }
+    /* MV PRO: losa exterior para los equipos junto a la tubería principal */
+    box(x,.16,z+MV_PUMP_LANE,w+.4,.26,3.3,'#a9aea6');
+    box(x,.30,z+MV_PUMP_LANE,w+.1,.04,3.0,'#c3c7bf');
+
     box(left+.63,1.74,back+.70,.66,2.44,1.09,'#435d67');
     box(left+.65,1.98,back+1.29,.48,1.24,.075,'#90b0b9',1,.13,.80);
     for(const yy of [1.59,1.87,2.12])for(const dx of [-.14,.12]){
@@ -1916,12 +1913,8 @@ void main(){
       cylinder(xx,4.42,front+.38,.24,.14,'#f3e5c6',{seg:14,kind:16,levelId:index,em:1.1});
       casetaGlowDisk(xx,.36,front+.62,.95,.95,index,.20);
     }
-    bar([left,1.31,z-.80],[left-1.30,1.31,z-.80],.26,'#1d6fb8',{seg:16});
-    orientedCylinder([left-.05,1.31,z-.80],[left-.22,1.31,z-.80],.38,'#7d8c94',{seg:18});
-    orientedCylinder([left-1.00,1.31,z-.80],[left-1.10,1.31,z-.80],.36,'#6f7f88',{seg:18});
-    bar([right,1.29,z+.78],[right+1.30,1.29,z+.78],.26,'#1d6fb8',{seg:16});
-    orientedCylinder([right+.05,1.29,z+.78],[right+.22,1.29,z+.78],.38,'#7d8c94',{seg:18});
-    orientedCylinder([right+1.00,1.29,z+.78],[right+1.10,1.29,z+.78],.36,'#6f7f88',{seg:18});
+
+
     box(x,.39,front+.60,3.38,.14,1.30,'#a7b3b2');
     box(x,.46,front+.66,3.14,.10,1.20,'#d1d8d5');
   }
@@ -1989,9 +1982,9 @@ void main(){
       const x = n[3], z = n[4];
       // cerca perimetral con portón
       if (n[2] === 'pump') {
-        const hw = 6.9, hd = 5.6;
+        const hw = 6.9, hd = 9.0, hb = 5.0;
         const W = (lx, lz) => toWorld(n, lx, lz);
-        const pts = [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd], [-hw, -hd]];
+        const pts = [[-hw, -hb], [hw, -hb], [hw, hd], [-hw, hd], [-hw, -hb]];
         for (let s2 = 0; s2 < 4; s2++) {
           const p0 = pts[s2], p1 = pts[s2 + 1], L2 = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), steps = Math.round(L2 / 1.6);
           for (let k = 0; k <= steps; k++) {
@@ -2060,8 +2053,8 @@ void main(){
       }
     };
     for (const n of config.nodes.filter(q => q[2] === 'pump')) {
-      const hw = 6.6, hd = 5.3, a = angOf(n), c = Math.cos(a), sn = Math.sin(a);
-      for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const f = toWorld(n, sx * hw, sz * hd), dx = -sx * .7071, dz = -sz * .7071; lamp(f[0], f[1], dx * c - dz * sn, dx * sn + dz * c); }
+      const hw = 6.6, hd = 8.7, a = angOf(n), c = Math.cos(a), sn = Math.sin(a);
+      for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const f = toWorld(n, sx * hw, sz > 0 ? hd : -5.3), dx = -sx * .7071, dz = -sz * .7071; lamp(f[0], f[1], dx * c - dz * sn, dx * sn + dz * c); }
     }
     {
       const pts = resample(route, 1.0); let accL = 6;
@@ -2069,14 +2062,14 @@ void main(){
         accL += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][2] - pts[i - 1][2]);
         if (accL < 12) continue;
         const p = pts[i];
-        if (casetas.some(n => inBox(n, p[0], p[2], 8.5, 7.5)) || lakeDistance(p[0], p[2]) < 2) continue;
+        if (casetas.some(n => inBox(n, p[0], p[2], 8.5, n[2] === 'pump' ? 10.5 : 7.5)) || lakeDistance(p[0], p[2]) < 2) continue;
         accL = 0;
         const a = pts[i - 1]; let nx = -(p[2] - a[2]), nz = p[0] - a[0]; const l = Math.hypot(nx, nz) || 1; nx /= l; nz /= l; if ((p[0] - routeC[0]) * nx + (p[2] - routeC[1]) * nz > 0) { nx = -nx; nz = -nz; }
         lamp(p[0] + nx * 2.2, p[2] + nz * 2.2, -nx, -nz);
       }
     }
     // soportes de concreto bajo la tubería y señalización de ducto
-    const nearCaseta = (x, z) => casetas.some(n => inBox(n, x, z, 6.2, 5.0));
+    const nearCaseta = (x, z) => casetas.some(n => n[2] === 'pump' ? (() => { const l = toLocal(n, x, z); return Math.abs(l[0]) < 6.2 && l[1] > -5 && l[1] < 9.2; })() : inBox(n, x, z, 6.2, 5.0));
     for (const def of pipeDefs) {
       const pts = resample(def.nodes.map(p => [p[0], 0, p[2]]), 2.6);
       pts.forEach((p, i) => {
@@ -2107,7 +2100,7 @@ void main(){
       if (lakeDistance(x, z) < 3.5) return true;
       if (distToPoly(x, z, route) < 6.5 + margin) return true;
       if (distToPoly(x, z, polePts) < 2.2 + margin) return true;
-      if (casetas.some(n => inBox(n, x, z, 8 + margin, 7 + margin))) return true;
+      if (casetas.some(n => inBox(n, x, z, 8 + margin, (n[2] === 'pump' ? 10.5 : 7) + margin))) return true;
       return false;
     };
     const tree = (x, z, s) => {
