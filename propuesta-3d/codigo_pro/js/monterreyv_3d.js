@@ -277,10 +277,10 @@ if((kind>3.5&&kind<4.5)||(kind>7.5&&kind<8.5)) c+=vec3(.08,.12,.14)*fres*(.60+.4
 {
   vec3 R=reflect(-V,N);
   if(kind>3.5&&kind<4.5){
-    c=mix(c,mvSky(R)*.92,clamp(.10+fres*.62,0.0,.62));
+    c=mix(c,mvSky(R)*.92,clamp(.04+fres*.30,0.0,.26)*(.35+.65*max(N.y,0.0)+.35*(1.0-abs(N.y))*(1.0-fres)));
     c+=vec3(1.0,.97,.90)*pow(max(dot(N,H),0.0),220.0)*1.15*mvSh;
   } else if((kind>1.5&&kind<2.5)||(kind>4.5&&kind<6.5)){
-    c=mix(c,mvSky(R)*.80,clamp(fres*.45,0.0,.40));
+    c=mix(c,mvSky(R)*.80,clamp(fres*.30,0.0,.24));
     c+=vec3(1.0,.97,.90)*pow(max(dot(N,H),0.0),160.0)*.65*mvSh;
   } else if(kind>7.5&&kind<8.5){
     c+=mvSky(R)*fres*.10;
@@ -638,6 +638,28 @@ gl_FragColor=vec4(c,outAlpha);
       return null;
     }
   })();
+  /* MV PRO: profundidad de tuberías y agua para que tapen las placas/tarjetas que quedan detrás */
+  const mvOccluder = (() => {
+    if (!enhancedWaterShader || /[?&]oclusion=0/i.test(location.search)) return null;
+    try {
+      const op = gl.createProgram();
+      gl.attachShader(op, shader(gl.VERTEX_SHADER, vert));
+      gl.attachShader(op, shader(gl.FRAGMENT_SHADER, 'precision mediump float;varying vec4 vData;varying float vTankFill;void main(){float k=vData.z;bool flow=k>.5&&k<1.5;bool water=(k>1.5&&k<2.5)||(k>4.5&&k<6.5);bool glow=(k>2.5&&k<3.5)||(k>8.5&&k<10.5)||k>11.5;if(water&&vTankFill<.018)discard;if(glow||!(flow||water||vData.w>.6))discard;gl_FragColor=vec4(1.0);}'));
+      for (const [name, index] of [['aPos', loc.pos], ['aNormal', loc.normal], ['aColor', loc.color], ['aData', loc.data]]) if (index >= 0) gl.bindAttribLocation(op, index, name);
+      gl.linkProgram(op);
+      if (!gl.getProgramParameter(op, gl.LINK_STATUS)) return null;
+      return { program: op, vp: gl.getUniformLocation(op, 'uVP'), time: gl.getUniformLocation(op, 'uTime'), levels: gl.getUniformLocation(op, 'uLevels[0]'), anim: gl.getUniformLocation(op, 'uAnimate') };
+    } catch (error) { console.warn('MTYV 3D: oclusión de placas no disponible:', error && error.message); return null; }
+  })();
+  function mvOccluderDepthPass() {
+    if (!mvOccluder) return;
+    gl.useProgram(mvOccluder.program);
+    gl.uniformMatrix4fv(mvOccluder.vp, false, vp); gl.uniform1f(mvOccluder.time, elapsed); gl.uniform1fv(mvOccluder.levels, levelsUniform); gl.uniform1f(mvOccluder.anim, 1);
+    gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.disable(gl.BLEND); gl.depthMask(true); gl.colorMask(false, false, false, false);
+    bindBuffer(pipeBuffers[1]); gl.drawArrays(gl.TRIANGLES, 0, pipeBuffers[1].count);
+    bindBuffer(buffers[1]); gl.drawArrays(gl.TRIANGLES, 0, buffers[1].count);
+    gl.colorMask(true, true, true, true);
+  }
   function mvRenderShadowMap(now, drawShadowCasters) {
     if (!mvShadow) return;
     if (!mvShadow.lightVP) mvShadow.lightVP = mvShadow.makeLightVP();
@@ -4529,6 +4551,7 @@ void main(){vec4 c=texture2D(uAtlas,vUV);float alpha=smoothstep(.035,.82,c.a)*uO
 
     renderExternalWalls();
 
+    mvOccluderDepthPass();
     renderWorldLabels(now);
     mvPositionMarkers();
     if (!document.documentElement.classList.contains('mv-scene-ready') && initialTelemetryResolved && (skyAssetSettled || !skyProgram)) {

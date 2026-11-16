@@ -97,10 +97,10 @@
 +{
 +  vec3 R=reflect(-V,N);
 +  if(kind>3.5&&kind<4.5){
-+    c=mix(c,mvSky(R)*.92,clamp(.10+fres*.62,0.0,.62));
++    c=mix(c,mvSky(R)*.92,clamp(.04+fres*.30,0.0,.26)*(.35+.65*max(N.y,0.0)+.35*(1.0-abs(N.y))*(1.0-fres)));
 +    c+=vec3(1.0,.97,.90)*pow(max(dot(N,H),0.0),220.0)*1.15*mvSh;
 +  } else if((kind>1.5&&kind<2.5)||(kind>4.5&&kind<6.5)){
-+    c=mix(c,mvSky(R)*.80,clamp(fres*.45,0.0,.40));
++    c=mix(c,mvSky(R)*.80,clamp(fres*.30,0.0,.24));
 +    c+=vec3(1.0,.97,.90)*pow(max(dot(N,H),0.0),160.0)*.65*mvSh;
 +  } else if(kind>7.5&&kind<8.5){
 +    c+=mvSky(R)*fres*.10;
@@ -120,7 +120,7 @@
  }`;
    const fallbackVert = `
  attribute vec3 aPos; attribute vec3 aNormal; attribute vec3 aColor; attribute vec4 aData;
-@@ -512,6 +578,103 @@
+@@ -512,6 +578,125 @@
    gl.useProgram(program);
    gl.uniform1i(loc.turf, 1);
    gl.uniform1i(loc.forest, 2);
@@ -184,6 +184,28 @@
 +      return null;
 +    }
 +  })();
++  /* MV PRO: profundidad de tuberías y agua para que tapen las placas/tarjetas que quedan detrás */
++  const mvOccluder = (() => {
++    if (!enhancedWaterShader || /[?&]oclusion=0/i.test(location.search)) return null;
++    try {
++      const op = gl.createProgram();
++      gl.attachShader(op, shader(gl.VERTEX_SHADER, vert));
++      gl.attachShader(op, shader(gl.FRAGMENT_SHADER, 'precision mediump float;varying vec4 vData;varying float vTankFill;void main(){float k=vData.z;bool flow=k>.5&&k<1.5;bool water=(k>1.5&&k<2.5)||(k>4.5&&k<6.5);bool glow=(k>2.5&&k<3.5)||(k>8.5&&k<10.5)||k>11.5;if(water&&vTankFill<.018)discard;if(glow||!(flow||water||vData.w>.6))discard;gl_FragColor=vec4(1.0);}'));
++      for (const [name, index] of [['aPos', loc.pos], ['aNormal', loc.normal], ['aColor', loc.color], ['aData', loc.data]]) if (index >= 0) gl.bindAttribLocation(op, index, name);
++      gl.linkProgram(op);
++      if (!gl.getProgramParameter(op, gl.LINK_STATUS)) return null;
++      return { program: op, vp: gl.getUniformLocation(op, 'uVP'), time: gl.getUniformLocation(op, 'uTime'), levels: gl.getUniformLocation(op, 'uLevels[0]'), anim: gl.getUniformLocation(op, 'uAnimate') };
++    } catch (error) { console.warn('MTYV 3D: oclusión de placas no disponible:', error && error.message); return null; }
++  })();
++  function mvOccluderDepthPass() {
++    if (!mvOccluder) return;
++    gl.useProgram(mvOccluder.program);
++    gl.uniformMatrix4fv(mvOccluder.vp, false, vp); gl.uniform1f(mvOccluder.time, elapsed); gl.uniform1fv(mvOccluder.levels, levelsUniform); gl.uniform1f(mvOccluder.anim, 1);
++    gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.disable(gl.BLEND); gl.depthMask(true); gl.colorMask(false, false, false, false);
++    bindBuffer(pipeBuffers[1]); gl.drawArrays(gl.TRIANGLES, 0, pipeBuffers[1].count);
++    bindBuffer(buffers[1]); gl.drawArrays(gl.TRIANGLES, 0, buffers[1].count);
++    gl.colorMask(true, true, true, true);
++  }
 +  function mvRenderShadowMap(now, drawShadowCasters) {
 +    if (!mvShadow) return;
 +    if (!mvShadow.lightVP) mvShadow.lightVP = mvShadow.makeLightVP();
@@ -224,7 +246,7 @@
    gl.activeTexture(gl.TEXTURE0);
    const skyVertex = `
  attribute vec2 aSkyPosition;
-@@ -1263,6 +1426,7 @@
+@@ -1263,6 +1448,7 @@
    const superiorPumpBuffers = [0, 1, 2].map(() => ({ buf: gl.createBuffer(), count: 0 }));
  
    function rebuildPumpBatches() {
@@ -232,7 +254,7 @@
      for (let g = 0; g < 3; g++) {
        let total = 0;
        for (const p of pumpMeshes) total += (p.active === true ? p.on : p.off)[g].length;
-@@ -1283,6 +1447,7 @@
+@@ -1283,6 +1469,7 @@
    rebuildPumpBatches();
    const pipeBuffers = [0, 1, 2].map(() => ({ buf: gl.createBuffer(), count: 0 }));
    function rebuildPipeBuffers() {
@@ -240,7 +262,7 @@
      const saved = A; A = [[], [], []];
      for (const def of pipeDefs) pipe(def.nodes, def.r, def);
      for (let group = 0; group < 3; group++) {
-@@ -3132,7 +3297,7 @@
+@@ -3132,7 +3319,7 @@
      'LA CRUZ': 'LA CRUZ'
    };
    const LABEL_TILE_W = 512, LABEL_TILE_H = 128, LABEL_COLS = 4, LABEL_ROWS = 16;
@@ -249,7 +271,7 @@
    const mvTextureAnisotropy = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
    const mvApplyTextureQuality = () => {
      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-@@ -4189,6 +4354,17 @@
+@@ -4189,6 +4376,17 @@
    const levelsUniform = new Float32Array(tankSpecs.length);
    const cameraUniform = new Float32Array(3);
    let dynamicQuality = 1, qualityElapsed = 0, qualityFrames = 0, qualityRecovery = 0, currentMeanFrame = 16.7;
@@ -267,7 +289,7 @@
    function adaptQuality(frameMs) {
      if (frameMs <= 0 || frameMs > 1000) return;
      qualityElapsed += Math.min(frameMs, 200);
-@@ -4226,6 +4402,7 @@
+@@ -4226,6 +4424,7 @@
    const maximumViewportDimensions = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
    const maximumRenderbufferDimension = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE);
    function resize() {
@@ -275,7 +297,7 @@
      const width = Math.max(1, canvas.clientWidth);
      const height = Math.max(1, canvas.clientHeight);
      const mobile = Math.min(width, height) <= 600 && (window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 600);
-@@ -4328,12 +4505,19 @@
+@@ -4328,12 +4527,19 @@
        viewTarget = [...guidedTour.look];
      }
      vp.set(matMul(perspective(44 * Math.PI / 180, vw / vh, .15, 4000), lookAt(camera, viewTarget, [0, 1, 0])));
@@ -296,3 +318,11 @@
      function drawPumps(part) {
  
        const mesh = isTopViewMode() ? superiorPumpBuffers[part] : livePumpBuffers[part];
+@@ -4345,6 +4551,7 @@
+ 
+     renderExternalWalls();
+ 
++    mvOccluderDepthPass();
+     renderWorldLabels(now);
+     mvPositionMarkers();
+     if (!document.documentElement.classList.contains('mv-scene-ready') && initialTelemetryResolved && (skyAssetSettled || !skyProgram)) {
