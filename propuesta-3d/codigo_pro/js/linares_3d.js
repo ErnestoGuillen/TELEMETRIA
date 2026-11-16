@@ -20,6 +20,24 @@
   };
   const separateCasetaX=x=>x>=22?x:22+(x-22)*1.105;
   for(const node of config.nodes){if(node[0]!=='li00')node[3]=separateCasetaX(node[3]);}
+  /* MV PRO: trazo curvo del acueducto (sale de la presa, se aleja y regresa a PB4) */
+  const mvNodeAngle=new Map(), mvNodeFrac=new Map();
+  const mvCurve=(()=>{
+    const order=['li00','li01','li02','li02a','li03','li04a','li05','li04'].map(id=>config.nodes.find(n=>n[0]===id)).filter(Boolean);
+    const cum=[0];for(let i=1;i<order.length;i++)cum.push(cum[i-1]+Math.hypot(order[i][3]-order[i-1][3],order[i][4]-order[i-1][4]));
+    const P0=[order[0][3],order[0][4]],P3=[order[order.length-1][3],order[order.length-1][4]];
+    const cl=Math.hypot(P3[0]-P0[0],P3[1]-P0[1])||1,dir=[(P3[0]-P0[0])/cl,(P3[1]-P0[1])/cl];
+    let away=[dir[1],-dir[0]];if(away[1]>0)away=[-away[0],-away[1]];
+    const C1=[P0[0]+away[0]*36+dir[0]*4,P0[1]+away[1]*36+dir[1]*4],C2=[P3[0]+away[0]*32-dir[0]*16,P3[1]+away[1]*32-dir[1]*16];
+    const bz=t=>{const u=1-t;return [u*u*u*P0[0]+3*u*u*t*C1[0]+3*u*t*t*C2[0]+t*t*t*P3[0],u*u*u*P0[1]+3*u*u*t*C1[1]+3*u*t*t*C2[1]+t*t*t*P3[1]];};
+    const N=600,pts=[],len=[0];for(let i=0;i<=N;i++){pts.push(bz(i/N));if(i)len.push(len[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));}
+    const total=len[N];
+    const at=f=>{const L=Math.max(0,Math.min(1,f))*total;let i=1;while(i<N&&len[i]<L)i++;const k=(L-len[i-1])/Math.max(1e-6,len[i]-len[i-1]);const a=pts[i-1],b=pts[i];return {x:a[0]+(b[0]-a[0])*k,z:a[1]+(b[1]-a[1])*k,tx:(b[0]-a[0]),tz:(b[1]-a[1])};};
+    order.forEach((n,i)=>{const f=cum[i]/cum[cum.length-1];mvNodeFrac.set(n[0],f);const p=at(f);const l=Math.hypot(p.tx,p.tz)||1;
+      if(n[0]!=='li00'&&n[0]!=='li04'){n[3]=p.x;n[4]=p.z;}
+      mvNodeAngle.set(n[0],Math.atan2(-p.tz/l,-p.tx/l));});
+    return {at};
+  })();
   const nodeById = new Map(config.nodes.map((node, index) => [node[0], { data: node, index }]));
   const live = new Map();
   const canvas=$('scene');
@@ -1487,12 +1505,12 @@ void main(){
     const a=pointNodes.get(start),b=pointNodes.get(end);
     if(!a||!b)continue;
     const key=start+'|'+end;
-    const path=customPipePaths[key]?customPipePaths[key].map(point=>[separateCasetaX(point[0]),point[1],point[2]]):[[a[3],1.03,a[4]],[b[3],1.03,b[4]]];
+    const fa=mvNodeFrac.get(start),fb=mvNodeFrac.get(end);const path=(fa!==undefined&&fb!==undefined)?Array.from({length:13},(_,k)=>{const q=mvCurve.at(fa+(fb-fa)*k/12);return [q.x,1.03,q.z];}):[[a[3],1.03,a[4]],[b[3],1.03,b[4]]];
     const meta={nodes:path,source:a[1],target:b[1]};
     pipeDefs.push(meta);
   }
   /* MV PRO: la tubería principal se corta dentro de las casetas para que se vean todos los equipos */
-  const mvInsideCaseta=(x,z)=>config.nodes.some(n=>n[2]==='pump'&&Math.abs(x-n[3])<10.8*.5-.05&&Math.abs(z-n[4])<8.15*.5-.05);
+  const mvInsideCaseta=(x,z)=>config.nodes.some(n=>{if(n[2]!=='pump')return false;const a=mvNodeAngle.get(n[0])||0,c=Math.cos(a),sn=Math.sin(a),dx=x-n[3],dz=z-n[4];return Math.abs(dx*c+dz*sn)<10.8*.5-.05&&Math.abs(-dx*sn+dz*c)<8.15*.5-.05;});
   for(const def of pipeDefs){
     const pts=def.nodes,parts=[];let cur=[];
     for(let i=0;i<pts.length;i++){
@@ -1905,13 +1923,14 @@ void main(){
     box(x,.39,front+.60,3.38,.14,1.30,'#a7b3b2');
     box(x,.46,front+.66,3.14,.10,1.20,'#d1d8d5');
   }
+  function mvRotateBuild(x,z,ang,fn){const st=A.map(g=>g.length);fn();const c=Math.cos(ang),sn=Math.sin(ang);for(let g=0;g<A.length;g++){const arr=A[g];for(let i=st[g];i<arr.length;i+=13){const dx=arr[i]-x,dz=arr[i+2]-z;arr[i]=x+dx*c-dz*sn;arr[i+2]=z+dx*sn+dz*c;const nx=arr[i+3],nz=arr[i+5];arr[i+3]=nx*c-nz*sn;arr[i+5]=nx*sn+nz*c;}}}
   config.nodes.forEach(n=>{
     const [,name,type,x,z]=n;
     if(type==='tank')tankLabels.push(tank(x,z,name,0,1.40));
     else if(type==='reservoir')reservoirScene(x,z);
-    else if(type==='pump')pumpCaseta(x,z,name,casetaLightById.get(n[0]));
+    else if(type==='pump')mvRotateBuild(x,z,mvNodeAngle.get(n[0])||0,()=>pumpCaseta(x,z,name,casetaLightById.get(n[0])));
     else if(type==='meter')flowMeterScene(x,z);
-    else facilityScene(x,z,name.toLowerCase().includes('potabilizadora')?'potabilizadora':'facility');
+    else mvRotateBuild(x,z,mvNodeAngle.get(n[0])||0,()=>facilityScene(x,z,name.toLowerCase().includes('potabilizadora')?'potabilizadora':'facility'));
   });
   /* ===== MV PRO: entorno del acueducto (camino de servicio, línea eléctrica, soportes, señalización, cercas, vegetación) ===== */
   (function mvLinaresEnvironment() {
@@ -1940,6 +1959,11 @@ void main(){
       return best;
     };
     const casetas = config.nodes.filter(n => n[2] === 'pump' || n[2] === 'tank' || n[2] === 'facility');
+    const angOf = n => (typeof mvNodeAngle !== 'undefined' && mvNodeAngle.get(n[0])) || 0;
+    const toWorld = (n, lx, lz) => { const a = angOf(n), c = Math.cos(a), sn = Math.sin(a); return [n[3] + lx * c - lz * sn, n[4] + lx * sn + lz * c]; };
+    const toLocal = (n, x, z) => { const a = angOf(n), c = Math.cos(a), sn = Math.sin(a), dx = x - n[3], dz = z - n[4]; return [dx * c + dz * sn, -dx * sn + dz * c]; };
+    const inBox = (n, x, z, hx, hz) => { const l = toLocal(n, x, z); return Math.abs(l[0]) < hx && Math.abs(l[1]) < hz; };
+    const routeC = route.reduce((acc, p) => [acc[0] + p[0] / route.length, acc[1] + p[2] / route.length], [0, 0]);
     // camino de servicio paralelo (lado frontal), de PB1 a PB4
     const startIndex = route.findIndex(p => Math.hypot(p[0] - casetas[0][3], p[2] - casetas[0][4]) < .2);
     const base = resample(route.slice(Math.max(0, startIndex)), 1.0);
@@ -1948,7 +1972,7 @@ void main(){
     const road = smooth.map((p, i) => {
       const a = smooth[Math.max(0, i - 1)], b = smooth[Math.min(smooth.length - 1, i + 1)];
       let tx = b[0] - a[0], tz = b[2] - a[2]; const l = Math.hypot(tx, tz) || 1; tx /= l; tz /= l;
-      let nx = -tz, nz = tx; if (nz < 0) { nx = -nx; nz = -nz; }
+      let nx = -tz, nz = tx; if ((p[0] - routeC[0]) * nx + (p[2] - routeC[1]) * nz < 0) { nx = -nx; nz = -nz; }
       return { x: p[0] + nx * OFFSET, z: p[2] + nz * OFFSET, nx, nz, tx, tz };
     });
     const strip = (pts, off0, off1, y, col) => {
@@ -1963,22 +1987,23 @@ void main(){
       const x = n[3], z = n[4];
       // cerca perimetral con portón
       if (n[2] === 'pump') {
-        const hw = 6.9, hd = 5.6, posts = [];
-        const pts = [[x - hw, z - hd], [x + hw, z - hd], [x + hw, z + hd], [x - hw, z + hd], [x - hw, z - hd]];
-        for (let s = 0; s < 4; s++) {
-          const p0 = pts[s], p1 = pts[s + 1], L2 = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), steps = Math.round(L2 / 1.6);
+        const hw = 6.9, hd = 5.6;
+        const W = (lx, lz) => toWorld(n, lx, lz);
+        const pts = [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd], [-hw, -hd]];
+        for (let s2 = 0; s2 < 4; s2++) {
+          const p0 = pts[s2], p1 = pts[s2 + 1], L2 = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), steps = Math.round(L2 / 1.6);
           for (let k = 0; k <= steps; k++) {
-            const fx = p0[0] + (p1[0] - p0[0]) * k / steps, fz = p0[1] + (p1[1] - p0[1]) * k / steps;
-            const gate = s === 2 && Math.abs(fx - x) < 2.0;
-            if (!gate) cylinder(fx, ground(fx, fz) + .62, fz, .045, 1.24, '#9aa5aa', { seg: 6 });
+            const lx = p0[0] + (p1[0] - p0[0]) * k / steps, lz = p0[1] + (p1[1] - p0[1]) * k / steps, f = W(lx, lz);
+            const gate = s2 === 2 && Math.abs(lx) < 2.0;
+            if (!gate) cylinder(f[0], ground(f[0], f[1]) + .62, f[1], .045, 1.24, '#9aa5aa', { seg: 6 });
             if (k > 0) {
-              const gx = p0[0] + (p1[0] - p0[0]) * (k - 1) / steps, gz = p0[1] + (p1[1] - p0[1]) * (k - 1) / steps;
-              const gateSeg = s === 2 && (Math.abs(fx - x) < 2.0 || Math.abs(gx - x) < 2.0);
-              if (!gateSeg) for (const hy of [.42, .82, 1.18]) bar([gx, ground(gx, gz) + hy, gz], [fx, ground(fx, fz) + hy, fz], .012, '#b9c3c7', { seg: 4 });
+              const gx = p0[0] + (p1[0] - p0[0]) * (k - 1) / steps, gz = p0[1] + (p1[1] - p0[1]) * (k - 1) / steps, g2 = W(gx, gz);
+              const gateSeg = s2 === 2 && (Math.abs(lx) < 2.0 || Math.abs(gx) < 2.0);
+              if (!gateSeg) for (const hy of [.42, .82, 1.18]) bar([g2[0], ground(g2[0], g2[1]) + hy, g2[1]], [f[0], ground(f[0], f[1]) + hy, f[1]], .012, '#b9c3c7', { seg: 4 });
             }
           }
         }
-        for (const sx of [-1, 1]) cylinder(x + sx * 2.0, ground(x, z + hd) + .8, z + hd, .09, 1.6, '#7e898e', { seg: 8 });
+        for (const sx of [-1, 1]) { const f = W(sx * 2.0, hd); cylinder(f[0], ground(f[0], f[1]) + .8, f[1], .09, 1.6, '#7e898e', { seg: 8 }); }
       }
     }
     // línea eléctrica (postes de madera con cruceta, aisladores y cables con catenaria)
@@ -1986,7 +2011,7 @@ void main(){
     let acc = 99;
     for (let i = 1; i < road.length; i++) {
       acc += Math.hypot(road[i].x - road[i - 1].x, road[i].z - road[i - 1].z);
-      if (acc >= 10.5) { acc = 0; const r = road[i]; poles.push({ x: r.x + r.nx * poleOff, z: r.z + r.nz * poleOff, nx: r.nx, nz: r.nz }); }
+      if (acc >= 10.5 && ground(road[i].x + road[i].nx * poleOff, road[i].z + road[i].nz * poleOff) < 1.2) { acc = 0; const r = road[i]; poles.push({ x: r.x + r.nx * poleOff, z: r.z + r.nz * poleOff, nx: r.nx, nz: r.nz }); }
     }
     for (const p of poles) {
       const g = ground(p.x, p.z);
@@ -2033,8 +2058,8 @@ void main(){
       }
     };
     for (const n of config.nodes.filter(q => q[2] === 'pump')) {
-      const x = n[3], z = n[4], hw = 6.6, hd = 5.3;
-      for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) lamp(x + sx * hw, z + sz * hd, -sx * .7071, -sz * .7071);
+      const hw = 6.6, hd = 5.3, a = angOf(n), c = Math.cos(a), sn = Math.sin(a);
+      for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const f = toWorld(n, sx * hw, sz * hd), dx = -sx * .7071, dz = -sz * .7071; lamp(f[0], f[1], dx * c - dz * sn, dx * sn + dz * c); }
     }
     {
       const pts = resample(route, 1.0); let accL = 6;
@@ -2042,14 +2067,14 @@ void main(){
         accL += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][2] - pts[i - 1][2]);
         if (accL < 12) continue;
         const p = pts[i];
-        if (casetas.some(n => Math.abs(p[0] - n[3]) < 8.5 && Math.abs(p[2] - n[4]) < 7.5) || lakeDistance(p[0], p[2]) < 2) continue;
+        if (casetas.some(n => inBox(n, p[0], p[2], 8.5, 7.5)) || lakeDistance(p[0], p[2]) < 2) continue;
         accL = 0;
-        const a = pts[i - 1]; let nx = -(p[2] - a[2]), nz = p[0] - a[0]; const l = Math.hypot(nx, nz) || 1; nx /= l; nz /= l; if (nz > 0) { nx = -nx; nz = -nz; }
+        const a = pts[i - 1]; let nx = -(p[2] - a[2]), nz = p[0] - a[0]; const l = Math.hypot(nx, nz) || 1; nx /= l; nz /= l; if ((p[0] - routeC[0]) * nx + (p[2] - routeC[1]) * nz > 0) { nx = -nx; nz = -nz; }
         lamp(p[0] + nx * 2.2, p[2] + nz * 2.2, -nx, -nz);
       }
     }
     // soportes de concreto bajo la tubería y señalización de ducto
-    const nearCaseta = (x, z) => casetas.some(n => Math.abs(x - n[3]) < 6.2 && Math.abs(z - n[4]) < 5.0);
+    const nearCaseta = (x, z) => casetas.some(n => inBox(n, x, z, 6.2, 5.0));
     for (const def of pipeDefs) {
       const pts = resample(def.nodes.map(p => [p[0], 0, p[2]]), 2.6);
       pts.forEach((p, i) => {
@@ -2080,7 +2105,7 @@ void main(){
       if (lakeDistance(x, z) < 3.5) return true;
       if (distToPoly(x, z, route) < 6.5 + margin) return true;
       if (distToPoly(x, z, polePts) < 2.2 + margin) return true;
-      if (casetas.some(n => Math.abs(x - n[3]) < 8 + margin && Math.abs(z - n[4]) < 7 + margin)) return true;
+      if (casetas.some(n => inBox(n, x, z, 8 + margin, 7 + margin))) return true;
       return false;
     };
     const tree = (x, z, s) => {
