@@ -1,0 +1,38 @@
+--- tu_version/linares_3d.js
++++ con_tanques/linares_3d.js
+@@ -2030,6 +2030,35 @@
+       mvStationBounds.set(n[0], corners); mvStationVisibility.set(n[0], visible.filter(Boolean));
+     }
+   });
++  /* ===== Tanque alto junto a cada estación de bombeo (como en el mapa SCADA) ===== */
++  function mvTallTank(cx, cz) {
++    const R = 1.28, H = 7.4, top = .52 + H;
++    pad(cx, cz, 3.5);
++    cylinder(cx, .31, cz, R * 1.13, .18, '#667c88', { seg: 36 });
++    cylinder(cx, .43, cz, R * .99, .07, '#2f5164', { seg: 36 });
++    cylinder(cx, .52 + H * .37, cz, R * .93, H * .74, '#0b6fc0', { seg: 48, em: .85 });
++    cylinder(cx, .52 + H * .74 + .02, cz, R * .93, .04, '#4fa7e6', { seg: 48, em: 1.1 });
++    cylinder(cx, .52 + H / 2, cz, R * .965, H, '#9da3aa', { seg: 48, g: 1, alpha: .5, em: .02, kind: 8, caps: false });
++    cylinder(cx, .52 + H / 2, cz, R * .985, H, '#c4c9ce', { seg: 48, g: 2, alpha: .065, em: .035, kind: 8, caps: false });
++    const fr = R * 1.04;
++    for (const k of [0, .25, .5, .75, 1]) ring(cx, .52 + H * k, cz, fr, k === 0 || k === 1 ? '#e2ebee' : '#597d8b', k === 0 || k === 1 ? .08 : .03, { seg: 8, em: .12 });
++    for (let i = 0; i < 8; i++) {
++      const a = i * Math.PI / 4, xp = cx + Math.cos(a) * fr, zp = cz + Math.sin(a) * fr;
++      bar([xp, .52, zp], [xp, top, zp], .047, i % 2 ? '#789aab' : '#d1e2e8', { seg: 8, em: .08 });
++    }
++    cylinder(cx, top + .12, cz, R * 1.02, .2, '#8fa3ad', { seg: 36 });
++    cylinder(cx, top + .32, cz, R * .55, .22, '#a9bcc4', { seg: 24 });
++    const gold = '#eebd54', zr = cz - R - .15, lx = cx - .2;
++    bar([lx, .48, zr], [lx, top + .2, zr], .049, gold, { seg: 8 });
++    bar([lx + .39, .48, zr], [lx + .39, top + .2, zr], .049, gold, { seg: 8 });
++    for (let y = .65; y < top; y += .32) bar([lx, y, zr], [lx + .39, y, zr], .037, gold, { seg: 7 });
++    for (const k of [.3, .55, .8]) ring(cx, .52 + H * k + .9, zr + .05, .42, gold, .03, { seg: 6 });
++  }
++  for (const id of casetaIds) {
++    const n = pointNodes.get(id); if (!n) continue;
++    const x = n[3], z = n[4];
++    mvRotateBuild(x, z, mvNodeAngle.get(id) || 0, () => mvTallTank(x + 8.3, z + MV_PIPE_LANE));
++  }
+   /* ===== MV PRO: entorno del acueducto (camino de servicio, línea eléctrica, soportes, señalización, cercas, vegetación) ===== */
+   (function mvLinaresEnvironment() {
+     let seed = 90817;
