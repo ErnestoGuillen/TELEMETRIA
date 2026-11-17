@@ -46,7 +46,7 @@
    function updateWaterLevels() {
 +    for (const [, code, lid] of MV_TALL) {
 +      const v = live.get(code), lv = v && v.level !== null && Number.isFinite(Number(v.level)) ? Number(v.level) : null;
-+      if (lv === null || lv <= 0) { levelsUniform[lid] = .55; continue; }
++      if (lv === null || lv <= 0) { levelsUniform[lid] = 0; continue; } // sin nivel (PB1, PB4): tanque vacío
 +      const mx = v.maximum !== null && Number.isFinite(Number(v.maximum)) && Number(v.maximum) > lv ? Number(v.maximum) : (code === 'LINPB002' ? 30 : 6);
 +      levelsUniform[lid] = Math.max(.03, Math.min(.94, lv / mx * .92));
 +    }
