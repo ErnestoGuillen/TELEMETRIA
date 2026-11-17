@@ -1,5 +1,5 @@
---- tu_version/linares_3d.js
-+++ tiempo_real/linares_3d.js
+--- /tmp/claude-0/-home-user-TELEMETRIA/404ca65b-c313-55f4-9cf6-001170540311/scratchpad/v4/js/js/linares_3d.js	2026-11-17 01:54:01.629505628 +0000
++++ js/linares_3d.js	2026-11-17 20:03:13.771470391 +0000
 @@ -1097,8 +1097,8 @@
    }
    function pipe(path, r = .30, meta = {}) {
@@ -37,7 +37,7 @@
    function pumpStationScene(x, z) { pumpUnit(x, z, 4); }
    function facilityScene(x, z, type) {
      pad(x, z, 5.4);
-@@ -2030,6 +2031,49 @@
+@@ -2030,6 +2031,51 @@
        mvStationBounds.set(n[0], corners); mvStationVisibility.set(n[0], visible.filter(Boolean));
      }
    });
@@ -45,11 +45,13 @@
 +  /* Tanques altos: nivel en tiempo real (id de nivel 2..6 en uLevels) */
 +  /* Escala real 1:1 (1 unidad = 1 m): la altura del agua dibujada es el nivel real en metros.
 +     [estación, código, id de nivel, altura del tanque en m] — PB2 reporta ~23 m, por eso su tanque es más alto */
-+  const MV_TALL = [['li01', 'LINPB001', 2, 7.4], ['li02', 'LINPB002', 3, 26], ['li02a', 'LINPB02A', 4, 7.4], ['li03', 'LINPB003', 5, 7.4], ['li04', 'LINPB004', 6, 7.4]];
++  /* [estación, código, id de nivel, altura visual del tanque, capacidad real en m]. PB2 reporta ~23 m: se dibuja más bajo
++     (12 m) pero el agua y la regla siguen el valor real a escala reducida */
++  const MV_TALL = [['li01', 'LINPB001', 2, 7.4, 7.0], ['li02', 'LINPB002', 3, 12, 26], ['li02a', 'LINPB02A', 4, 7.4, 7.0], ['li03', 'LINPB003', 5, 7.4, 7.0], ['li04', 'LINPB004', 6, 7.4, 7.0]];
 +  const MV_TALL_WATER = H => H - .4;
 +  const mvTallPos = new Map();
-+  function mvTallTank(cx, cz, lid, H) {
-+    const R = H > 12 ? 1.6 : 1.28, top = .52 + H, mw = MV_TALL_WATER(H);
++  function mvTallTank(cx, cz, lid, H, cap) {
++    const R = H > 10 ? 1.45 : 1.28, top = .52 + H, mw = MV_TALL_WATER(H);
 +    pad(cx, cz, 3.5);
 +    cylinder(cx, .31, cz, R * 1.13, .18, '#667c88', { seg: 36 });
 +    cylinder(cx, .43, cz, R * .99, .07, '#2f5164', { seg: 36 });
@@ -73,33 +75,33 @@
 +    /* regla de nivel: marca cada metro, marca larga cada 5 m (0 m = fondo del tanque) */
 +    const gx = cx + R * 1.12, gz = cz + R * .62;
 +    bar([gx, .52, gz], [gx, .52 + mw, gz], .035, '#e8eef0', { seg: 6 });
-+    for (let m = 0; m <= Math.floor(mw); m++) {
-+      const big = m % 5 === 0, y = .52 + m, L = big ? .42 : .22;
++    for (let m = 0; m <= Math.floor(cap); m++) {
++      const big = m % 5 === 0, y = .52 + m * mw / cap, L = big ? .42 : .22;
 +      bar([gx, y, gz], [gx + L * .86, y, gz + L * .5], big ? .03 : .018, big ? '#ff9c2a' : '#ffffff', { seg: 5, em: .4 });
 +    }
 +  }
-+  for (const [id, code, lid, H] of MV_TALL) {
++  for (const [id, code, lid, H, cap] of MV_TALL) {
 +    const n = pointNodes.get(id); if (!n) continue;
 +    const x = n[3], z = n[4], a = mvNodeAngle.get(id) || 0, c = Math.cos(a), sn = Math.sin(a), dx = 8.3, dz = MV_PIPE_LANE;
-+    mvRotateBuild(x, z, a, () => mvTallTank(x + dx, z + dz, lid, H));
-+    mvTallPos.set(code, { x: x + dx * c - dz * sn, z: z + dx * sn + dz * c, r: H > 12 ? 1.6 : 1.28, H, mw: MV_TALL_WATER(H) });
++    mvRotateBuild(x, z, a, () => mvTallTank(x + dx, z + dz, lid, H, cap));
++    mvTallPos.set(code, { x: x + dx * c - dz * sn, z: z + dx * sn + dz * c, r: H > 10 ? 1.45 : 1.28, H, cap, mw: MV_TALL_WATER(H) });
 +  }
    /* ===== MV PRO: entorno del acueducto (camino de servicio, línea eléctrica, soportes, señalización, cercas, vegetación) ===== */
    (function mvLinaresEnvironment() {
      let seed = 90817;
-@@ -2263,6 +2307,11 @@
+@@ -2263,6 +2309,11 @@
    gl.disable(gl.CULL_FACE);
    const levelsUniform = new Float32Array(36);
    function updateWaterLevels() {
-+    for (const [, code, lid, H] of MV_TALL) {
++    for (const [, code, lid, H, cap] of MV_TALL) {
 +      const v = live.get(code), lv = v && v.level !== null && Number.isFinite(Number(v.level)) ? Number(v.level) : null;
 +      if (lv === null || lv <= 0) { levelsUniform[lid] = 0; continue; } // sin nivel (PB1, PB4): tanque vacío
-+      levelsUniform[lid] = Math.max(.02, Math.min(.94, lv / MV_TALL_WATER(H))); // 1:1, el agua mide lo mismo que el nivel
++      levelsUniform[lid] = Math.max(.02, Math.min(.94, lv / cap)); // nivel real / capacidad (1:1 en tanques de 7.4 m)
 +    }
      for (let i = 0; i < tankSpecs.length; i++) {
        const node = config.nodes.filter(n => n[2] === 'tank')[i];
        const value = node && node[5] ? live.get(node[5]) : null;
-@@ -2282,13 +2331,39 @@
+@@ -2282,13 +2333,39 @@
        }
      }
    }
@@ -144,7 +146,7 @@
    }
    let mvOverviewFit = true, mvOverviewZoom = 1, mvAutoZoom = 1, mvFrameDistance = 0, mvFrameMode = '';
    /* Vista general: encuadre automático. Al acercar al máximo o bajar la cámara se pasa a cámara libre
-@@ -3373,6 +3448,7 @@
+@@ -3373,6 +3450,7 @@
  
    /* ===== MV PRO: tarjetas 3D fijas (nombres, nivel del tanque, presa) como Monterrey V ===== */
    const mvPl = { tiles: [], dirty: true, rects: [] };
@@ -152,7 +154,7 @@
    const MV_TW = 512, MV_TH = 128, MV_COLS = 4, MV_ROWS = 8;
    const mvAtlas = document.createElement('canvas'); mvAtlas.width = MV_TW * MV_COLS; mvAtlas.height = MV_TH * MV_ROWS;
    const mvInk = mvAtlas.getContext('2d');
-@@ -3437,6 +3513,13 @@
+@@ -3437,6 +3515,13 @@
        const w = mvTile(i, 'level', [lv === null ? 'N/D' : lv.toFixed(2) + ' m', typeof mvTrendDisplay === 'function' ? mvTrendDisplay(tr) : ''], typeof mvTrendDirection === 'function' ? mvTrendDirection(tr) : null);
        const t = tankLabels[0]; if (t) mvPl.tiles.push({ id: 'level', kind: 'level', tile: i, w, H: 1.25, x: t.x, y: t.screenY, z: t.z, r: t.radius, post: null }); i++;
      }
@@ -161,12 +163,12 @@
 +      if (lv === null || !p) continue;
 +      const h = typeof mvLnHist !== 'undefined' ? mvLnHist.get(code) : null, tr = h && typeof mvLnTrend === 'function' ? mvLnTrend(h.level) : null;
 +      const w = mvTile(i, 'level', [lv.toFixed(2) + ' m', typeof mvTrendDisplay === 'function' ? mvTrendDisplay(tr) : ''], typeof mvTrendDirection === 'function' ? mvTrendDirection(tr) : null);
-+      mvPl.tiles.push({ id: 'level', kind: 'level', tile: i, w, H: 1.25, x: p.x, y: .52 + Math.max(.7, Math.min(lv, p.mw * .94)), z: p.z, r: p.r, post: null }); i++; // a la altura del agua
++      mvPl.tiles.push({ id: 'level', kind: 'level', tile: i, w, H: 1.25, x: p.x, y: .52 + Math.max(.7, Math.min(lv / p.cap, .94) * p.mw), z: p.z, r: p.r, post: null }); i++; // a la altura del agua
 +    }
      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, mvTex); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mvAtlas); gl.generateMipmap(gl.TEXTURE_2D);
      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-@@ -3479,7 +3562,7 @@
+@@ -3479,7 +3564,7 @@
      gl.drawArrays(gl.TRIANGLES, 0, v.length / 5);
      gl.disable(gl.BLEND); gl.disableVertexAttribArray(mvPlLoc.p); gl.disableVertexAttribArray(mvPlLoc.u); gl.useProgram(program);
    }

@@ -2035,11 +2035,13 @@ void main(){
   /* Tanques altos: nivel en tiempo real (id de nivel 2..6 en uLevels) */
   /* Escala real 1:1 (1 unidad = 1 m): la altura del agua dibujada es el nivel real en metros.
      [estación, código, id de nivel, altura del tanque en m] — PB2 reporta ~23 m, por eso su tanque es más alto */
-  const MV_TALL = [['li01', 'LINPB001', 2, 7.4], ['li02', 'LINPB002', 3, 26], ['li02a', 'LINPB02A', 4, 7.4], ['li03', 'LINPB003', 5, 7.4], ['li04', 'LINPB004', 6, 7.4]];
+  /* [estación, código, id de nivel, altura visual del tanque, capacidad real en m]. PB2 reporta ~23 m: se dibuja más bajo
+     (12 m) pero el agua y la regla siguen el valor real a escala reducida */
+  const MV_TALL = [['li01', 'LINPB001', 2, 7.4, 7.0], ['li02', 'LINPB002', 3, 12, 26], ['li02a', 'LINPB02A', 4, 7.4, 7.0], ['li03', 'LINPB003', 5, 7.4, 7.0], ['li04', 'LINPB004', 6, 7.4, 7.0]];
   const MV_TALL_WATER = H => H - .4;
   const mvTallPos = new Map();
-  function mvTallTank(cx, cz, lid, H) {
-    const R = H > 12 ? 1.6 : 1.28, top = .52 + H, mw = MV_TALL_WATER(H);
+  function mvTallTank(cx, cz, lid, H, cap) {
+    const R = H > 10 ? 1.45 : 1.28, top = .52 + H, mw = MV_TALL_WATER(H);
     pad(cx, cz, 3.5);
     cylinder(cx, .31, cz, R * 1.13, .18, '#667c88', { seg: 36 });
     cylinder(cx, .43, cz, R * .99, .07, '#2f5164', { seg: 36 });
@@ -2063,16 +2065,16 @@ void main(){
     /* regla de nivel: marca cada metro, marca larga cada 5 m (0 m = fondo del tanque) */
     const gx = cx + R * 1.12, gz = cz + R * .62;
     bar([gx, .52, gz], [gx, .52 + mw, gz], .035, '#e8eef0', { seg: 6 });
-    for (let m = 0; m <= Math.floor(mw); m++) {
-      const big = m % 5 === 0, y = .52 + m, L = big ? .42 : .22;
+    for (let m = 0; m <= Math.floor(cap); m++) {
+      const big = m % 5 === 0, y = .52 + m * mw / cap, L = big ? .42 : .22;
       bar([gx, y, gz], [gx + L * .86, y, gz + L * .5], big ? .03 : .018, big ? '#ff9c2a' : '#ffffff', { seg: 5, em: .4 });
     }
   }
-  for (const [id, code, lid, H] of MV_TALL) {
+  for (const [id, code, lid, H, cap] of MV_TALL) {
     const n = pointNodes.get(id); if (!n) continue;
     const x = n[3], z = n[4], a = mvNodeAngle.get(id) || 0, c = Math.cos(a), sn = Math.sin(a), dx = 8.3, dz = MV_PIPE_LANE;
-    mvRotateBuild(x, z, a, () => mvTallTank(x + dx, z + dz, lid, H));
-    mvTallPos.set(code, { x: x + dx * c - dz * sn, z: z + dx * sn + dz * c, r: H > 12 ? 1.6 : 1.28, H, mw: MV_TALL_WATER(H) });
+    mvRotateBuild(x, z, a, () => mvTallTank(x + dx, z + dz, lid, H, cap));
+    mvTallPos.set(code, { x: x + dx * c - dz * sn, z: z + dx * sn + dz * c, r: H > 10 ? 1.45 : 1.28, H, cap, mw: MV_TALL_WATER(H) });
   }
   /* ===== MV PRO: entorno del acueducto (camino de servicio, línea eléctrica, soportes, señalización, cercas, vegetación) ===== */
   (function mvLinaresEnvironment() {
@@ -2307,10 +2309,10 @@ void main(){
   gl.disable(gl.CULL_FACE);
   const levelsUniform = new Float32Array(36);
   function updateWaterLevels() {
-    for (const [, code, lid, H] of MV_TALL) {
+    for (const [, code, lid, H, cap] of MV_TALL) {
       const v = live.get(code), lv = v && v.level !== null && Number.isFinite(Number(v.level)) ? Number(v.level) : null;
       if (lv === null || lv <= 0) { levelsUniform[lid] = 0; continue; } // sin nivel (PB1, PB4): tanque vacío
-      levelsUniform[lid] = Math.max(.02, Math.min(.94, lv / MV_TALL_WATER(H))); // 1:1, el agua mide lo mismo que el nivel
+      levelsUniform[lid] = Math.max(.02, Math.min(.94, lv / cap)); // nivel real / capacidad (1:1 en tanques de 7.4 m)
     }
     for (let i = 0; i < tankSpecs.length; i++) {
       const node = config.nodes.filter(n => n[2] === 'tank')[i];
@@ -3518,7 +3520,7 @@ void main(){
       if (lv === null || !p) continue;
       const h = typeof mvLnHist !== 'undefined' ? mvLnHist.get(code) : null, tr = h && typeof mvLnTrend === 'function' ? mvLnTrend(h.level) : null;
       const w = mvTile(i, 'level', [lv.toFixed(2) + ' m', typeof mvTrendDisplay === 'function' ? mvTrendDisplay(tr) : ''], typeof mvTrendDirection === 'function' ? mvTrendDirection(tr) : null);
-      mvPl.tiles.push({ id: 'level', kind: 'level', tile: i, w, H: 1.25, x: p.x, y: .52 + Math.max(.7, Math.min(lv, p.mw * .94)), z: p.z, r: p.r, post: null }); i++; // a la altura del agua
+      mvPl.tiles.push({ id: 'level', kind: 'level', tile: i, w, H: 1.25, x: p.x, y: .52 + Math.max(.7, Math.min(lv / p.cap, .94) * p.mw), z: p.z, r: p.r, post: null }); i++; // a la altura del agua
     }
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, mvTex); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mvAtlas); gl.generateMipmap(gl.TEXTURE_2D);
