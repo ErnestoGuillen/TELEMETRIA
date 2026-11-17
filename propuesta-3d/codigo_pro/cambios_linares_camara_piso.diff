@@ -17,7 +17,69 @@
    function mvCameraBounds(id){
      if(id)return mvStationBounds.get(id)||[];
      return Array.from(mvStationBounds.values()).flat();
-@@ -2692,7 +2702,7 @@
+@@ -2323,7 +2333,7 @@
+     const points=mvCameraBounds(id).slice();
+     const center=[0,1,2].map(axis=>points.reduce((sum,p)=>sum+p[axis],0)/Math.max(1,points.length));
+     const add=(other,weight)=>{if(weight>0)for(const p of mvCameraBounds(other))points.push(p.map((v,axis)=>center[axis]+(v-center[axis])*weight));};
+-    if(index>=0)add(index?MV_ROUTE_IDS[index-1]:'li00',1-mvEase((local-3.1)/2));
++    if(index>0)add(MV_ROUTE_IDS[index-1],1-mvEase((local-3.1)/2));
+     add(index+1<MV_ROUTE_IDS.length?MV_ROUTE_IDS[index+1]:'li00',mvEase((local-duration+2)/2));
+     return points;
+   }
+@@ -2593,7 +2603,7 @@
+   const mvTour={rate:1};
+   const mvAround={elapsed:0,zoom:1,pitch:1.20};
+   const MV_CENTER=[0,1,2].map(axis=>{const points=mvCameraBounds();return (Math.min(...points.map(p=>p[axis]))+Math.max(...points.map(p=>p[axis])))/2;});
+-  const MV_LAKE_SECONDS=18;
++  const MV_LAKE_SECONDS=22;
+   const MV_STOP_SECONDS=9;
+   const MV_RETURN_SECONDS=9;
+   const MV_ROUTE_IDS=['li01','li02','li02a','li03','li04a','li05','li04'];
+@@ -2610,13 +2620,30 @@
+     const angle=tank?0:(mvNodeAngle.get(id)||0),c=Math.cos(angle),s=Math.sin(angle);
+     return {eye:[n[3]+8*c-24.8*s,pump?15.6:tank?13.3:12.8,n[4]+8*s+24.8*c],look:[n[3],height,n[4]+.2]};
+   }
++  /* Recorrido de la presa: toma aérea, descenso por la orilla, vuelo rasante sobre el agua
++     hacia la cortina y salida directa rumbo a PB1 */
+   function mvLakePose(t){
+-    const a=.77+1.64*mvEase(t);
+-    const r=31;
+-    return {eye:[lakeCenter[0]+Math.cos(a)*r,19.2,lakeCenter[1]+Math.sin(a)*r],look:[lakeCenter[0]-3.5,2.2,lakeCenter[1]-1.2]};
++    const cx=lakeCenter[0],cz=lakeCenter[1],pb1=pointNodes.get('li01')||[0,0,0,39,5.2];
++    const K=[
++      {e:[cx-30,26,cz+40],l:[cx,.5,cz]},
++      {e:[cx-6,14,cz+33],l:[cx+2,.5,cz-2]},
++      {e:[cx+17,7.5,cz+15],l:[cx-10,.8,cz+2]},
++      {e:[cx-3,5.6,cz+11],l:[cx-25,2,cz-1]},
++      {e:[cx-17,9,cz+15],l:[pb1[3],3,pb1[4]]}
++    ];
++    const u=Math.max(0,Math.min(1,t))*(K.length-1),i=Math.min(K.length-2,Math.floor(u)),f=u-i;
++    const cr=(key)=>[0,1,2].map(a=>{const p0=K[Math.max(0,i-1)][key][a],p1=K[i][key][a],p2=K[i+1][key][a],p3=K[Math.min(K.length-1,i+2)][key][a];
++      return .5*((2*p1)+(-p0+p2)*f+(2*p0-5*p1+4*p2-p3)*f*f+(-p0+3*p1-3*p2+p3)*f*f*f);});
++    return {eye:cr('e'),look:cr('l')};
++  }
++  /* 1 = cámara libre del recorrido de la presa; 0 = encuadre automático de las casetas */
++  function mvCineFreeWeight(){
++    if(state.auto!=='spin'&&state.auto!=='presentation')return 0;
++    const t=mvCine.clock;
++    return t<MV_LAKE_SECONDS?mvEase(t/2.5):1-mvEase((t-MV_LAKE_SECONDS)/3.1);
+   }
+   function mvCinePose(time){
+-    if(time<MV_LAKE_SECONDS)return {...mvLakePose(time/MV_LAKE_SECONDS),index:0,progress:time/MV_LAKE_SECONDS};
++    if(time<MV_LAKE_SECONDS){const p=time/MV_LAKE_SECONDS;return {...mvLakePose(.5*p+.5*mvEase(p)),index:0,progress:p};}
+     const routeEnd=MV_LAKE_SECONDS+MV_ROUTE_IDS.length*MV_STOP_SECONDS;
+     if(time<routeEnd){
+       const elapsed=time-MV_LAKE_SECONDS;
+@@ -2674,7 +2701,7 @@
+       const ease=1-Math.exp(-dt*2.5);
+       mvCine.eye=mvMix(mvCine.eye,pose.eye,ease);
+       mvCine.look=mvMix(mvCine.look,pose.look,ease);
+-      mvCine.eye[2]=Math.max(mvCine.eye[2],mvCine.look[2]+12);
++      if(mvCine.clock>=MV_LAKE_SECONDS)mvCine.eye[2]=Math.max(mvCine.eye[2],mvCine.look[2]+12);
+       mvSetPose(mvCine.eye,mvCine.look);
+     }else if(state.auto==='around'){
+       mvAround.elapsed+=dt*mvTour.rate;
+@@ -2692,7 +2719,7 @@
    const mvZoom=f=>{
      if(state.auto==='around'){mvAround.zoom=Math.max(1,Math.min(1.16,mvAround.zoom*f));mvFrameDistance=0;return;}
      if(state.auto==='spin'||state.auto==='presentation'){mvAutoZoom=Math.max(.60,Math.min(1.16,mvAutoZoom*f));mvFrameDistance=0;return;}
@@ -26,7 +88,7 @@
      mvZoomGoal=Math.max(CAMERA_LIMITS.minDist,Math.min(CAMERA_LIMITS.maxDist,(mvZoomGoal??state.dist)*f));
    };
    $('zoomIn').onclick=()=>mvZoom(.84);
-@@ -2703,7 +2713,7 @@
+@@ -2703,7 +2730,7 @@
    $('free').onclick=()=>{if(!mvFree)mvSetFree(true);else if(mvFreeMode==='move'){mvFreeMode='rotate';mvSyncNav();}else mvSetFree(false);};
    {const r=$('reset').onclick,tp=$('top').onclick;$('reset').onclick=()=>{mvSetFree(false);mvZoomGoal=null;r();};$('top').onclick=()=>{mvSetFree(false);mvZoomGoal=null;tp();};}
    {const sp=$('presentationToggle').onclick;$('presentationToggle').onclick=()=>{mvSetFree(false);sp();};}
@@ -35,11 +97,31 @@
    const mvPan=(dx,dy)=>{mvOverviewFit=false;const s=state.dist*.00125,sy=Math.sin(state.yaw),cy=Math.cos(state.yaw);state.target[0]=Math.max(CAMERA_LIMITS.panXMin,Math.min(CAMERA_LIMITS.panXMax,state.target[0]+sy*dx*s+cy*dy*s));state.target[2]=Math.max(CAMERA_LIMITS.panZMin,Math.min(CAMERA_LIMITS.panZMax,state.target[2]-cy*dx*s+sy*dy*s));};
    const mvFreeMove=(dx,dy)=>{const ds=Math.max(3.5,state.dist)*.0013,vs=Math.max(.35,Math.abs(Math.cos(state.pitch))),h=dx*ds,dp=dy*ds/vs,y=state.yaw;state.target[0]=Math.max(CAMERA_LIMITS.panXMin-16,Math.min(CAMERA_LIMITS.panXMax+16,state.target[0]-Math.sin(y)*h-Math.cos(y)*dp));state.target[2]=Math.max(CAMERA_LIMITS.panZMin-16,Math.min(CAMERA_LIMITS.panZMax+16,state.target[2]+Math.cos(y)*h-Math.sin(y)*dp));};
    const mvFreeHeight=dy=>{state.target[1]=Math.max(.6,Math.min(35,state.target[1]+dy*Math.max(3.5,state.dist)*.0013));};
-@@ -2779,6 +2789,7 @@
+@@ -2775,10 +2802,16 @@
+     const sn=Math.sin(state.pitch),cs=Math.cos(state.pitch),eye=[state.target[0]+Math.cos(state.yaw)*state.dist*sn,Math.max(2.1,state.target[1]+state.dist*cs),state.target[2]+Math.sin(state.yaw)*state.dist*sn];
+     eye[0]=Math.max(-118,Math.min(119,eye[0]));
+     eye[2]=Math.max(-64,Math.min(88,eye[2]));
+-    if(state.auto==='presentation'||state.auto==='spin'||state.auto==='around')eye[2]=Math.max(eye[2],state.target[2]+11);
++    const mvFW=mvCineFreeWeight(),mvFreeEye=[...eye];
++    if(mvFW>0)keepCameraAboveTerrain(mvFreeEye,state.target);
++    if((state.auto==='presentation'||state.auto==='spin'||state.auto==='around')&&mvFW<1)eye[2]=Math.max(eye[2],state.target[2]+11);
      let cameraTarget=state.target;
-     if(state.auto==='spin'||state.auto==='presentation'||state.auto==='around'||mvOverviewFit)cameraTarget=mvFitCamera(eye,state.target,dt);
+-    if(state.auto==='spin'||state.auto==='presentation'||state.auto==='around'||mvOverviewFit)cameraTarget=mvFitCamera(eye,state.target,dt);
++    if(state.auto==='spin'||state.auto==='presentation'||state.auto==='around'||mvOverviewFit){
++      if(mvFW<1)cameraTarget=mvFitCamera(eye,state.target,dt);else mvFrameDistance=0;
++      if(mvFW>0){for(let i=0;i<3;i++)eye[i]+=(mvFreeEye[i]-eye[i])*mvFW;cameraTarget=cameraTarget.map((v,i)=>v+(state.target[i]-v)*mvFW);}
++    }
      else {mvFrameDistance=0;keepCameraAboveTerrain(eye,state.target);}
 +    mvLastEye=[...eye];mvLastTarget=[...cameraTarget];
      const mat=mul(proj(Math.PI/3.45,canvas.width/Math.max(canvas.height,1),.12,Math.max(4000,Math.hypot(...minus(eye,cameraTarget))+600)),view(eye,cameraTarget));
      mvRenderShadowMap();
      gl.clearColor(.60,.78,.88,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+@@ -3394,7 +3427,7 @@
+     for(const t of mvPl.tiles){
+       if(t.kind==='name'&&(!state.names||(pres&&state.selected!==t.id)))continue;
+       if(t.kind==='silla')continue;
+-      if(t.kind==='level'&&(!state.levels||(pres&&state.selected!=='li04a')))continue;
++      if(t.kind==='level'&&!state.levels)continue;
+       let fx=eye[0]-t.x,fz=eye[2]-t.z;const fl=Math.hypot(fx,fz)||1;fx/=fl;fz/=fl;
+       const rx=fz,rz=-fx;let cx=t.x,cz=t.z;
+       if(t.kind==='level'){cx+=fx*(t.r*1.04);cz+=fz*(t.r*1.04);}
