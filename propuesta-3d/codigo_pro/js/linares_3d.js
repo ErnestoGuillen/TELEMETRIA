@@ -2036,8 +2036,8 @@ void main(){
   /* Escala real 1:1 (1 unidad = 1 m): la altura del agua dibujada es el nivel real en metros.
      [estación, código, id de nivel, altura del tanque en m] — PB2 reporta ~23 m, por eso su tanque es más alto */
   /* [estación, código, id de nivel, altura visual del tanque, capacidad real en m]. PB2 reporta ~23 m: se dibuja más bajo
-     (6 m) pero el agua y la regla siguen el valor real a escala reducida */
-  const MV_TALL = [['li01', 'LINPB001', 2, 7.4, 7.0], ['li02', 'LINPB002', 3, 6, 26], ['li02a', 'LINPB02A', 4, 7.4, 7.0], ['li03', 'LINPB003', 5, 7.4, 7.0], ['li04', 'LINPB004', 6, 7.4, 7.0]];
+     (9.5 m) pero el agua y la regla siguen el valor real a escala reducida */
+  const MV_TALL = [['li01', 'LINPB001', 2, 7.4, 7.0], ['li02', 'LINPB002', 3, 9.5, 26], ['li02a', 'LINPB02A', 4, 7.4, 7.0], ['li03', 'LINPB003', 5, 7.4, 7.0], ['li04', 'LINPB004', 6, 7.4, 7.0]];
   const MV_TALL_WATER = H => H - .4;
   const mvTallPos = new Map();
   function mvTallTank(cx, cz, lid, H, cap) {
@@ -2067,7 +2067,7 @@ void main(){
     bar([gx, .52, gz], [gx, .52 + mw, gz], .035, '#e8eef0', { seg: 6 });
     for (let m = 0; m <= Math.floor(cap); m++) {
       const big = m % 5 === 0, y = .52 + m * mw / cap, L = big ? .42 : .22;
-      if (!big && mw / cap < .35) continue; // tanque a escala reducida: solo marcas cada 5 m
+      if (!big && mw / cap < .45) continue; // tanque a escala reducida: solo marcas cada 5 m
       bar([gx, y, gz], [gx + L * .86, y, gz + L * .5], big ? .03 : .018, big ? '#ff9c2a' : '#ffffff', { seg: 5, em: .4 });
     }
   }
