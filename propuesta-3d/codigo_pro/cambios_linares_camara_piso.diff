@@ -1,0 +1,45 @@
+--- tu_version/linares_3d.js
++++ corregido/linares_3d.js
+@@ -2285,6 +2285,16 @@
+     gl.drawArrays(gl.TRIANGLES,0,b.count);
+   }
+   let mvOverviewFit=true,mvOverviewZoom=1,mvAutoZoom=1,mvFrameDistance=0,mvFrameMode='';
++  /* Vista general: encuadre automático. Al acercar al máximo o bajar la cámara se pasa a cámara libre
++     (conservando la vista actual) para poder llegar hasta el piso; "Vista general" vuelve al encuadre. */
++  let mvLastEye=null,mvLastTarget=null;
++  function mvLeaveOverview(){
++    if(!mvOverviewFit||!mvLastEye||!mvLastTarget)return;
++    mvOverviewFit=false;mvFrameDistance=0;mvZoomGoal=null;
++    const e=mvLastEye,t=mvLastTarget,dx=e[0]-t[0],dy=e[1]-t[1],dz=e[2]-t[2],d=Math.max(CAMERA_LIMITS.minDist,Math.hypot(dx,dy,dz));
++    state.target=[Math.max(CAMERA_LIMITS.panXMin,Math.min(CAMERA_LIMITS.panXMax,t[0])),Math.max(.6,t[1]),Math.max(CAMERA_LIMITS.panZMin,Math.min(CAMERA_LIMITS.panZMax,t[2]))];
++    state.dist=Math.min(CAMERA_LIMITS.maxDist,d);state.yaw=Math.atan2(dz,dx);state.pitch=Math.acos(Math.max(-1,Math.min(1,dy/Math.hypot(dx,dy,dz))));
++  }
+   function mvCameraBounds(id){
+     if(id)return mvStationBounds.get(id)||[];
+     return Array.from(mvStationBounds.values()).flat();
+@@ -2692,7 +2702,7 @@
+   const mvZoom=f=>{
+     if(state.auto==='around'){mvAround.zoom=Math.max(1,Math.min(1.16,mvAround.zoom*f));mvFrameDistance=0;return;}
+     if(state.auto==='spin'||state.auto==='presentation'){mvAutoZoom=Math.max(.60,Math.min(1.16,mvAutoZoom*f));mvFrameDistance=0;return;}
+-    if(mvOverviewFit){mvOverviewZoom=Math.max(.45,Math.min(1.16,mvOverviewZoom*f));mvFrameDistance=0;return;}
++    if(mvOverviewFit){if(f<1&&mvOverviewZoom<=.46)mvLeaveOverview();else{mvOverviewZoom=Math.max(.45,Math.min(1.16,mvOverviewZoom*f));mvFrameDistance=0;return;}}
+     mvZoomGoal=Math.max(CAMERA_LIMITS.minDist,Math.min(CAMERA_LIMITS.maxDist,(mvZoomGoal??state.dist)*f));
+   };
+   $('zoomIn').onclick=()=>mvZoom(.84);
+@@ -2703,7 +2713,7 @@
+   $('free').onclick=()=>{if(!mvFree)mvSetFree(true);else if(mvFreeMode==='move'){mvFreeMode='rotate';mvSyncNav();}else mvSetFree(false);};
+   {const r=$('reset').onclick,tp=$('top').onclick;$('reset').onclick=()=>{mvSetFree(false);mvZoomGoal=null;r();};$('top').onclick=()=>{mvSetFree(false);mvZoomGoal=null;tp();};}
+   {const sp=$('presentationToggle').onclick;$('presentationToggle').onclick=()=>{mvSetFree(false);sp();};}
+-  const mvOrbit=(dx,dy)=>{state.yaw-=dx*.006;state.pitch=Math.max(.18,Math.min(CAMERA_LIMITS.maxPitch,state.pitch-dy*.006));};
++  const mvOrbit=(dx,dy)=>{if(mvOverviewFit&&dy<0&&state.pitch>1.28)mvLeaveOverview();state.yaw-=dx*.006;state.pitch=Math.max(.18,Math.min(CAMERA_LIMITS.maxPitch,state.pitch-dy*.006));};
+   const mvPan=(dx,dy)=>{mvOverviewFit=false;const s=state.dist*.00125,sy=Math.sin(state.yaw),cy=Math.cos(state.yaw);state.target[0]=Math.max(CAMERA_LIMITS.panXMin,Math.min(CAMERA_LIMITS.panXMax,state.target[0]+sy*dx*s+cy*dy*s));state.target[2]=Math.max(CAMERA_LIMITS.panZMin,Math.min(CAMERA_LIMITS.panZMax,state.target[2]-cy*dx*s+sy*dy*s));};
+   const mvFreeMove=(dx,dy)=>{const ds=Math.max(3.5,state.dist)*.0013,vs=Math.max(.35,Math.abs(Math.cos(state.pitch))),h=dx*ds,dp=dy*ds/vs,y=state.yaw;state.target[0]=Math.max(CAMERA_LIMITS.panXMin-16,Math.min(CAMERA_LIMITS.panXMax+16,state.target[0]-Math.sin(y)*h-Math.cos(y)*dp));state.target[2]=Math.max(CAMERA_LIMITS.panZMin-16,Math.min(CAMERA_LIMITS.panZMax+16,state.target[2]+Math.cos(y)*h-Math.sin(y)*dp));};
+   const mvFreeHeight=dy=>{state.target[1]=Math.max(.6,Math.min(35,state.target[1]+dy*Math.max(3.5,state.dist)*.0013));};
+@@ -2779,6 +2789,7 @@
+     let cameraTarget=state.target;
+     if(state.auto==='spin'||state.auto==='presentation'||state.auto==='around'||mvOverviewFit)cameraTarget=mvFitCamera(eye,state.target,dt);
+     else {mvFrameDistance=0;keepCameraAboveTerrain(eye,state.target);}
++    mvLastEye=[...eye];mvLastTarget=[...cameraTarget];
+     const mat=mul(proj(Math.PI/3.45,canvas.width/Math.max(canvas.height,1),.12,Math.max(4000,Math.hypot(...minus(eye,cameraTarget))+600)),view(eye,cameraTarget));
+     mvRenderShadowMap();
+     gl.clearColor(.60,.78,.88,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
