@@ -1,15 +1,55 @@
 --- tu_version/linares_3d.js
-+++ tanques_tiempo_real/linares_3d.js
-@@ -2030,6 +2030,39 @@
++++ tiempo_real/linares_3d.js
+@@ -1097,8 +1097,8 @@
+   }
+   function pipe(path, r = .30, meta = {}) {
+     const pts = roundPath(path, .85);
+-    const src = tankFractionByName(meta.source);
+-    const dst = meta.target ? tankFractionByName(meta.target) : src;
++    const src = meta.fill !== undefined ? meta.fill : tankFractionByName(meta.source);
++    const dst = meta.fill !== undefined ? meta.fill : meta.target ? tankFractionByName(meta.target) : src;
+     const peak = Math.max(src, dst), low = Math.min(src, dst);
+     const innerAt = t => {
+       const fill = src + (dst - src) * t;
+@@ -1578,6 +1578,7 @@
+   }
+   /* MV PRO: la tubería principal se corta dentro de las casetas para que se vean todos los equipos */
+   const mvInsideCaseta = (x, z) => config.nodes.some(n => { if (n[2] !== 'pump') return false; const a = mvNodeAngle.get(n[0]) || 0, c = Math.cos(a), sn = Math.sin(a), dx = x - n[3], dz = z - n[4]; return Math.abs(dx * c + dz * sn) < 10.8 * .5 + 1.05 && Math.abs(-dx * sn + dz * c) < 8.15 * .5 - .05; });
++  const mvPipeJobs = [];
+   for (const def of pipeDefs) {
+     const pts = def.nodes, parts = []; let cur = [];
+     for (let i = 0; i < pts.length; i++) {
+@@ -1591,7 +1592,7 @@
+       else if (!mvInsideCaseta(pts[0][0], pts[0][2])) cur.push(pts[0]);
+     }
+     if (cur.length > 1) parts.push(cur);
+-    for (const part of parts) pipe(part, .28, def);
++    mvPipeJobs.push({ parts, r: .28, def });
+   }
+   /* MV PRO: tubería de PB4 que sale por el corte del cerro */
+   const mvPB4 = pointNodes.get('li04'), mvG4 = mvNodeAngle.get('li04') || 0, mvP4 = [mvPB4[3] - Math.sin(mvG4) * MV_PIPE_LANE, mvPB4[4] + Math.cos(mvG4) * MV_PIPE_LANE];
+@@ -1599,7 +1600,7 @@
+   const mountainPipePath = [[mvP4[0], 1.03, mvP4[1]]];
+   for (let x = Math.floor(mvP4[0]) - 2; x >= -190; x -= 4)mountainPipePath.push([x, mvCutY(x), mvP4[1]]);
+   for (let x = -56; x >= -150; x -= 7) { const g = terrainHeight(x, mvP4[1]), y = mvCutY(x); box(x, (g + y - .31) / 2, mvP4[1], .5, Math.max(.05, y - .31 - g), .9, '#b7b2a6'); }
+-  pipe(mountainPipePath, .31, { source: 'PB4 Linares', target: 'PB4 Linares' });
++  mvPipeJobs.push({ parts: [mountainPipePath], r: .31, def: { source: 'PB4 Linares', target: 'PB4 Linares' } });
+   function pumpStationScene(x, z) { pumpUnit(x, z, 4); }
+   function facilityScene(x, z, type) {
+     pad(x, z, 5.4);
+@@ -2030,6 +2031,49 @@
        mvStationBounds.set(n[0], corners); mvStationVisibility.set(n[0], visible.filter(Boolean));
      }
    });
 +  /* ===== Tanque alto junto a cada estación de bombeo (como en el mapa SCADA) ===== */
 +  /* Tanques altos: nivel en tiempo real (id de nivel 2..6 en uLevels) */
-+  const MV_TALL = [['li01', 'LINPB001', 2], ['li02', 'LINPB002', 3], ['li02a', 'LINPB02A', 4], ['li03', 'LINPB003', 5], ['li04', 'LINPB004', 6]];
++  /* Escala real 1:1 (1 unidad = 1 m): la altura del agua dibujada es el nivel real en metros.
++     [estación, código, id de nivel, altura del tanque en m] — PB2 reporta ~23 m, por eso su tanque es más alto */
++  const MV_TALL = [['li01', 'LINPB001', 2, 7.4], ['li02', 'LINPB002', 3, 26], ['li02a', 'LINPB02A', 4, 7.4], ['li03', 'LINPB003', 5, 7.4], ['li04', 'LINPB004', 6, 7.4]];
++  const MV_TALL_WATER = H => H - .4;
 +  const mvTallPos = new Map();
-+  function mvTallTank(cx, cz, lid) {
-+    const R = 1.28, H = 7.4, top = .52 + H, mw = H * .92;
++  function mvTallTank(cx, cz, lid, H) {
++    const R = H > 12 ? 1.6 : 1.28, top = .52 + H, mw = MV_TALL_WATER(H);
 +    pad(cx, cz, 3.5);
 +    cylinder(cx, .31, cz, R * 1.13, .18, '#667c88', { seg: 36 });
 +    cylinder(cx, .43, cz, R * .99, .07, '#2f5164', { seg: 36 });
@@ -30,30 +70,81 @@
 +    bar([lx + .39, .48, zr], [lx + .39, top + .2, zr], .049, gold, { seg: 8 });
 +    for (let y = .65; y < top; y += .32) bar([lx, y, zr], [lx + .39, y, zr], .037, gold, { seg: 7 });
 +    for (const k of [.3, .55, .8]) ring(cx, .52 + H * k + .9, zr + .05, .42, gold, .03, { seg: 6 });
++    /* regla de nivel: marca cada metro, marca larga cada 5 m (0 m = fondo del tanque) */
++    const gx = cx + R * 1.12, gz = cz + R * .62;
++    bar([gx, .52, gz], [gx, .52 + mw, gz], .035, '#e8eef0', { seg: 6 });
++    for (let m = 0; m <= Math.floor(mw); m++) {
++      const big = m % 5 === 0, y = .52 + m, L = big ? .42 : .22;
++      bar([gx, y, gz], [gx + L * .86, y, gz + L * .5], big ? .03 : .018, big ? '#ff9c2a' : '#ffffff', { seg: 5, em: .4 });
++    }
 +  }
-+  for (const [id, code, lid] of MV_TALL) {
++  for (const [id, code, lid, H] of MV_TALL) {
 +    const n = pointNodes.get(id); if (!n) continue;
 +    const x = n[3], z = n[4], a = mvNodeAngle.get(id) || 0, c = Math.cos(a), sn = Math.sin(a), dx = 8.3, dz = MV_PIPE_LANE;
-+    mvRotateBuild(x, z, a, () => mvTallTank(x + dx, z + dz, lid));
-+    mvTallPos.set(code, { x: x + dx * c - dz * sn, z: z + dx * sn + dz * c, r: 1.28, y: .52 + 7.4 * .5 });
++    mvRotateBuild(x, z, a, () => mvTallTank(x + dx, z + dz, lid, H));
++    mvTallPos.set(code, { x: x + dx * c - dz * sn, z: z + dx * sn + dz * c, r: H > 12 ? 1.6 : 1.28, H, mw: MV_TALL_WATER(H) });
 +  }
    /* ===== MV PRO: entorno del acueducto (camino de servicio, línea eléctrica, soportes, señalización, cercas, vegetación) ===== */
    (function mvLinaresEnvironment() {
      let seed = 90817;
-@@ -2263,6 +2296,12 @@
+@@ -2263,6 +2307,11 @@
    gl.disable(gl.CULL_FACE);
    const levelsUniform = new Float32Array(36);
    function updateWaterLevels() {
-+    for (const [, code, lid] of MV_TALL) {
++    for (const [, code, lid, H] of MV_TALL) {
 +      const v = live.get(code), lv = v && v.level !== null && Number.isFinite(Number(v.level)) ? Number(v.level) : null;
 +      if (lv === null || lv <= 0) { levelsUniform[lid] = 0; continue; } // sin nivel (PB1, PB4): tanque vacío
-+      const mx = v.maximum !== null && Number.isFinite(Number(v.maximum)) && Number(v.maximum) > lv ? Number(v.maximum) : (code === 'LINPB002' ? 30 : 6);
-+      levelsUniform[lid] = Math.max(.03, Math.min(.94, lv / mx * .92));
++      levelsUniform[lid] = Math.max(.02, Math.min(.94, lv / MV_TALL_WATER(H))); // 1:1, el agua mide lo mismo que el nivel
 +    }
      for (let i = 0; i < tankSpecs.length; i++) {
        const node = config.nodes.filter(n => n[2] === 'tank')[i];
        const value = node && node[5] ? live.get(node[5]) : null;
-@@ -3373,6 +3412,7 @@
+@@ -2282,13 +2331,39 @@
+       }
+     }
+   }
++  /* ===== Agua en la tubería en tiempo real: el tramo se ve lleno si la estación que bombea tiene flujo > 0,
++     vacío si el flujo es 0 o no hay lectura. Se reconstruye sólo cuando cambia algún estado. ===== */
++  const mvPipeBufs = [0, 1, 2].map(() => ({ buf: gl.createBuffer(), count: 0 }));
++  let mvPipeKey = '';
++  const mvNodeByName = name => config.nodes.find(q => q[1] === name);
++  const mvStationFlow = n => { const v = n && n[5] ? live.get(n[5]) : null; return v && v.flow !== null && v.flow !== undefined && Number.isFinite(Number(v.flow)) ? Number(v.flow) : null; };
++  function mvSegFill(def) {
++    if (!live.size) return .94;
++    const a = mvNodeByName(def.source), b = mvNodeByName(def.target);
++    let f = a && a[2] !== 'reservoir' ? mvStationFlow(a) : null;
++    if (f === null) f = mvStationFlow(b);
++    return f !== null && f > 0 ? .94 : 0;
++  }
++  function mvRebuildPipes(force) {
++    const fills = mvPipeJobs.map(j => mvSegFill(j.def)), key = fills.join(',');
++    if (!force && key === mvPipeKey) return;
++    mvPipeKey = key;
++    const saved = A; A = [[], [], []];
++    mvPipeJobs.forEach((j, i) => { for (const part of j.parts) pipe(part, j.r, Object.assign({}, j.def, { fill: fills[i] })); });
++    for (let g = 0; g < 3; g++) { const arr = new Float32Array(A[g]); gl.bindBuffer(gl.ARRAY_BUFFER, mvPipeBufs[g].buf); gl.bufferData(gl.ARRAY_BUFFER, arr, gl.DYNAMIC_DRAW); mvPipeBufs[g].count = arr.length / 13; }
++    A = saved;
++    try { mvShadowDirty = true; } catch (e) { }
++  }
++  mvRebuildPipes(true);
+   function drawGroup(group) {
+-    const b = buffers[group]; if (!b || !b.count) return;
+-    gl.bindBuffer(gl.ARRAY_BUFFER, b.buf);
+-    for (const [attr, offset, size] of [[loc.pos, 0, 3], [loc.normal, 12, 3], [loc.color, 24, 3], [loc.data, 36, 4]]) {
+-      if (attr < 0) continue; gl.enableVertexAttribArray(attr); gl.vertexAttribPointer(attr, size, gl.FLOAT, false, 52, offset);
++    for (const b of [buffers[group], mvPipeBufs[group]]) {
++      if (!b || !b.count) continue;
++      gl.bindBuffer(gl.ARRAY_BUFFER, b.buf);
++      for (const [attr, offset, size] of [[loc.pos, 0, 3], [loc.normal, 12, 3], [loc.color, 24, 3], [loc.data, 36, 4]]) {
++        if (attr < 0) continue; gl.enableVertexAttribArray(attr); gl.vertexAttribPointer(attr, size, gl.FLOAT, false, 52, offset);
++      }
++      gl.drawArrays(gl.TRIANGLES, 0, b.count);
+     }
+-    gl.drawArrays(gl.TRIANGLES, 0, b.count);
+   }
+   let mvOverviewFit = true, mvOverviewZoom = 1, mvAutoZoom = 1, mvFrameDistance = 0, mvFrameMode = '';
+   /* Vista general: encuadre automático. Al acercar al máximo o bajar la cámara se pasa a cámara libre
+@@ -3373,6 +3448,7 @@
  
    /* ===== MV PRO: tarjetas 3D fijas (nombres, nivel del tanque, presa) como Monterrey V ===== */
    const mvPl = { tiles: [], dirty: true, rects: [] };
@@ -61,7 +152,7 @@
    const MV_TW = 512, MV_TH = 128, MV_COLS = 4, MV_ROWS = 8;
    const mvAtlas = document.createElement('canvas'); mvAtlas.width = MV_TW * MV_COLS; mvAtlas.height = MV_TH * MV_ROWS;
    const mvInk = mvAtlas.getContext('2d');
-@@ -3437,6 +3477,13 @@
+@@ -3437,6 +3513,13 @@
        const w = mvTile(i, 'level', [lv === null ? 'N/D' : lv.toFixed(2) + ' m', typeof mvTrendDisplay === 'function' ? mvTrendDisplay(tr) : ''], typeof mvTrendDirection === 'function' ? mvTrendDirection(tr) : null);
        const t = tankLabels[0]; if (t) mvPl.tiles.push({ id: 'level', kind: 'level', tile: i, w, H: 1.25, x: t.x, y: t.screenY, z: t.z, r: t.radius, post: null }); i++;
      }
@@ -70,8 +161,17 @@
 +      if (lv === null || !p) continue;
 +      const h = typeof mvLnHist !== 'undefined' ? mvLnHist.get(code) : null, tr = h && typeof mvLnTrend === 'function' ? mvLnTrend(h.level) : null;
 +      const w = mvTile(i, 'level', [lv.toFixed(2) + ' m', typeof mvTrendDisplay === 'function' ? mvTrendDisplay(tr) : ''], typeof mvTrendDirection === 'function' ? mvTrendDirection(tr) : null);
-+      mvPl.tiles.push({ id: 'level', kind: 'level', tile: i, w, H: 1.25, x: p.x, y: p.y, z: p.z, r: p.r, post: null }); i++;
++      mvPl.tiles.push({ id: 'level', kind: 'level', tile: i, w, H: 1.25, x: p.x, y: .52 + Math.max(.7, Math.min(lv, p.mw * .94)), z: p.z, r: p.r, post: null }); i++; // a la altura del agua
 +    }
      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, mvTex); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mvAtlas); gl.generateMipmap(gl.TEXTURE_2D);
      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+@@ -3479,7 +3562,7 @@
+     gl.drawArrays(gl.TRIANGLES, 0, v.length / 5);
+     gl.disable(gl.BLEND); gl.disableVertexAttribArray(mvPlLoc.p); gl.disableVertexAttribArray(mvPlLoc.u); gl.useProgram(program);
+   }
+-  { const orig = updateData; updateData = function () { orig(); mvPl.dirty = true; }; }
++  { const orig = updateData; updateData = function () { orig(); mvPl.dirty = true; mvRebuildPipes(false); }; }
+   setInterval(() => { mvPl.dirty = true; }, 60000);
+   /* clic sobre una tarjeta = abrir esa instalación */
+   {
