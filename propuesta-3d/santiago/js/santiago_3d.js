@@ -5,8 +5,8 @@
   const $ = id => document.getElementById(id);
   const config = {
     title: 'Sistema Santiago I y II',
-    nodes: [ [ 'sa00', 'Presa La Boca', 'reservoir', 57.8, 14, 'PRESALB' ], [ 'pp', 'P.P. La Boca', 'facility', 36, 12, 'PPLBOCA' ], [ 'a2', 'Acueducto Santiago II', 'meter', 16, 4, 'ACSII002' ], [ 'te', 'Tercera Estación', 'tank', 16, -8, 'EST30001' ], [ 'l2', 'Llegada Santiago 2 (Contry)', 'meter', 16, -22, 'ACSII001' ], [ 'l1', 'Llegada Santiago 1 (Satélite)', 'meter', 2, -22, 'ACSI0002' ], [ 'a1', 'Acueducto Santiago I', 'meter', 2, -8, 'ACSI0001' ], [ 'pe', 'Manantial La Estanzuela', 'facility', -16, -2, 'PEST0001' ], [ 'ts', 'Túnel San Francisco', 'facility', -42.6, 6, 'TSFCO001' ], [ 'c2', 'Túnel Cola de Caballo II', 'facility', -41.6, 16, 'TCDC0002' ], [ 'c1', 'Túnel Cola de Caballo I', 'facility', -42.6, 26, 'TCDC0001' ] ],
-    lines: [ [ 'sa00', 'pp' ], [ 'pp', 'a2' ], [ 'a2', 'te' ], [ 'te', 'l2' ], [ 'pp', 'a1' ], [ 'c1', 'a1' ], [ 'c2', 'a1' ], [ 'ts', 'a1' ], [ 'pe', 'a1' ], [ 'a1', 'l1' ] ]
+    nodes: [ [ 'sa00', 'Presa La Boca', 'reservoir', 57.8, 14, 'PRESALB' ], [ 'pp', 'P.P. La Boca', 'facility', 36, 12, 'PPLBOCA' ], [ 'a2', 'Acueducto Santiago II', 'meter', 16, 4, 'ACSII002' ], [ 'te', 'Tercera Estación', 'tank', 16, -8, 'EST30001' ], [ 'l2', 'Llegada Santiago 2 (Contry)', 'meter', 16, -22, 'ACSII001' ], [ 'l1', 'Llegada Santiago 1 (Satélite)', 'meter', 2, -22, 'ACSI0002' ], [ 'a1', 'Acueducto Santiago I', 'meter', 2, -8, 'ACSI0001' ], [ 'pe', 'Manantial La Estanzuela', 'facility', -16, -2, 'PEST0001' ], [ 'ts', 'Túnel San Francisco', 'facility', -42.6, 6, 'TSFCO001' ], [ 'c2', 'Túnel Cola de Caballo II', 'facility', -41.6, 16, 'TCDC0002' ], [ 'c1', 'Túnel Cola de Caballo I', 'facility', -42.6, 26, 'TCDC0001' ], [ 'am', 'Toma 10" Álamo', 'meter', -20, 26, 'MCDC0010' ], [ 'ca', 'Macro El Cantinflas', 'meter', -22, 16, null ], [ 'pt', 'PTAR Santiago', 'facility', -12, 40, 'PTAR' ], [ 'lc', 'La Chueca', 'tank', 8, 40, 'BATLCH01' ], [ 'fa', 'Faisán', 'tank', 24, 40, 'FAISAS' ], [ 'il', 'Tanque La Ilusión', 'tank', 40, 34, 'TQLILU01' ] ],
+    lines: [ [ 'sa00', 'pp' ], [ 'pp', 'a2' ], [ 'a2', 'te' ], [ 'te', 'l2' ], [ 'pp', 'a1' ], [ 'c1', 'a1' ], [ 'c2', 'a1' ], [ 'ts', 'a1' ], [ 'pe', 'a1' ], [ 'a1', 'l1' ], [ 'pt', 'lc' ], [ 'lc', 'fa' ] ]
   };
   const mvNodeAngle = new Map, MV_PUMP_LANE = 6.2, MV_PIPE_LANE = 5.45;
   const nodeById = new Map(config.nodes.map((node, index) => [ node[0], {
@@ -1327,7 +1327,11 @@
       'c2|a1': [ [ -39, 16 ], [ -6, 16 ], [ -6, 12 ], [ 2, 12 ] ],
       'ts|a1': [ [ -40, 6 ], [ 2, 6 ] ],
       'pe|a1': [ [ -8.5, -2 ], [ 2, -2 ] ],
-      'a1|l1': [ [ 2, 26 ], [ 2, -8 ], [ 2, -22 ] ]
+      'a1|l1': [ [ 2, 26 ], [ 2, -8 ], [ 2, -22 ] ],
+      'pt|lc': [ [ -4.5, 40 ], [ 8, 40 ] ],
+      'lc|fa': [ [ 8, 40 ], [ 24, 40 ] ],
+      'am|a1': [ [ -20, 26 ], [ -20, 26 ] ],
+      'ca|a1': [ [ -22, 16 ], [ -22, 16 ] ]
     };
     const path = (SA_PATHS[key] || [ [ aa[3], aa[4] ], [ bb[3], bb[4] ] ]).map(p => [ p[0], 1.03, p[1] ]);
     if (b[2] === 'pump' && (key === 'li00|li01' || key === 'li05|li04')) {
@@ -1706,6 +1710,29 @@
     box(x + 4.6, 2.9, z - .2, 2.9, .2, 2.9, '#a3343a');
     box(x + 4.6, .45, z + 2, 3.2, .1, 1.6, '#3b8fc4', 0, .45);
   }
+  function mvPTAR(x, z) {
+    box(x, .07, z, 15, .14, 11, '#7f8a84');
+    box(x, .16, z, 14.4, .06, 10.4, '#a9b1ab');
+    for (const [dx, dz] of [ [ -3.6, -1.6 ], [ 2, -1.6 ] ]) {
+      cylinder(x + dx, .6, z + dz, 2.4, 1, '#cfd4cf', {
+        seg: 40
+      });
+      cylinder(x + dx, 1.08, z + dz, 2.2, .04, '#5d8f74', {
+        seg: 40,
+        em: .35
+      });
+      bar([ x + dx - 2.2, 1.25, z + dz ], [ x + dx + 2.2, 1.25, z + dz ], .06, '#e2b23c', {
+        seg: 6
+      });
+      cylinder(x + dx, 1.3, z + dz, .35, .5, '#8a979c', {
+        seg: 12
+      });
+    }
+    box(x + 5.3, 1.3, z - 2.6, 3.4, 2.4, 3.4, '#c3c9c6');
+    box(x + 5.3, 2.6, z - 2.6, 3.7, .2, 3.7, '#5f6e75');
+    for (let k = 0; k < 3; k++) box(x - 4 + k * 3.4, .5, z + 3.2, 2.8, .7, 2.2, '#cfd4cf');
+    for (let k = 0; k < 3; k++) box(x - 4 + k * 3.4, .86, z + 3.2, 2.5, .04, 1.9, '#4f8c6a', 0, .3);
+  }
   function flowMeterScene(x, z) {
     pad(x, z, 2.9);
     cylinder(x, .91, z, .68, 1.26, '#7d9baa', {
@@ -2015,7 +2042,7 @@
   config.nodes.forEach(n => {
     const starts = A.map(group => group.length);
     const [, name, type, x, z] = n;
-    if (type === 'tank') tankLabels.push(tank(x, z, name, 0, 1.4)); else if (type === 'reservoir') reservoirScene(x, z); else if (type === 'pump') mvRotateBuild(x, z, mvNodeAngle.get(n[0]) || 0, () => pumpCaseta(x, z, name, casetaLightById.get(n[0]))); else if (type === 'meter') flowMeterScene(x, z); else if (n[0] === 'pp') mvPotabilizadora(x, z); else if (n[0] === 'pe') mvManantial(x, z); else if (/^(ts|c1|c2)$/.test(n[0])) {
+    if (type === 'tank') tankLabels.push(tank(x, z, name, 0, 1.4)); else if (type === 'reservoir') reservoirScene(x, z); else if (type === 'pump') mvRotateBuild(x, z, mvNodeAngle.get(n[0]) || 0, () => pumpCaseta(x, z, name, casetaLightById.get(n[0]))); else if (type === 'meter') flowMeterScene(x, z); else if (n[0] === 'pp') mvPotabilizadora(x, z); else if (n[0] === 'pe') mvManantial(x, z); else if (n[0] === 'pt') mvPTAR(x, z); else if (/^(ts|c1|c2)$/.test(n[0])) {
       if (n[0] === 'ts') mvSierraTuneles();
       mvTunnel(x, z);
     } else mvRotateBuild(x, z, mvNodeAngle.get(n[0]) || 0, () => facilityScene(x, z, name.toLowerCase().includes('potabilizadora') ? 'potabilizadora' : 'facility'));
@@ -2683,7 +2710,7 @@
     panXMin: -50,
     panXMax: 58,
     panZMin: -32,
-    panZMax: 26
+    panZMax: 46
   };
   const state = {
     yaw: 1.44,
@@ -4323,10 +4350,13 @@
       mvLnTile();
     };
   }
-  setInterval(() => {
-    mvLnFetchHistory('EST30001').then(mvLnTile);
-  }, 6e4);
-  mvLnFetchHistory('EST30001').then(mvLnTile);
+  const mvTankCodes = config.nodes.filter(n => n[2] === 'tank').map(n => n[5]);
+  const mvTankHist = () => Promise.all(mvTankCodes.map(c => mvLnFetchHistory(c))).then(() => {
+    mvLnTile();
+    if (typeof mvPl !== 'undefined') mvPl.dirty = true;
+  });
+  setInterval(mvTankHist, 6e4);
+  mvTankHist();
   const mvAl = document.createElement('aside');
   mvAl.className = 'mv-alerts';
   mvAl.id = 'mvAlerts';
@@ -4665,7 +4695,7 @@
         y = 6 + H / 2;
         post = [ 5.4, 6.1 ];
       } else if (n[2] === 'tank') {
-        const t = tankLabels[0];
+        const t = tankLabels.find(q => q.name === n[1]) || tankLabels[0];
         H = 1.3;
         y = (t ? t.y : 5) + .75 + H / 2;
         post = [ t ? t.y : 4.6, (t ? t.y : 4.6) + .8 ];
@@ -4703,13 +4733,13 @@
       });
       i++;
     }
-    {
-      const g = live.get('EST30001'), lv = g && g.level !== null && Number.isFinite(Number(g.level)) ? Number(g.level) : null;
-      const h = typeof mvLnHist !== 'undefined' ? mvLnHist.get('EST30001') : null;
+    config.nodes.filter(n => n[2] === 'tank').forEach((n, k) => {
+      const g = live.get(n[5]), lv = g && g.level !== null && Number.isFinite(Number(g.level)) ? Number(g.level) : null;
+      const h = typeof mvLnHist !== 'undefined' ? mvLnHist.get(n[5]) : null;
       const tr = h && typeof mvLnTrend === 'function' ? mvLnTrend(h.level) : null;
       const w = mvTile(i, 'level', [ lv === null ? 'N/D' : lv.toFixed(2) + ' m', typeof mvTrendDisplay === 'function' ? mvTrendDisplay(tr) : '' ], typeof mvTrendDirection === 'function' ? mvTrendDirection(tr) : null);
-      const t = tankLabels[0];
-      if (t) mvPl.tiles.push({
+      const t = tankLabels[k];
+      if (t && n[5]) mvPl.tiles.push({
         id: 'level',
         kind: 'level',
         tile: i,
@@ -4722,7 +4752,7 @@
         post: null
       });
       i++;
-    }
+    });
     for (const [, code] of MV_TALL) {
       const v = live.get(code), lv = v && v.level !== null && Number.isFinite(Number(v.level)) ? Number(v.level) : null, p = mvTallPos.get(code);
       if (lv === null || !p) continue;
@@ -4755,7 +4785,7 @@
     if (an) gl.texParameterf(gl.TEXTURE_2D, an.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, gl.getParameter(an.MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
     mvPl.dirty = false;
   }
-  const MV_SILLA_SPOTS = [ [ -60, 2 ], [ -62, -14 ], [ -62, 18 ], [ -64, 30 ], [ -64, -26 ], [ -68, 6 ], [ -70, -6 ], [ -70, 22 ] ];
+  const MV_SILLA_SPOTS = [];
   function mvPlatesDraw(mat, eye, look = state.target) {
     if (mvPl.dirty) mvBuildPlates();
     const v = [], rects = [], pres = state.auto === 'presentation';

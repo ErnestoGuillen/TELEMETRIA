@@ -2,7 +2,7 @@
 header('Content-Type: text/html; charset=UTF-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
-$v = '20261118-sa-2';
+$v = '20261118-sa-3';
 ?><!DOCTYPE html>
 <html lang="es">
 <head>
@@ -55,7 +55,7 @@ $v = '20261118-sa-2';
     <span class="mv-panorama-divider" aria-hidden="true"></span>
     <div class="mv-panorama-info">
       <strong class="mv-panorama-title">SISTEMA SANTIAGO I Y II</strong>
-      <span class="mv-panorama-subtitle">PRESA LA BOCA · TÚNELES · 11 INSTALACIONES</span>
+      <span class="mv-panorama-subtitle">PRESA LA BOCA · TÚNELES · 17 INSTALACIONES</span>
       <div class="mv-panorama-date-line"><span class="mv-panorama-live">TIEMPO REAL</span><span class="mv-panorama-clock" id="clockText">--:--:--</span></div>
     </div>
     <span class="mv-panel-indicator" aria-hidden="true">^</span>
@@ -64,7 +64,7 @@ $v = '20261118-sa-2';
 
   <section id="presentationPanel" hidden role="region" aria-label="Información de presentación">
     <header class="presentation-head">
-      <div class="presentation-head-top"><span class="presentation-kicker" id="presentationStep">INSTALACIÓN 1 DE 11</span></div>
+      <div class="presentation-head-top"><span class="presentation-kicker" id="presentationStep">INSTALACIÓN 1 DE 17</span></div>
       <h2 class="presentation-tank-title" id="presentationName">—</h2>
     </header>
     <div class="presentation-progress-track"><div id="presentationProgress" class="presentation-progress-fill"></div></div>

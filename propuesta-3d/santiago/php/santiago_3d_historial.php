@@ -9,7 +9,7 @@ header('Pragma: no-cache');
 $lhBase = dirname(dirname(dirname(__FILE__)));
 if (is_file($lhBase . '/CambioHorario/horario.php')) { ob_start(); @include_once($lhBase . '/CambioHorario/horario.php'); ob_end_clean(); }
 
-$allowed = array('TSFCO001', 'TCDC0001', 'TCDC0002', 'PEST0001', 'EST30001', 'ACSI0001', 'ACSII002', 'ACSI0002', 'ACSII001', 'PPLBOCA');
+$allowed = array('PTAR', 'BATLCH01', 'FAISAS', 'MCDC0010', 'TQLILU01', 'TSFCO001', 'TCDC0001', 'TCDC0002', 'PEST0001', 'EST30001', 'ACSI0001', 'ACSII002', 'ACSI0002', 'ACSII001', 'PPLBOCA');
 $code = isset($_GET['codigo']) ? strtoupper(trim((string)$_GET['codigo'])) : '';
 $hours = isset($_GET['horas']) ? (int)$_GET['horas'] : 6;
 if (!in_array($code, $allowed, true) || ($hours != 6 && $hours != 24)) {
