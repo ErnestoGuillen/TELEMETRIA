@@ -4643,10 +4643,10 @@
         kind: 'silla',
         tile: i,
         w: w,
-        H: 6,
-        x: -84,
-        y: 31,
-        z: 10,
+        H: 4.2,
+        x: -70,
+        y: terrainHeight(-76, 2) + 11,
+        z: 1,
         post: null
       });
       i++;
@@ -4731,7 +4731,7 @@
     const camU = [ camR[1] * cf[2] - camR[2] * cf[1], camR[2] * cf[0] - camR[0] * cf[2], camR[0] * cf[1] - camR[1] * cf[0] ];
     for (const t of mvPl.tiles) {
       if (t.kind === 'name' && (!state.names || pres && state.selected !== t.id)) continue;
-      if (t.kind === 'silla') continue;
+      if (t.kind === 'silla' && (!state.names || pres)) continue;
       if (t.kind === 'level' && !state.levels) continue;
       let fx = eye[0] - t.x, fz = eye[2] - t.z;
       const fl = Math.hypot(fx, fz) || 1;

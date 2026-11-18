@@ -3588,7 +3588,7 @@ void main(){
       else { H = 1.3; y = 3.6 + H / 2; post = [2.6, 3.65]; }
       mvPl.tiles.push({ id: n[0], kind: 'name', tile: i, w, H, x, y, z, post, postTile: POST }); i++;
     }
-    { const w = mvTile(i, 'name', ['CERRO DE LA SILLA']); mvPl.tiles.push({ id: 'silla', kind: 'silla', tile: i, w, H: 6, x: -84, y: 31, z: 10, post: null }); i++; }
+    { const w = mvTile(i, 'name', ['CERRO DE LA SILLA']); mvPl.tiles.push({ id: 'silla', kind: 'silla', tile: i, w, H: 4.2, x: -70, y: terrainHeight(-76, 2) + 11, z: 1, post: null }); i++; }
     {
       const g = live.get('TGRP0001'), lv = g && g.level !== null && Number.isFinite(Number(g.level)) ? Number(g.level) : null; const h = typeof mvLnHist !== 'undefined' ? mvLnHist.get('TGRP0001') : null; const tr = h && typeof mvLnTrend === 'function' ? mvLnTrend(h.level) : null;
       const w = mvTile(i, 'level', [lv === null ? 'N/D' : lv.toFixed(2) + ' m', typeof mvTrendDisplay === 'function' ? mvTrendDisplay(tr) : ''], typeof mvTrendDirection === 'function' ? mvTrendDirection(tr) : null);
@@ -3621,7 +3621,7 @@ void main(){
     const camU = [camR[1] * cf[2] - camR[2] * cf[1], camR[2] * cf[0] - camR[0] * cf[2], camR[0] * cf[1] - camR[1] * cf[0]];
     for (const t of mvPl.tiles) {
       if (t.kind === 'name' && (!state.names || (pres && state.selected !== t.id))) continue;
-      if (t.kind === 'silla') continue;
+      if (t.kind === 'silla' && (!state.names || pres)) continue;
       if (t.kind === 'level' && !state.levels) continue;
       let fx = eye[0] - t.x, fz = eye[2] - t.z; const fl = Math.hypot(fx, fz) || 1; fx /= fl; fz /= fl;
       const rx = fz, rz = -fx; let cx = t.x, cz = t.z;
