@@ -3581,7 +3581,7 @@
   }, {
     id: 'santiago',
     title: 'Sistema Santiago I y II',
-    detail: 'Pendiente de desarrollo'
+    detail: 'Presa La Boca · Túneles · Acueductos'
   }, {
     id: 'linares',
     title: 'Sistema Linares',
@@ -3603,7 +3603,8 @@
     const routes = {
       mtyv: '/MTYV3D',
       linares: '/LINARES3D',
-      cuchillo: '/CUCHILLO3D'
+      cuchillo: '/CUCHILLO3D',
+      santiago: '/SANTIAGO3D'
     };
     if (routes[id]) window.location.assign(routes[id]);
   }
@@ -3612,7 +3613,7 @@
     btn.type = 'button';
     btn.className = 'az-item';
     btn.setAttribute('aria-current', 'false');
-    if (![ 'mtyv', 'linares', 'cuchillo' ].includes(zone.id)) {
+    if (![ 'mtyv', 'linares', 'cuchillo', 'santiago' ].includes(zone.id)) {
       btn.disabled = true;
       btn.setAttribute('aria-disabled', 'true');
       btn.title = 'En desarrollo';
