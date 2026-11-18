@@ -190,37 +190,6 @@ $items['ACSII002'] = saFromRow('ACSII002', saRow($santiago, 'ACSII002'), 'Disp_1
 $items['ACSI0002'] = saFromRow('ACSI0002', saRow($pozosmetro, 'ACSI0002'), 'Flujo', 1, 'none');
 $items['ACSII001'] = saFromRow('ACSII001', saRow($pozosmetro, 'ACSII001'), 'Flujo', 1, 'none');
 
-function saPumps(&$item, $row, $bits) {
-    if ($row === null || !isset($row['ED_SD']) || !is_numeric($row['ED_SD'])) return;
-    $v = (int)$row['ED_SD']; $item['pumps'] = array();
-    foreach ($bits as $i => $b) $item['pumps'][] = array('name' => 'Equipo ' . ($i + 1), 'on' => (($v & $b) ? true : false));
-}
-$r = saRow($santiago, 'PTAR');
-$items['PTAR'] = saFromRow('PTAR', $r, 'Flujo', 1, 'none');
-if ($r !== null) {
-    lnExtra($items['PTAR'], 'Presión', saDiv(isset($r['Presion']) ? $r['Presion'] : null, 100), 'kg/cm²');
-    saPumps($items['PTAR'], $r, array(1, 2, 4, 8, 16, 32, 64));
-    if (isset($r['ED_SD']) && is_numeric($r['ED_SD'])) $items['PTAR']['extra'][] = array('label' => 'CFE', 'value' => (((int)$r['ED_SD']) & 128) ? 'Activo' : 'Inactivo', 'unit' => '');
-}
-$r = saRow($santiago, 'BATLCH01');
-$items['BATLCH01'] = saFromRow('BATLCH01', $r, 'Flujo', 1, 'cm');
-if ($r !== null) {
-    lnExtra($items['BATLCH01'], 'Flujo 2', isset($r['Disp_1']) ? $r['Disp_1'] : null, 'LPS');
-    lnExtra($items['BATLCH01'], 'Presión', saDiv(isset($r['Presion']) ? $r['Presion'] : null, 10), 'kg/cm²');
-    saPumps($items['BATLCH01'], $r, array(1, 2));
-}
-$r = saRow($santiago, 'FAISAS');
-$items['FAISAS'] = saFromRow('FAISAS', $r, 'Flujo', 1, 'cm');
-$items['FAISAS']['flow'] = null;
-if ($r !== null) {
-    lnExtra($items['FAISAS'], 'Presión', saDiv(isset($r['Presion']) ? $r['Presion'] : null, 10), 'kg/cm²');
-    saPumps($items['FAISAS'], $r, array(1, 2, 4));
-}
-$items['MCDC0010'] = saFromCsv('MCDC0010', 4);
-if (($csv = lnReadCsv('MCDC0010')) !== null && isset($csv['row'][5]) && trim((string)$csv['row'][5]) !== '') $items['MCDC0010']['extra'][] = array('label' => 'Acumulado', 'value' => trim((string)$csv['row'][5]), 'unit' => '');
-$items['TQLILU01'] = saFromCsv('TQLILU01', 99);
-if (($csv = lnReadCsv('TQLILU01')) !== null) $items['TQLILU01']['level'] = lnLevel(isset($csv['row'][4]) ? $csv['row'][4] : null, 'cm');
-
 $pp = lnEmpty('PPLBOCA');
 $parts = array('PPLBCLA1' => array('Clarificador 1', 4), 'PPLBCLA2' => array('Clarificador 2', 4), 'PPLTAC02' => array('Estación Bombeo 2', 5), 'PPLTAC2A' => array('Estación Bombeo 2A', 5));
 $total = null;

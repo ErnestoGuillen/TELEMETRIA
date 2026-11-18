@@ -5,8 +5,8 @@
   const $ = id => document.getElementById(id);
   const config = {
     title: 'Sistema Santiago I y II',
-    nodes: [ [ 'sa00', 'Presa La Boca', 'reservoir', 57.8, 14, 'PRESALB' ], [ 'pp', 'P.P. La Boca', 'facility', 36, 12, 'PPLBOCA' ], [ 'a2', 'Acueducto Santiago II', 'meter', 16, 4, 'ACSII002' ], [ 'te', 'Tercera Estación', 'tank', 16, -8, 'EST30001' ], [ 'l2', 'Llegada Santiago 2 (Contry)', 'meter', 16, -22, 'ACSII001' ], [ 'l1', 'Llegada Santiago 1 (Satélite)', 'meter', 2, -22, 'ACSI0002' ], [ 'a1', 'Acueducto Santiago I', 'meter', 2, -8, 'ACSI0001' ], [ 'pe', 'Manantial La Estanzuela', 'facility', -16, -2, 'PEST0001' ], [ 'ts', 'Túnel San Francisco', 'facility', -42.6, 6, 'TSFCO001' ], [ 'c2', 'Túnel Cola de Caballo II', 'facility', -41.6, 16, 'TCDC0002' ], [ 'c1', 'Túnel Cola de Caballo I', 'facility', -42.6, 26, 'TCDC0001' ], [ 'am', 'Toma 10" Álamo', 'meter', -20, 26, 'MCDC0010' ], [ 'ca', 'Macro El Cantinflas', 'meter', -22, 16, null ], [ 'pt', 'PTAR Santiago', 'facility', -12, 40, 'PTAR' ], [ 'lc', 'La Chueca', 'tank', 8, 40, 'BATLCH01' ], [ 'fa', 'Faisán', 'tank', 24, 40, 'FAISAS' ], [ 'il', 'Tanque La Ilusión', 'tank', 40, 34, 'TQLILU01' ] ],
-    lines: [ [ 'sa00', 'pp' ], [ 'pp', 'a2' ], [ 'a2', 'te' ], [ 'te', 'l2' ], [ 'pp', 'a1' ], [ 'c1', 'a1' ], [ 'c2', 'a1' ], [ 'ts', 'a1' ], [ 'pe', 'a1' ], [ 'a1', 'l1' ], [ 'pt', 'lc' ], [ 'lc', 'fa' ] ]
+    nodes: [ [ 'sa00', 'Presa La Boca', 'reservoir', 57.8, 14, 'PRESALB' ], [ 'pp', 'P.P. La Boca', 'facility', 36, 12, 'PPLBOCA' ], [ 'a2', 'Acueducto Santiago II', 'meter', 16, 4, 'ACSII002' ], [ 'te', 'Tercera Estación', 'tank', 16, -8, 'EST30001' ], [ 'l2', 'Llegada Santiago 2 (Contry)', 'meter', 16, -22, 'ACSII001' ], [ 'l1', 'Llegada Santiago 1 (Satélite)', 'meter', 2, -22, 'ACSI0002' ], [ 'a1', 'Acueducto Santiago I', 'meter', 2, -8, 'ACSI0001' ], [ 'pe', 'Manantial La Estanzuela', 'facility', -16, -2, 'PEST0001' ], [ 'ts', 'Túnel San Francisco', 'facility', -42.6, 6, 'TSFCO001' ], [ 'c2', 'Túnel Cola de Caballo II', 'facility', -41.6, 16, 'TCDC0002' ], [ 'c1', 'Túnel Cola de Caballo I', 'facility', -42.6, 26, 'TCDC0001' ] ],
+    lines: [ [ 'sa00', 'pp' ], [ 'pp', 'a2' ], [ 'a2', 'te' ], [ 'te', 'l2' ], [ 'pp', 'a1' ], [ 'c1', 'a1' ], [ 'c2', 'a1' ], [ 'ts', 'a1' ], [ 'pe', 'a1' ], [ 'a1', 'l1' ] ]
   };
   const mvNodeAngle = new Map, MV_PUMP_LANE = 6.2, MV_PIPE_LANE = 5.45;
   const nodeById = new Map(config.nodes.map((node, index) => [ node[0], {
@@ -1710,29 +1710,6 @@
     box(x + 4.6, 2.9, z - .2, 2.9, .2, 2.9, '#a3343a');
     box(x + 4.6, .45, z + 2, 3.2, .1, 1.6, '#3b8fc4', 0, .45);
   }
-  function mvPTAR(x, z) {
-    box(x, .07, z, 15, .14, 11, '#7f8a84');
-    box(x, .16, z, 14.4, .06, 10.4, '#a9b1ab');
-    for (const [dx, dz] of [ [ -3.6, -1.6 ], [ 2, -1.6 ] ]) {
-      cylinder(x + dx, .6, z + dz, 2.4, 1, '#cfd4cf', {
-        seg: 40
-      });
-      cylinder(x + dx, 1.08, z + dz, 2.2, .04, '#5d8f74', {
-        seg: 40,
-        em: .35
-      });
-      bar([ x + dx - 2.2, 1.25, z + dz ], [ x + dx + 2.2, 1.25, z + dz ], .06, '#e2b23c', {
-        seg: 6
-      });
-      cylinder(x + dx, 1.3, z + dz, .35, .5, '#8a979c', {
-        seg: 12
-      });
-    }
-    box(x + 5.3, 1.3, z - 2.6, 3.4, 2.4, 3.4, '#c3c9c6');
-    box(x + 5.3, 2.6, z - 2.6, 3.7, .2, 3.7, '#5f6e75');
-    for (let k = 0; k < 3; k++) box(x - 4 + k * 3.4, .5, z + 3.2, 2.8, .7, 2.2, '#cfd4cf');
-    for (let k = 0; k < 3; k++) box(x - 4 + k * 3.4, .86, z + 3.2, 2.5, .04, 1.9, '#4f8c6a', 0, .3);
-  }
   function flowMeterScene(x, z) {
     pad(x, z, 2.9);
     cylinder(x, .91, z, .68, 1.26, '#7d9baa', {
@@ -2042,7 +2019,7 @@
   config.nodes.forEach(n => {
     const starts = A.map(group => group.length);
     const [, name, type, x, z] = n;
-    if (type === 'tank') tankLabels.push(tank(x, z, name, 0, 1.4)); else if (type === 'reservoir') reservoirScene(x, z); else if (type === 'pump') mvRotateBuild(x, z, mvNodeAngle.get(n[0]) || 0, () => pumpCaseta(x, z, name, casetaLightById.get(n[0]))); else if (type === 'meter') flowMeterScene(x, z); else if (n[0] === 'pp') mvPotabilizadora(x, z); else if (n[0] === 'pe') mvManantial(x, z); else if (n[0] === 'pt') mvPTAR(x, z); else if (/^(ts|c1|c2)$/.test(n[0])) {
+    if (type === 'tank') tankLabels.push(tank(x, z, name, 0, 1.4)); else if (type === 'reservoir') reservoirScene(x, z); else if (type === 'pump') mvRotateBuild(x, z, mvNodeAngle.get(n[0]) || 0, () => pumpCaseta(x, z, name, casetaLightById.get(n[0]))); else if (type === 'meter') flowMeterScene(x, z); else if (n[0] === 'pp') mvPotabilizadora(x, z); else if (n[0] === 'pe') mvManantial(x, z); else if (/^(ts|c1|c2)$/.test(n[0])) {
       if (n[0] === 'ts') mvSierraTuneles();
       mvTunnel(x, z);
     } else mvRotateBuild(x, z, mvNodeAngle.get(n[0]) || 0, () => facilityScene(x, z, name.toLowerCase().includes('potabilizadora') ? 'potabilizadora' : 'facility'));
@@ -2710,7 +2687,7 @@
     panXMin: -50,
     panXMax: 58,
     panZMin: -32,
-    panZMax: 46
+    panZMax: 32
   };
   const state = {
     yaw: 1.44,
