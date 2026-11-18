@@ -2747,14 +2747,17 @@ void main(){
   /* ===== MV PRO: navegación igual que Monterrey V / Anillo TV ===== */
   let mvZoomGoal = null, mvFree = false, mvFreeMode = 'move';
   const mvTour = { rate: 1 };
-  const mvAround = { elapsed: 0, zoom: 1, pitch: 1.02, yaw0: 1.44 };
+  const mvAround = { elapsed: 0, zoom: 1, pitch: 1.02, yaw0: 1.44, phase: 0 };
   const MV_CENTER = [0, 1, 2].map(axis => { const points = mvCameraBounds(); return (Math.min(...points.map(p => p[axis])) + Math.max(...points.map(p => p[axis]))) / 2; });
-  const MV_AROUND_CENTER = (() => { const ns = config.nodes.filter(n => n[2] !== 'reservoir'); return [ns.reduce((a, n) => a + n[3], 0) / ns.length + 6, 2.2, ns.reduce((a, n) => a + n[4], 0) / ns.length]; })();
-  const MV_AROUND_PATH = ['li01', 'li02', 'li02a', 'li03', 'li04a', 'li05', 'li04'].map(id => config.nodes.find(n => n[0] === id)).filter(Boolean).map(n => [n[3], n[4]]);
-  function mvAroundTarget(e) {
-    const u = (.5 - .5 * Math.cos(e * .03)) * (MV_AROUND_PATH.length - 1), i = Math.min(MV_AROUND_PATH.length - 2, Math.floor(u)), f = u - i, a = MV_AROUND_PATH[i], b = MV_AROUND_PATH[i + 1];
-    return [a[0] + (b[0] - a[0]) * f, 2.2, a[1] + (b[1] - a[1]) * f];
+  const MV_AROUND_PATH = [...['li04', 'li05', 'li04a', 'li03', 'li02a', 'li02', 'li01'].map(id => config.nodes.find(n => n[0] === id)).filter(Boolean).map(n => [n[3], n[4]]), [lakeCenter[0] - 6, lakeCenter[1]]];
+  const MV_AROUND_LEN = (() => { const L = [0]; for (let i = 1; i < MV_AROUND_PATH.length; i++) L.push(L[i - 1] + Math.hypot(MV_AROUND_PATH[i][0] - MV_AROUND_PATH[i - 1][0], MV_AROUND_PATH[i][1] - MV_AROUND_PATH[i - 1][1])); return L; })();
+  function mvAroundTargetAt(d) {
+    let i = 0; while (i < MV_AROUND_LEN.length - 2 && MV_AROUND_LEN[i + 1] < d) i++;
+    const f = (d - MV_AROUND_LEN[i]) / Math.max(.001, MV_AROUND_LEN[i + 1] - MV_AROUND_LEN[i]), a = MV_AROUND_PATH[i], b = MV_AROUND_PATH[i + 1];
+    return [a[0] + (b[0] - a[0]) * f, 2.0, a[1] + (b[1] - a[1]) * f];
   }
+  function mvAroundTarget(e) { return mvAroundTargetAt((.5 - .5 * Math.cos(e * .034 + mvAround.phase)) * MV_AROUND_LEN[MV_AROUND_LEN.length - 1]); }
+
   const MV_LAKE_SECONDS = 22;
   const MV_STOP_SECONDS = 9;
   const MV_RETURN_SECONDS = 9;
@@ -2834,7 +2837,7 @@ void main(){
   function mvStartAround() {
     mvSetFree(false);
     if (state.auto === 'presentation') endPresentation();
-    mvLeaveOverview(); mvOverviewFit = false; mvFrameDistance = 0; mvAround.elapsed = 0; mvAround.zoom = 1; mvAround.pitch = 1.02; mvAround.yaw0 = state.yaw;
+    mvLeaveOverview(); mvOverviewFit = false; mvFrameDistance = 0; mvAround.elapsed = 0; mvAround.zoom = 1; mvAround.pitch = 1.02; mvAround.yaw0 = state.yaw; { const t = state.target, P = MV_AROUND_PATH, total = MV_AROUND_LEN[MV_AROUND_LEN.length - 1]; let best = 0, bd = 1e9; for (let k = 0; k <= 40; k++) { const q = mvAroundTargetAt(k / 40 * total); const dd = Math.hypot(q[0] - t[0], q[2] - t[2]); if (dd < bd) { bd = dd; best = k / 40; } } mvAround.phase = Math.acos(Math.max(-1, Math.min(1, 1 - 2 * best))); }
     state.auto = 'around'; syncButtons(); mvSyncNav();
   }
   function mvTickNav(dt) {
@@ -2861,19 +2864,20 @@ void main(){
     } else if (state.auto === 'around') {
       mvAround.elapsed += dt * mvTour.rate;
       const smooth = 1 - Math.exp(-dt * 1.6);
-      let dy = (1.50 + .95 * Math.sin(mvAround.elapsed * .085)) - state.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+      const e = mvAround.elapsed, ramp = mvEase(e / 4);
+      let dy = (mvAround.yaw0 + e * .085) - state.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
       state.yaw += dy * smooth;
-      state.pitch += (mvAround.pitch - state.pitch) * smooth;
-      const goal = mvAroundTarget(mvAround.elapsed);
-      for (let i = 0; i < 3; i++)state.target[i] += (goal[i] - state.target[i]) * smooth;
-      state.dist += (32 * mvAround.zoom - state.dist) * smooth;
+      state.pitch += ((1.02 + .09 * Math.sin(e * .052)) - state.pitch) * smooth;
+      const goal = mvAroundTarget(e);
+      for (let i = 0; i < 3; i++)state.target[i] += (goal[i] - state.target[i]) * smooth * (.35 + .65 * ramp);
+      state.dist += ((38 + 9 * Math.sin(e * .061 + .8)) * mvAround.zoom - state.dist) * smooth;
     }
     if (mvZoomGoal !== null) { state.dist += (mvZoomGoal - state.dist) * Math.min(1, dt * 7); if (Math.abs(mvZoomGoal - state.dist) < .05) mvZoomGoal = null; }
   }
   function mvSetFree(on) { mvFree = !!on; if (mvFree) mvOverviewFit = false; mvFreeMode = 'move'; state.mode = mvFree ? 'pan' : 'orbit'; CAMERA_LIMITS.minDist = mvFree ? 4 : 10; if (mvFree) { if (state.auto === 'presentation') endPresentation(); state.auto = ''; } syncButtons(); mvSyncNav(); }
   function mvSyncNav() { const b = $('free'); if (!b) return; const label = !mvFree ? 'Manos libres' : mvFreeMode === 'rotate' ? 'Manos libres: Girar' : 'Manos libres: Mover'; const svg = b.querySelector('svg'); b.textContent = ''; if (svg) b.appendChild(svg); b.appendChild(document.createTextNode((svg ? ' ' : '') + label)); b.title = !mvFree ? 'Clic: Mover · Segundo clic: Girar · Tercer clic: Salir' : mvFreeMode === 'move' ? 'Clic izquierdo: mover · Derecho o Mayús: girar · Clic otra vez: girar' : 'Clic izquierdo: girar · Derecho o Mayús: mover · Clic otra vez: salir'; canvas.style.cursor = !mvFree ? '' : mvFreeMode === 'rotate' ? 'move' : 'grab'; $('spinSpeed').textContent = mvTour.rate > 1 ? 'Giro: Rápida' : 'Giro: Normal'; }
   const mvZoom = f => {
-    if (state.auto === 'around') { mvAround.zoom = Math.max(1, Math.min(1.16, mvAround.zoom * f)); mvFrameDistance = 0; return; }
+    if (state.auto === 'around') { mvAround.zoom = Math.max(.6, Math.min(1.5, mvAround.zoom * f)); mvFrameDistance = 0; return; }
     if (state.auto === 'spin' || state.auto === 'presentation') { mvAutoZoom = Math.max(.60, Math.min(1.16, mvAutoZoom * f)); mvFrameDistance = 0; return; }
     if (mvOverviewFit) { if (f < 1 && mvOverviewZoom <= .46) mvLeaveOverview(); else { mvOverviewZoom = Math.max(.45, Math.min(1.16, mvOverviewZoom * f)); mvFrameDistance = 0; return; } }
     mvZoomGoal = Math.max(CAMERA_LIMITS.minDist, Math.min(CAMERA_LIMITS.maxDist, (mvZoomGoal ?? state.dist) * f));
@@ -2883,7 +2887,6 @@ void main(){
   $('spin').onclick = () => state.auto === 'spin' ? mvStopAll() : mvStartTour();
   $('spinSpeed').onclick = () => { mvTour.rate = mvTour.rate === 1 ? 1.8 : 1; mvSyncNav(); };
   $('around').onclick = () => state.auto === 'around' ? mvStopAll() : mvStartAround();
-  $('around').hidden = true; $('around').style.setProperty('display', 'none', 'important');
   $('free').onclick = () => { if (!mvFree) mvSetFree(true); else if (mvFreeMode === 'move') { mvFreeMode = 'rotate'; mvSyncNav(); } else mvSetFree(false); };
   { const r = $('reset').onclick, tp = $('top').onclick; $('reset').onclick = () => { mvSetFree(false); mvZoomGoal = null; r(); }; $('top').onclick = () => { mvSetFree(false); mvZoomGoal = null; tp(); }; }
   { const sp = $('presentationToggle').onclick; $('presentationToggle').onclick = () => { mvSetFree(false); sp(); }; }
@@ -3623,7 +3626,7 @@ void main(){
       let fx = eye[0] - t.x, fz = eye[2] - t.z; const fl = Math.hypot(fx, fz) || 1; fx /= fl; fz /= fl;
       const rx = fz, rz = -fx; let cx = t.x, cz = t.z;
       if (t.kind === 'level') { cx += fx * (t.r * 1.04); cz += fz * (t.r * 1.04); }
-      const H = t.H, W = H * t.w / (MV_TH - 16);
+      const H = t.id === 'li00' && t.kind === 'name' ? t.H * Math.max(.38, Math.min(1, Math.hypot(eye[0] - t.x, eye[1] - t.y, eye[2] - t.z) / 60)) : t.H, W = H * t.w / (MV_TH - 16);
       if (t.post) { const pw = .09; quad(t.x, (t.post[0] + t.post[1]) / 2, t.z, camR[0], camR[2], pw, t.post[1] - t.post[0], t.postTile, MV_TW); }
       const cs = quad(cx, t.y, cz, camR[0], camR[2], W, H, t.tile, t.w, camU);
       if (t.kind === 'name') { const ps = cs.map(p => project(p, mat, vw, vh)).filter(Boolean); if (ps.length === 4) rects.push({ id: t.id, x0: Math.min(...ps.map(p => p[0])), x1: Math.max(...ps.map(p => p[0])), y0: Math.min(...ps.map(p => p[1])), y1: Math.max(...ps.map(p => p[1])) }); }
