@@ -4841,7 +4841,7 @@
       i++;
     }
     {
-      const w = mvTile(i, 'name', [ 'CERRO DE LA SILLA' ]);
+      const w = mvTile(i, 'name', [ 'SIERRA MADRE ORIENTAL' ]);
       mvPl.tiles.push({
         id: 'silla',
         kind: 'silla',
@@ -4924,7 +4924,7 @@
     if (an) gl.texParameterf(gl.TEXTURE_2D, an.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, gl.getParameter(an.MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
     mvPl.dirty = false;
   }
-  const MV_SILLA_SPOTS = [];
+  const MV_SILLA_SPOTS = [ [ -62, -12 ], [ -66, -2 ], [ -72, -14 ], [ -60, 22 ], [ -78, 6 ], [ -84, -8 ], [ -74, 28 ], [ -56, -18 ] ];
   function mvPlatesDraw(mat, eye, look = state.target) {
     if (mvPl.dirty) mvBuildPlates();
     const v = [], rects = [], pres = state.auto === 'presentation';
