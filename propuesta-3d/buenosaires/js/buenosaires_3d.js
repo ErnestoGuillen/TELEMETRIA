@@ -3436,11 +3436,58 @@
     for (let i = 1; i < MV_AROUND_PATH.length; i++) L.push(L[i - 1] + Math.hypot(MV_AROUND_PATH[i][0] - MV_AROUND_PATH[i - 1][0], MV_AROUND_PATH[i][1] - MV_AROUND_PATH[i - 1][1]));
     return L;
   })();
+  const baTour = {
+    u: 0
+  };
+  const BA_TOUR = (() => {
+    const raw = [ [ 40, -24 ], [ 24, -24 ], [ 9, -24 ], [ 4, -24 ], [ 4, -15 ], [ -13.5, -15 ], [ -29.5, -12 ], ...BA_ROAD.slice(1), [ -98, 22 ], [ -96, 4 ], [ -84, -16 ], [ -60, -30 ], [ -30, -34 ], [ 0, -36 ], [ 30, -34 ], [ 44, -28 ] ];
+    const P = [];
+    for (let i = 1; i < raw.length; i++) {
+      const a = raw[i - 1], b = raw[i], n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 1.5));
+      for (let k = 0; k < n; k++) {
+        const x = a[0] + (b[0] - a[0]) * k / n, z = a[1] + (b[1] - a[1]) * k / n;
+        P.push([ x, Math.max(0, terrainHeight(x, z)) + 1.2, z ]);
+      }
+    }
+    for (let r = 0; r < 4; r++) for (let i = 1; i < P.length - 1; i++) P[i] = P[i].map((v, k) => (P[i - 1][k] + v * 2 + P[i + 1][k]) / 4);
+    const L = [ 0 ];
+    for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][2] - P[i - 1][2]));
+    return {
+      P: P,
+      L: L,
+      total: L[L.length - 1]
+    };
+  })();
+  function baTourAt(d) {
+    const T = BA_TOUR, t = (d % T.total + T.total) % T.total;
+    let i = 0;
+    while (i < T.L.length - 2 && T.L[i + 1] < t) i++;
+    const f = (t - T.L[i]) / Math.max(.001, T.L[i + 1] - T.L[i]), a = T.P[i], b = T.P[i + 1];
+    return a.map((v, k) => v + (b[k] - v) * f);
+  }
+  function baTourPose(u) {
+    const p = baTourAt(u), ahead = baTourAt(u + 16), back = baTourAt(u - 14);
+    let dx = ahead[0] - back[0], dz = ahead[2] - back[2];
+    const l = Math.hypot(dx, dz) || 1;
+    dx /= l;
+    dz /= l;
+    const eye = [ back[0] + dz * 9, Math.max(back[1], p[1]) + 12, back[2] - dx * 9 ];
+    if (eye[2] < back[2]) {
+      eye[0] = back[0] - dz * 9;
+      eye[2] = back[2] + dx * 9;
+    }
+    eye[1] = Math.max(eye[1], terrainHeight(eye[0], eye[2]) + 7);
+    return {
+      eye: eye,
+      look: [ ahead[0], ahead[1] + 1.5, ahead[2] ]
+    };
+  }
   function mvAroundTargetAt(d) {
     let i = 0;
     while (i < MV_AROUND_LEN.length - 2 && MV_AROUND_LEN[i + 1] < d) i++;
     const f = (d - MV_AROUND_LEN[i]) / Math.max(.001, MV_AROUND_LEN[i + 1] - MV_AROUND_LEN[i]), a = MV_AROUND_PATH[i], b = MV_AROUND_PATH[i + 1];
-    return [ a[0] + (b[0] - a[0]) * f, 2, a[1] + (b[1] - a[1]) * f ];
+    const tx = a[0] + (b[0] - a[0]) * f, tz = a[1] + (b[1] - a[1]) * f;
+    return [ tx, Math.max(2, terrainHeight(tx, tz) + 2.5), tz ];
   }
   function mvAroundTarget(e) {
     return mvAroundTargetAt((.5 - .5 * Math.cos(e * .034 + mvAround.phase)) * MV_AROUND_LEN[MV_AROUND_LEN.length - 1]);
@@ -3522,7 +3569,8 @@
     };
   }
   function mvCineFreeWeight() {
-    if (state.auto !== 'spin') return 0;
+    if (state.auto === 'spin') return 1;
+    if (state.auto !== 'presentation') return 0;
     const t = mvCine.clock;
     return t < MV_LAKE_SECONDS ? mvEase(t / 2.5) : 1 - mvEase((t - MV_LAKE_SECONDS) / 3.1);
   }
@@ -3580,6 +3628,7 @@
     mvSetFree(false);
     if (state.auto === 'presentation') endPresentation();
     mvResetCinematic();
+    baTour.u = 0;
     state.auto = 'spin';
     syncButtons();
     mvSyncNav();
@@ -3615,7 +3664,17 @@
     mvSyncNav();
   }
   function mvTickNav(dt) {
-    if (state.auto === 'spin' || state.auto === 'presentation') {
+    if (state.auto === 'spin') {
+      baTour.u += dt * mvTour.rate * 6.5;
+      const p = baTourPose(baTour.u), ease = 1 - Math.exp(-dt * 1.6);
+      if (!mvCine.eye || !mvCine.look) {
+        mvCine.eye = p.eye;
+        mvCine.look = p.look;
+      }
+      mvCine.eye = mvMix(mvCine.eye, p.eye, ease);
+      mvCine.look = mvMix(mvCine.look, p.look, ease);
+      mvSetPose(mvCine.eye, mvCine.look);
+    } else if (state.auto === 'presentation') {
       const playing = state.auto !== 'presentation' || !state.paused;
       if (playing) mvCine.clock = (mvCine.clock + dt * (state.auto === 'spin' ? mvTour.rate : mvPresentationRate)) % MV_CYCLE_SECONDS;
       const pose = mvCinePose(mvCine.clock);
