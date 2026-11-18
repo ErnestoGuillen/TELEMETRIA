@@ -1,7 +1,5 @@
 <?php
-/* Cuchillo 3D - historial de 6 h para la gráfica. Compatible con PHP 5.x.
-   Lee lecturas/AAMMDD00_CODIGO.CSV de hoy y ayer (NI0000001 nivel, FL0000001 flujo).
-   PRESACU = Presa El Cuchillo (archivo OBTO003, columna ELEV0001 / 100 = msnm). */
+
 ini_set('display_errors', '0');
 error_reporting(E_ERROR | E_PARSE);
 header('Content-Type: application/json; charset=UTF-8');
@@ -33,7 +31,6 @@ function lhNumber($value) {
     return $v;
 }
 
-/* Fecha de la fila: año/mes/día (como sanroque.php) o día/mes/año de 4 dígitos */
 function lhTimestamp($row, $fileDay) {
     if (!isset($row[2], $row[3]) || !is_numeric($row[2]) || !is_numeric($row[3])) return null;
     $p = preg_split('/[\/\-]/', trim(isset($row[0]) ? (string)$row[0] : ''));

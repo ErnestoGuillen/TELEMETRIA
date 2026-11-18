@@ -1,5 +1,5 @@
 <?php
-/* Sistema Cuchillo I y II 3D - lecturas en tiempo real (PHP 5 compatible, mismas fuentes que sanroque.php) */
+
 ini_set('display_errors', '0');
 error_reporting(E_ERROR | E_PARSE);
 header('Content-Type: application/json; charset=UTF-8');
@@ -12,7 +12,6 @@ if (is_file($lnBase . '/CambioHorario/horario.php')) { ob_start(); @include_once
 if (is_file($lnBase . '/lol/includes/connection2.php')) { ob_start(); @include_once($lnBase . '/lol/includes/connection2.php'); ob_end_clean(); }
 set_time_limit(20);
 
-/* Misma ventana de comunicación que sanroque.php (últimos 30 min) */
 $hhh = ((date('H') * 60) + date('i')) - 30;
 $hhs = ((date('H') * 60) + date('i')) + 60;
 $S = date('ymd00');
@@ -78,7 +77,6 @@ function lnLevel($raw, $unit) {
     return $unit === 'cm' ? round($v / 100, 3) : round($v, 3);
 }
 
-/* Lee toda la tabla como sanroque.php */
 function lnTable($table) {
     $rows = array();
     if (function_exists('mysql_query')) {
@@ -95,7 +93,6 @@ function lnTable($table) {
     return $rows;
 }
 
-/* Carpetas posibles (igual que sanroque.php: ../../lecturas y ../../lab) */
 function lnDirs($sub) {
     global $lnBase;
     $out = array();
@@ -111,7 +108,6 @@ function lnDirs($sub) {
     return $out;
 }
 
-/* Abre lecturas/AAMMDD00_CODIGO.CSV y devuelve encabezados + última fila con datos (como sanroque.php) */
 function lnReadCsv($code) {
     global $S;
     $days = array($S, date('ymd00', time() - 86400));
@@ -151,7 +147,6 @@ function lnCsvValue($csv, $column, $fallbackIndex) {
     return $csv['row'][$idx];
 }
 
-/* Fecha y hora de una fila CSV: "16/11 15:24" como en sanroque.php */
 function lnCsvTime($csv) {
     if ($csv === null) return array(null, null);
     $row = $csv['row'];
@@ -167,7 +162,6 @@ foreach ($definitions as $code => $def) $items[$code] = lnEmpty($code);
 $tables = array('sanroque' => lnTable('sanroque'));
 $readings = 0;
 
-/* Estaciones de bombeo China I, China II y PB5: tabla sanroque, igual que sanroque.php */
 foreach ($definitions as $code => $def) {
     if ($def['table'] !== 'sanroque' || !isset($tables['sanroque'][$code])) continue;
     $row = $tables['sanroque'][$code];
@@ -177,7 +171,7 @@ foreach ($definitions as $code => $def) {
     if ($item['updated'] === '') $item['updated'] = null;
     $item['level'] = lnLevel(isset($row['Nivel']) ? $row['Nivel'] : null, $def['level']);
     $item['flow'] = lnNumber(isset($row['Flujo']) ? $row['Flujo'] : null);
-    /* China II no reporta equipos en sanroque.php: sólo se publican si llegan bits distintos de cero */
+
     if (isset($def['pumps']) && isset($row['ED_SD']) && is_numeric($row['ED_SD']) && (substr($code, 0, 6) !== 'CHIPB2' || (int)$row['ED_SD'] > 0)) {
         $bits = (int)$row['ED_SD'];
         $item['pumps'] = array();
@@ -188,10 +182,9 @@ foreach ($definitions as $code => $def) {
     $items[$code] = $item;
     $readings++;
 }
-/* Llegada Ac. China I a San Roque se muestra junto a PB5 */
+
 if ($items['PPLCH001']['flow'] !== null) lnExtra($items['PBSRQ005'], 'Llegada Ac. China I', $items['PPLCH001']['flow'], 'LPS');
 
-/* Tanques de sumergencia Ac. China II: lecturas/AAMMDD00_TSACII0X.CSV, NI0000001 en cm */
 foreach (array('TSACII01', 'TSACII02', 'TSACII03', 'TSACII04') as $code) {
     $csv = lnReadCsv($code);
     if ($csv === null) continue;
@@ -204,8 +197,6 @@ foreach (array('TSACII01', 'TSACII02', 'TSACII03', 'TSACII04') as $code) {
     $readings++;
 }
 
-/* Presa El Cuchillo: elevación OBTO003 (ELEV0001 / 100), almacenamiento y % de lab/presas.CSV (columnas 1 y 2),
-   extracción total CHIPB015 (FL0000001); igual que sanroque.php / presas.php */
 $item = lnEmpty('PRESACU');
 $csv = lnReadCsv('OBTO003');
 if ($csv !== null) {

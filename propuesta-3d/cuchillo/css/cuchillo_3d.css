@@ -3442,7 +3442,6 @@ html.mv-alerts-off .mv-alert-markers {
   display: none !important;
 }
 
-
 .controls-dock #controlsToggle.mv-control-launcher {
   box-sizing: border-box;
   width: min(388px, calc(100vw - 24px));
@@ -3627,7 +3626,6 @@ html.mv-alerts-off .mv-alert-markers {
   }
 }
 
-
 .controls-dock #controlsToggle.mv-control-launcher.mv-clock-hidden {
   width: min(202px, calc(100vw - 18px));
 }
@@ -3635,7 +3633,6 @@ html.mv-alerts-off .mv-alert-markers {
 .controls-dock #controlsToggle.mv-control-launcher.mv-clock-hidden .mv-control-separator {
   display: none;
 }
-
 
 .controls-dock {
   left: 30px !important;
@@ -3691,7 +3688,6 @@ html.mv-alerts-off .mv-alert-markers {
   }
 }
 
-
 #mvPanoramaHeading {
   z-index: 92 !important;
   opacity: 1 !important;
@@ -3744,7 +3740,6 @@ html.mv-alerts-off .mv-alert-markers {
     top: var(--mv-menu-top, 112px) !important;
   }
 }
-
 
 #mvPanoramaHeading {
   top: auto !important;
@@ -3922,7 +3917,6 @@ html.mv-alerts-off .mv-alert-markers {
   column-gap: 6px !important;
   row-gap: 2px !important;
 }
-
 
 html,
 body {
@@ -4209,7 +4203,6 @@ body {
     max-height: calc(100dvh - 35px) !important;
   }
 }
-
 
 .presentation-mobile-collapse {
   display: none;
@@ -5289,8 +5282,6 @@ body.presentation-on #mvPanoramaHeading {
     width: min(360px, calc(100vw - 14px)) !important
   }
 }
-
-/* MV PRO: tarjetas de nombre con el diseño de Monterrey V */
 #labels .world-sign {
   transform: translate(-50%, -100%) scale(var(--mv-s, 1)) !important;
   transform-origin: 50% 100% !important;

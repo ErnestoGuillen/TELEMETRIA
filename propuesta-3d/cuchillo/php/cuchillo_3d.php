@@ -2,13 +2,13 @@
 header('Content-Type: text/html; charset=UTF-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
-$v = '20261117-cu-1';
+$v = '20261118-cu-2';
 ?><!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Sistema Cuchillo 3D | Telemetría</title>
+  <title>Sistema Cuchillo 3D Telemetría</title>
   <link rel="stylesheet" href="/Telemetria/css/cuchillo_3d.css?v=<?php echo $v; ?>">
   <style>
     html,body{margin:0;height:100%;overflow:hidden}
