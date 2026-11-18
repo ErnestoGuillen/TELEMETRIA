@@ -8,7 +8,7 @@ header('Expires: 0');
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <title>Anillo TV 3D | Telemetría</title>
+    <title>Anillo TV 3D Telemetría</title>
     <link rel="stylesheet" href="/Telemetria/css/anillo_tv_3d.css?v=20261118-1">
   </head>
   <body>

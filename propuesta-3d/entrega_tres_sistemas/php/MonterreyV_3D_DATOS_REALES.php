@@ -9,7 +9,7 @@ header('Expires: 0');
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Monterrey V 3D | Telemetría</title>
+  <title>Monterrey V 3D Telemetría</title>
   <link rel="stylesheet" href="/Telemetria/css/monterreyv_3d.css?v=20261118-1">
   <style>
     body>#mvReturnAnillo {
