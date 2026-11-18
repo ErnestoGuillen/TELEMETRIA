@@ -3589,7 +3589,7 @@
   }, {
     id: 'cuchillo',
     title: 'Sistema Cuchillo I y II',
-    detail: 'Pendiente de desarrollo'
+    detail: 'Acueductos China I y II · Presa El Cuchillo'
   }, {
     id: 'mtyv',
     title: 'Monterrey V',
@@ -3602,7 +3602,8 @@
   function selectSystemZone(id) {
     const routes = {
       mtyv: '/MTYV3D',
-      linares: '/LINARES3D'
+      linares: '/LINARES3D',
+      cuchillo: '/CUCHILLO3D'
     };
     if (routes[id]) window.location.assign(routes[id]);
   }
@@ -3611,7 +3612,7 @@
     btn.type = 'button';
     btn.className = 'az-item';
     btn.setAttribute('aria-current', 'false');
-    if (![ 'mtyv', 'linares' ].includes(zone.id)) {
+    if (![ 'mtyv', 'linares', 'cuchillo' ].includes(zone.id)) {
       btn.disabled = true;
       btn.setAttribute('aria-disabled', 'true');
       btn.title = 'En desarrollo';
