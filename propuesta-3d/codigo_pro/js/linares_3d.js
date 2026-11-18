@@ -3608,9 +3608,10 @@ void main(){
     const an = gl.getExtension('EXT_texture_filter_anisotropic'); if (an) gl.texParameterf(gl.TEXTURE_2D, an.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, gl.getParameter(an.MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
     mvPl.dirty = false;
   }
+  const MV_SILLA_SPOTS = [[-60, 2], [-62, -14], [-62, 18], [-64, 30], [-64, -26], [-68, 6], [-70, -6], [-70, 22]];
   function mvPlatesDraw(mat, eye, look = state.target) {
     if (mvPl.dirty) mvBuildPlates();
-    const v = [], rects = [], pres = state.auto === 'presentation';
+    const v = [], rects = [], pres = state.auto === 'presentation'; let mvTop = null;
     const uv = (tile, w) => { const col = tile % MV_COLS, row = Math.floor(tile / MV_COLS), u0 = (col * MV_TW + (MV_TW - w) / 2) / mvAtlas.width, u1 = (col * MV_TW + (MV_TW + w) / 2) / mvAtlas.width, v0 = row * MV_TH / mvAtlas.height, v1 = (row + 1) * MV_TH / mvAtlas.height; return [u0, u1, v0, v1]; };
     const quad = (cx, cy, cz, rx, rz, W, H, tile, w, up) => {
       const [u0, u1, v0, v1] = uv(tile, w), hw = W / 2, hh = H / 2; up = up || [0, 1, 0]; const P = (a, b) => [cx + rx * a + up[0] * b, cy + up[1] * b, cz + rz * a + up[2] * b];
@@ -3621,14 +3622,26 @@ void main(){
     const camU = [camR[1] * cf[2] - camR[2] * cf[1], camR[2] * cf[0] - camR[0] * cf[2], camR[0] * cf[1] - camR[1] * cf[0]];
     for (const t of mvPl.tiles) {
       if (t.kind === 'name' && (!state.names || (pres && state.selected !== t.id))) continue;
-      if (t.kind === 'silla' && (!state.names || pres)) continue;
+      if (t.kind === 'silla') {
+        if (!state.names || pres) continue;
+        let best = null, bd = 1e9;
+        for (const [ax, az] of MV_SILLA_SPOTS) {
+          const ay = terrainHeight(ax, az) + 4.5, q = project([ax, ay, az], mat, vw, vh);
+          if (!q || q[0] < 110 || q[0] > vw - 110 || q[1] < 70 || q[1] > vh - 90) continue;
+          const d = Math.hypot(q[0] - vw * .4, q[1] - vh * .35); if (d < bd) { bd = d; best = [ax, ay, az]; }
+        }
+        if (!best) continue;
+        t.x = best[0]; t.y = best[1]; t.z = best[2];
+      }
       if (t.kind === 'level' && !state.levels) continue;
       let fx = eye[0] - t.x, fz = eye[2] - t.z; const fl = Math.hypot(fx, fz) || 1; fx /= fl; fz /= fl;
       const rx = fz, rz = -fx; let cx = t.x, cz = t.z;
       if (t.kind === 'level') { cx += fx * (t.r * 1.04); cz += fz * (t.r * 1.04); }
+      if (t.kind === 'silla') { cx += fx * 11; cz += fz * 11; }
       const H = t.id === 'li00' && t.kind === 'name' ? t.H * Math.max(.38, Math.min(1, Math.hypot(eye[0] - t.x, eye[1] - t.y, eye[2] - t.z) / 60)) : t.H, W = H * t.w / (MV_TH - 16);
       if (t.post) { const pw = .09; quad(t.x, (t.post[0] + t.post[1]) / 2, t.z, camR[0], camR[2], pw, t.post[1] - t.post[0], t.postTile, MV_TW); }
-      const cs = quad(cx, t.y, cz, camR[0], camR[2], W, H, t.tile, t.w, camU);
+      const v0 = v.length / 5, cs = quad(cx, t.y, cz, camR[0], camR[2], W, H, t.tile, t.w, camU);
+      if (t.kind === 'silla') mvTop = [v0, v.length / 5 - v0];
       if (t.kind === 'name') { const ps = cs.map(p => project(p, mat, vw, vh)).filter(Boolean); if (ps.length === 4) rects.push({ id: t.id, x0: Math.min(...ps.map(p => p[0])), x1: Math.max(...ps.map(p => p[0])), y0: Math.min(...ps.map(p => p[1])), y1: Math.max(...ps.map(p => p[1])) }); }
     }
     mvPl.rects = rects;
@@ -3640,7 +3653,8 @@ void main(){
     gl.enableVertexAttribArray(mvPlLoc.p); gl.vertexAttribPointer(mvPlLoc.p, 3, gl.FLOAT, false, 20, 0);
     gl.enableVertexAttribArray(mvPlLoc.u); gl.vertexAttribPointer(mvPlLoc.u, 2, gl.FLOAT, false, 20, 12);
     gl.enable(gl.DEPTH_TEST); gl.depthMask(true); gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.disable(gl.CULL_FACE);
-    gl.drawArrays(gl.TRIANGLES, 0, v.length / 5);
+    if (mvTop) { gl.drawArrays(gl.TRIANGLES, 0, mvTop[0]); gl.drawArrays(gl.TRIANGLES, mvTop[0] + mvTop[1], v.length / 5 - mvTop[0] - mvTop[1]); gl.disable(gl.DEPTH_TEST); gl.drawArrays(gl.TRIANGLES, mvTop[0], mvTop[1]); gl.enable(gl.DEPTH_TEST); }
+    else gl.drawArrays(gl.TRIANGLES, 0, v.length / 5);
     gl.disable(gl.BLEND); gl.disableVertexAttribArray(mvPlLoc.p); gl.disableVertexAttribArray(mvPlLoc.u); gl.useProgram(program);
   }
   { const orig = updateData; updateData = function () { orig(); mvPl.dirty = true; mvRebuildPipes(false); }; }
