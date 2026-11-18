@@ -5,7 +5,7 @@
   const $ = id => document.getElementById(id);
   const config = {
     title: 'Sistema Cuchillo I y II',
-    nodes: [ [ 'cu00', 'Presa El Cuchillo', 'reservoir', 57.8, 14, 'PRESACU' ], [ 'a0', 'PB0 China', 'pump', 40, -10, 'CHIPB000' ], [ 'a1', 'PB1 China', 'pump', 24, -10, 'CHIPB001' ], [ 'a2', 'PB2 China', 'pump', 8, -10, 'CHIPB002' ], [ 'a3', 'PB3 China', 'pump', -8, -10, 'CHIPB003' ], [ 'a4', 'PB4 China', 'pump', -24, -10, 'CHIPB004' ], [ 'sr', 'PB5 San Roque', 'pump', -52, 2, 'PBSRQ005' ], [ 'b4', 'PB4 China 2', 'pump', -36, 13, 'CHIPB204' ], [ 't4', 'TS4 China 2', 'tank', -26.5, 18.45, 'TSACII04' ], [ 'b3', 'PB3 China 2', 'pump', -17, 13, 'CHIPB203' ], [ 't3', 'TS3 China 2', 'tank', -7.5, 18.45, 'TSACII03' ], [ 'b2', 'PB2 China 2', 'pump', 2, 13, 'CHIPB202' ], [ 't2', 'TS2 China 2', 'tank', 11.5, 18.45, 'TSACII02' ], [ 'b1', 'PB1 China 2', 'pump', 21, 13, 'CHIPB201' ], [ 't1', 'TS1 China 2', 'tank', 30.5, 18.45, 'TSACII01' ], [ 'b0', 'PB0 China 2', 'pump', 40, 13, 'CHIPB200' ], [ 't0', 'TS0 China 2', 'tank', 49.5, 18.45, null ] ],
+    nodes: [ [ 'cu00', 'Presa El Cuchillo', 'reservoir', 57.8, 14, 'PRESACU' ], [ 'a0', 'PB0 China', 'pump', 40, -10, 'CHIPB000' ], [ 'a1', 'PB1 China', 'pump', 24, -10, 'CHIPB001' ], [ 'a2', 'PB2 China', 'pump', 8, -10, 'CHIPB002' ], [ 'a3', 'PB3 China', 'pump', -8, -10, 'CHIPB003' ], [ 'a4', 'PB4 China', 'pump', -24, -10, 'CHIPB004' ], [ 'sr', 'P.P. San Roque', 'facility', -52, 2, 'PBSRQ005' ], [ 'b4', 'PB4 China 2', 'pump', -36, 13, 'CHIPB204' ], [ 't4', 'TS4 China 2', 'tank', -26.5, 18.45, 'TSACII04' ], [ 'b3', 'PB3 China 2', 'pump', -17, 13, 'CHIPB203' ], [ 't3', 'TS3 China 2', 'tank', -7.5, 18.45, 'TSACII03' ], [ 'b2', 'PB2 China 2', 'pump', 2, 13, 'CHIPB202' ], [ 't2', 'TS2 China 2', 'tank', 11.5, 18.45, 'TSACII02' ], [ 'b1', 'PB1 China 2', 'pump', 21, 13, 'CHIPB201' ], [ 't1', 'TS1 China 2', 'tank', 30.5, 18.45, 'TSACII01' ], [ 'b0', 'PB0 China 2', 'pump', 40, 13, 'CHIPB200' ], [ 't0', 'TS0 China 2', 'tank', 49.5, 18.45, null ] ],
     lines: [ [ 'cu00', 'a0' ], [ 'a0', 'a1' ], [ 'a1', 'a2' ], [ 'a2', 'a3' ], [ 'a3', 'a4' ], [ 'a4', 'sr' ], [ 'cu00', 't0' ], [ 't0', 'b0' ], [ 'b0', 't1' ], [ 't1', 'b1' ], [ 'b1', 't2' ], [ 't2', 'b2' ], [ 'b2', 't3' ], [ 't3', 'b3' ], [ 'b3', 't4' ], [ 't4', 'b4' ], [ 'b4', 'sr' ] ]
   };
   const mvNodeAngle = new Map, MV_PUMP_LANE = 6.2, MV_PIPE_LANE = 5.45;
@@ -1079,7 +1079,7 @@
     const latFade = 1 - smoothTerrain(110, 130, Math.abs(z - 6));
     return Math.max(0, body * serrations + crags) * towardWest * westFade * latFade * .68;
   };
-  const lakeOutline = [ [ 41.27, 31.69 ], [ 38.85, 25.41 ], [ 37.79, 19.64 ], [ 37.33, 13.1 ], [ 37.64, 6.95 ], [ 38.55, -.62 ], [ 38.85, -3.69 ], [ 35.21, -7.79 ], [ 31.58, -13.69 ], [ 34, -17.28 ], [ 39.15, -13.69 ], [ 44.3, -11.64 ], [ 45.52, -18.69 ], [ 48.85, -23.18 ], [ 52.48, -20.36 ], [ 53.09, -13.44 ], [ 56.73, -9.72 ], [ 58.24, -.36 ], [ 62.18, .67 ], [ 64, -7.15 ], [ 68.24, -12.15 ], [ 70.06, -19.33 ], [ 72.18, -26.38 ], [ 74.61, -33.44 ], [ 80.36, -37.92 ], [ 84.3, -34.72 ], [ 88.24, -37.54 ], [ 93.09, -32.92 ], [ 93.39, -26.51 ], [ 98.85, -21.9 ], [ 96.42, -16 ], [ 101.88, -10.62 ], [ 99.15, -4.97 ], [ 104.3, .41 ], [ 101.88, 6.82 ], [ 106.73, 12.21 ], [ 103.09, 18.36 ], [ 107.33, 25.03 ], [ 103.39, 30.67 ], [ 106.12, 37.59 ], [ 101.58, 43.23 ], [ 104, 49.9 ], [ 98.55, 56.05 ], [ 93.39, 62.21 ], [ 89.76, 57.08 ], [ 86.73, 51.95 ], [ 84.3, 58.1 ], [ 79.76, 64.51 ], [ 74.61, 60.41 ], [ 77.03, 53.23 ], [ 72.18, 49.38 ], [ 68.55, 42.21 ], [ 64.91, 34.51 ], [ 61.58, 36.31 ], [ 62.79, 44.26 ], [ 57.94, 50.41 ], [ 53.39, 56.05 ], [ 47.94, 59.64 ], [ 42.48, 64.51 ], [ 37.33, 62.21 ], [ 41.27, 55.54 ], [ 47.03, 49.9 ], [ 44, 45.54 ], [ 38.55, 48.62 ], [ 32.48, 51.95 ], [ 28.24, 48.1 ], [ 33.39, 42.72 ], [ 39.15, 37.85 ] ];
+  const lakeOutline = [ [ 41.27, 31.69 ], [ 38.85, 25.41 ], [ 37.79, 19.64 ], [ 37.33, 13.1 ], [ 37.64, 6.95 ], [ 38.55, -.62 ], [ 38.85, -3.69 ], [ 35.52, -8.05 ], [ 32.18, -13.95 ], [ 34.91, -17.54 ], [ 39.45, -14.46 ], [ 43.39, -10.1 ], [ 46.73, -19.33 ], [ 50.67, -24.21 ], [ 54.91, -20.1 ], [ 55.52, -12.41 ], [ 59.45, -8.05 ], [ 64, -8.31 ], [ 68.24, -12.15 ], [ 70.06, -19.33 ], [ 72.18, -26.38 ], [ 74.61, -33.44 ], [ 80.36, -37.92 ], [ 84.3, -35.49 ], [ 88.24, -37.54 ], [ 93.09, -32.92 ], [ 93.39, -26.51 ], [ 98.85, -21.9 ], [ 97.03, -16 ], [ 101.88, -10.62 ], [ 99.76, -4.97 ], [ 104.3, .41 ], [ 102.18, 6.82 ], [ 106.42, 12.21 ], [ 103.39, 18.36 ], [ 107.03, 25.03 ], [ 103.7, 30.67 ], [ 106.12, 37.59 ], [ 101.88, 43.23 ], [ 104, 49.9 ], [ 99.15, 56.05 ], [ 95.21, 61.95 ], [ 92.79, 55.54 ], [ 87.33, 50.15 ], [ 81.88, 55.54 ], [ 79.76, 63.49 ], [ 74.61, 60.67 ], [ 76.42, 53.74 ], [ 71.27, 48.1 ], [ 65.82, 45.28 ], [ 60.06, 48.36 ], [ 54.3, 56.05 ], [ 47.94, 60.92 ], [ 42.18, 64.77 ], [ 37.03, 62.21 ], [ 40.36, 57.08 ], [ 47.03, 50.67 ], [ 42.48, 44.77 ], [ 35.82, 49.38 ], [ 30.97, 52.21 ], [ 27.64, 47.85 ], [ 33.09, 42.46 ], [ 39.15, 37.85 ] ];
   for (const q of lakeOutline) {
     q[0] = 104 + (q[0] - 104) * .66;
     q[1] = 14 + (q[1] - 14) * .78;
@@ -1490,6 +1490,41 @@
         A[0].push(...drawVertex(a), ...drawVertex(b), ...drawVertex(c), ...drawVertex(a), ...drawVertex(c), ...drawVertex(d));
       }
     }
+    const wallBase = .3, wallTop = 1.24, roadTop = 1.31;
+    const wallInner = lakeShore.map((p, i) => [ p[0] + shoreNormals[i][0] * .62, p[1] + shoreNormals[i][1] * .62 ]);
+    const wallOuter = lakeShore.map((p, i) => [ p[0] + shoreNormals[i][0] * 1.29, p[1] + shoreNormals[i][1] * 1.29 ]);
+    const roadOuter = lakeShore.map((p, i) => [ p[0] + shoreNormals[i][0] * 2.52, p[1] + shoreNormals[i][1] * 2.52 ]);
+    const roadFill = lakeShore.map((p, i) => [ p[0] + shoreNormals[i][0] * 3.14, p[1] + shoreNormals[i][1] * 3.14 ]);
+    for (let i = 0; i < lakeN; i++) {
+      const next = (i + 1) % lakeN;
+      const a = wallInner[i], b = wallInner[next], c = wallOuter[next], d = wallOuter[i];
+      const g = roadOuter[next], h = roadOuter[i], m = roadFill[i], n = roadFill[next];
+      const normal = shoreNormals[i];
+      const concrete = i % 19 < 10 ? '#adb5b2' : '#a6afac';
+      const asphalt = i % 23 < 11 ? '#555d5f' : '#4f5658';
+      const fill1 = Math.max(terrainHeight(m[0], m[1]) + .06, .16);
+      const fill2 = Math.max(terrainHeight(n[0], n[1]) + .06, .16);
+      quad(0, [ a[0], wallBase, a[1] ], [ b[0], wallBase, b[1] ], [ b[0], wallTop, b[1] ], [ a[0], wallTop, a[1] ], [ -normal[0], 0, -normal[1] ], concrete, .02);
+      quad(0, [ c[0], wallBase, c[1] ], [ d[0], wallBase, d[1] ], [ d[0], wallTop, d[1] ], [ c[0], wallTop, c[1] ], [ normal[0], 0, normal[1] ], '#818c8a', .02);
+      quad(0, [ a[0], wallTop, a[1] ], [ b[0], wallTop, b[1] ], [ c[0], wallTop, c[1] ], [ d[0], wallTop, d[1] ], [ 0, 1, 0 ], '#d9ddd7', .05);
+      quad(0, [ d[0], roadTop, d[1] ], [ c[0], roadTop, c[1] ], [ g[0], roadTop, g[1] ], [ h[0], roadTop, h[1] ], [ 0, 1, 0 ], asphalt, .04);
+      quad(0, [ h[0], roadTop, h[1] ], [ g[0], roadTop, g[1] ], [ n[0], fill2, n[1] ], [ m[0], fill1, m[1] ], [ normal[0], .16, normal[1] ], '#7e8785', .03);
+      quad(0, [ m[0], fill1, m[1] ], [ n[0], fill2, n[1] ], [ g[0], fill2 - .08, g[1] ], [ h[0], fill1 - .08, h[1] ], [ 0, -1, 0 ], '#7b8482', .02);
+      tube([ [ d[0], roadTop + .03, d[1] ], [ c[0], roadTop + .03, c[1] ] ], .028, '#ecefe8', {
+        seg: 6
+      });
+      tube([ [ h[0], roadTop + .03, h[1] ], [ g[0], roadTop + .03, g[1] ] ], .022, '#d2d5cf', {
+        seg: 6
+      });
+      if (i % 17 === 0) {
+        tube([ [ a[0], .48, a[1] ], [ a[0], wallTop, a[1] ] ], .016, '#707b79', {
+          seg: 5
+        });
+        tube([ [ d[0], .48, d[1] ], [ d[0], roadTop, d[1] ] ], .016, '#687573', {
+          seg: 5
+        });
+      }
+    }
     const mvDamStart = A.map(g => g.length);
     const damPoints = [ [ 37, -3.5 ], [ 35.9, 1.3 ], [ 35, 6.9 ], [ 34.7, 13.1 ], [ 35.2, 19.6 ], [ 36.2, 25.4 ], [ 38.7, 31.7 ] ];
     const ribbon = (path, width, top, bottom, color) => {
@@ -1557,6 +1592,53 @@
       }
     }
   }
+  function mvPotabilizadora(x, z) {
+    pad(x, z, 1);
+    box(x, .07, z, 19, .14, 14, '#7f8a84');
+    box(x, .16, z, 18.4, .06, 13.4, '#a9b1ab');
+    const bld = (bx, bz, w, d, h, wall, roof) => {
+      box(bx, .19 + h / 2, bz, w, h, d, wall);
+      box(bx, .19 + h + .09, bz, w + .3, .18, d + .3, roof);
+      for (let k = 0; k < Math.floor(w / 1.4); k++) box(bx - w / 2 + .9 + k * 1.4, .19 + h * .62, bz + d / 2 + .02, .8, .55, .04, '#5f88a0', 0, .15);
+      box(bx + w * .3, .19 + .9, bz + d / 2 + .03, 1, 1.8, .05, '#46606e');
+    };
+    bld(x - 5.2, z - 4.4, 6.4, 4.2, 3, '#c3c9c6', '#6c7a80');
+    bld(x + 2.6, z - 4.6, 5, 3.6, 2.4, '#b9c1be', '#5f6e75');
+    for (let k = 0; k < 4; k++) {
+      const bx = x - 6.6 + k * 3.3, bz = z + 1.6, w = 2.8, d = 4.6;
+      box(bx, .55, bz - d / 2, w + .3, .8, .25, '#cfd4cf');
+      box(bx, .55, bz + d / 2, w + .3, .8, .25, '#cfd4cf');
+      box(bx - w / 2, .55, bz, .25, .8, d, '#cfd4cf');
+      box(bx + w / 2, .55, bz, .25, .8, d, '#cfd4cf');
+      box(bx, .72, bz, w - .2, .04, d - .2, k % 2 ? '#2f8ec9' : '#3a9bd3', 0, .55);
+    }
+    bar([ x - 8.4, 1, z + 4.15 ], [ x + 4.1, 1, z + 4.15 ], .035, '#e2b23c', {
+      seg: 6
+    });
+    const up = [ 0, 1, 0 ], tx = x + 6.8, tz = z + 2;
+    quad(0, [ tx - 1.6, .7, tz - 3.2 ], [ tx + 1.6, .7, tz - 3.2 ], [ tx + 2.3, .7, tz + 3.2 ], [ tx - 2.3, .7, tz + 3.2 ], up, '#4fa3c9', .5);
+    box(tx, .45, tz - 3.3, 3.5, .5, .2, '#cfd4cf');
+    box(tx, .45, tz + 3.3, 4.9, .5, .2, '#cfd4cf');
+    tube([ [ tx - 2, .5, tz - 3.2 ], [ tx - 2.6, .5, tz + 3.2 ] ], .1, '#cfd4cf', {
+      seg: 6
+    });
+    tube([ [ tx + 2, .5, tz - 3.2 ], [ tx + 2.6, .5, tz + 3.2 ] ], .1, '#cfd4cf', {
+      seg: 6
+    });
+    cylinder(x + 7.2, 1.6, z - 4.6, 1.1, 3, '#8fa6b2', {
+      seg: 24
+    });
+    ring(x + 7.2, 3.1, z - 4.6, 1.12, '#dfe7ea', .05, {
+      seg: 6
+    });
+    for (const [px, pz] of [ [ -9.4, -6.9 ], [ 9.4, -6.9 ], [ 9.4, 6.9 ], [ -9.4, 6.9 ] ]) cylinder(x + px, .9, z + pz, .05, 1.6, '#9aa5aa', {
+      seg: 6
+    });
+    const fence = [ [ -9.4, -6.9 ], [ 9.4, -6.9 ], [ 9.4, 6.9 ], [ -9.4, 6.9 ], [ -9.4, -6.9 ] ];
+    for (let k = 1; k < fence.length; k++) for (const hy of [ .6, 1.1, 1.55 ]) bar([ x + fence[k - 1][0], hy, z + fence[k - 1][1] ], [ x + fence[k][0], hy, z + fence[k][1] ], .014, '#b9c3c7', {
+      seg: 4
+    });
+  }
   function flowMeterScene(x, z) {
     pad(x, z, 2.9);
     cylinder(x, .91, z, .68, 1.26, '#7d9baa', {
@@ -1577,10 +1659,10 @@
       alpha: .22
     });
   }
-  const casetaIds = [ 'a0', 'a1', 'a2', 'a3', 'a4', 'b0', 'b1', 'b2', 'b3', 'b4', 'sr' ];
-  const casetaCounts = [ 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 6 ];
+  const casetaIds = [ 'a0', 'a1', 'a2', 'a3', 'a4', 'b0', 'b1', 'b2', 'b3', 'b4' ];
+  const casetaCounts = [ 6, 6, 6, 6, 6, 5, 5, 5, 5, 5 ];
   const casetaStarts = casetaCounts.map((c, i) => casetaCounts.slice(0, i).reduce((a, b) => a + b, 0));
-  const casetaDataCodes = [ 'CHIPB000', 'CHIPB001', 'CHIPB002', 'CHIPB003', 'CHIPB004', 'CHIPB200', 'CHIPB201', 'CHIPB202', 'CHIPB203', 'CHIPB204', 'PBSRQ005' ];
+  const casetaDataCodes = [ 'CHIPB000', 'CHIPB001', 'CHIPB002', 'CHIPB003', 'CHIPB004', 'CHIPB200', 'CHIPB201', 'CHIPB202', 'CHIPB203', 'CHIPB204' ];
   const casetaLightState = new Float32Array(11).fill(1);
   const casetaLightById = new Map(casetaIds.map((id, i) => [ id, i ]));
   function casetaGlazedQuad(a, b, c, d, color, alpha = .31) {
@@ -1866,7 +1948,7 @@
   config.nodes.forEach(n => {
     const starts = A.map(group => group.length);
     const [, name, type, x, z] = n;
-    if (type === 'tank') tankLabels.push(tank(x, z, name, 0, 1.25, 2.1)); else if (type === 'reservoir') reservoirScene(x, z); else if (type === 'pump') mvRotateBuild(x, z, mvNodeAngle.get(n[0]) || 0, () => pumpCaseta(x, z, name, casetaLightById.get(n[0]))); else if (type === 'meter') flowMeterScene(x, z); else mvRotateBuild(x, z, mvNodeAngle.get(n[0]) || 0, () => facilityScene(x, z, name.toLowerCase().includes('potabilizadora') ? 'potabilizadora' : 'facility'));
+    if (type === 'tank') tankLabels.push(tank(x, z, name, 0, 1.25, 2.1)); else if (type === 'reservoir') reservoirScene(x, z); else if (type === 'pump') mvRotateBuild(x, z, mvNodeAngle.get(n[0]) || 0, () => pumpCaseta(x, z, name, casetaLightById.get(n[0]))); else if (type === 'meter') flowMeterScene(x, z); else if (n[0] === 'sr') mvPotabilizadora(x, z); else mvRotateBuild(x, z, mvNodeAngle.get(n[0]) || 0, () => facilityScene(x, z, name.toLowerCase().includes('potabilizadora') ? 'potabilizadora' : 'facility'));
     const low = [ Infinity, Infinity, Infinity ], high = [ -Infinity, -Infinity, -Infinity ];
     const visible = [];
     for (let group = 0; group < A.length; group++) for (let i = starts[group]; i < A[group].length; i += 13) for (let axis = 0; axis < 3; axis++) {
