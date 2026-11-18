@@ -3,7 +3,7 @@
 (function() {
   const mvSkyPhoto = /[?&]cielo=foto/i.test(location.search);
   const $ = id => document.getElementById(id);
-  const BA_ROAD = [ [ -30, 6 ], [ -40, 4 ], [ -46, 12 ], [ -52, 3 ], [ -57, 13 ], [ -62, 2 ], [ -66, 14 ], [ -71, 3 ], [ -75, 15 ], [ -80, 5 ], [ -84, 16 ] ];
+  const BA_ROAD = [ [ -22.8, -1.5 ], [ -32.4, 0 ], [ -39.6, 3.4 ], [ -43.2, 0 ], [ -45.6, -4.1 ], [ -50.4, -4.1 ], [ -56.4, -.4 ], [ -61.2, 3 ], [ -64.2, 9 ], [ -66, 15 ], [ -72, 19.1 ], [ -81.6, 24.4 ], [ -90.6, 30.4 ] ];
   const BA_WELLS = (() => {
     const list = [ [ 'BAPZ0001', 'Pozo 1' ], [ 'BAPZ0002', 'Pozo 2' ], [ 'BAPZ0004', 'Pozo 4' ], [ 'BAPZ0005', 'Pozo 5' ], [ 'BAPZ0006', 'Pozo 6' ], [ 'BAPZ0008', 'Pozo 8' ], [ 'BAPZ0010', 'Pozo 10' ], [ 'BAPZ0013', 'Pozo 13' ], [ 'BAPZ0014', 'Pozo 14' ], [ 'BAPZ0017', 'Pozo 17' ], [ 'BAPZ0018', 'Pozo 18' ], [ 'BAPZ0019', 'Pozo 19' ], [ 'BAPZ019B', 'Pozo 19 BIS' ], [ 'BAPZ0025', 'Pozo 25' ], [ 'BAPZ0028', 'Pozo 28' ], [ 'BAPZ0030', 'Pozo 30' ], [ 'BAPZ0033', 'Pozo 33' ], [ 'BAPZ0039', 'Pozo 39' ], [ 'BAPZ0040', 'Pozo Galería 4' ] ], L = [ 0 ];
     for (let i = 1; i < BA_ROAD.length; i++) L.push(L[i - 1] + Math.hypot(BA_ROAD[i][0] - BA_ROAD[i - 1][0], BA_ROAD[i][1] - BA_ROAD[i - 1][1]));
@@ -19,8 +19,8 @@
   })();
   const config = {
     title: 'Sistema Buenos Aires',
-    nodes: [ [ 'ba00', 'Cisterna Santa Catarina', 'facility', -24, 6, 'BATOTAL' ], ...BA_WELLS, [ 'mo', 'Morteros', 'facility', -10, 16, 'BACEM001' ], [ 'vp', 'Valle Poniente', 'meter', 6, 16, 'VALLEP01' ], [ 'dt', 'Daltile', 'meter', 22, 16, 'MMDT001' ], [ 'ph', 'Parshall Huasteca', 'meter', -10, -4, 'PAHU0001' ], [ 'lq', 'Las Quintas', 'meter', 6, -4, 'MAFLSC02' ], [ 'ho', 'Horcones', 'meter', 22, -4, 'MMH001' ] ],
-    lines: [ [ 'ba00', 'mo' ], [ 'mo', 'vp' ], [ 'vp', 'dt' ], [ 'ba00', 'ph' ], [ 'ph', 'lq' ], [ 'lq', 'ho' ] ]
+    nodes: [ [ 'ba00', 'Cisterna Santa Catarina', 'facility', -27.6, -11, 'BATOTAL' ], ...BA_WELLS, [ 'mo', 'Morteros', 'facility', -33, 5.4, 'BACEM001' ], [ 'vp', 'Valle Poniente', 'meter', -6, 6, 'VALLEP01' ], [ 'dt', 'Daltile', 'meter', 10, 6, 'MMDT001' ], [ 'ph', 'Parshall Huasteca', 'meter', -10, -11, 'PAHU0001' ], [ 'lq', 'Las Quintas', 'meter', 6, -11, 'MAFLSC02' ], [ 'ho', 'Horcones', 'meter', 22, -11, 'MMH001' ] ],
+    lines: [ [ 'ba00', 'vp' ], [ 'vp', 'dt' ], [ 'ba00', 'ph' ], [ 'ph', 'lq' ], [ 'lq', 'ho' ] ]
   };
   const mvNodeAngle = new Map, MV_PUMP_LANE = 6.2, MV_PIPE_LANE = 5.45;
   const nodeById = new Map(config.nodes.map((node, index) => [ node[0], {
@@ -1067,13 +1067,26 @@
     const t = Math.min(1, Math.max(0, (value - a) / (b - a)));
     return t * t * (3 - 2 * t);
   };
+  const baValley = (x, z) => {
+    let rd = 1e9;
+    for (let i = 1; i < BA_ROAD.length; i++) {
+      const a = BA_ROAD[i - 1], b = BA_ROAD[i], dx = b[0] - a[0], dz = b[1] - a[1], q = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz)));
+      rd = Math.min(rd, Math.hypot(x - a[0] - dx * q, z - a[1] - dz * q));
+    }
+    return Math.exp(-Math.pow(rd / 9, 2));
+  };
   const baSierra = (x, z) => {
     if (x > -30) return 0;
-    const t = smoothTerrain(30, 128, -x), lat = 1 - smoothTerrain(70, 120, Math.abs(z - 8));
+    const t = smoothTerrain(26, 96, -x), lat = 1 - smoothTerrain(70, 120, Math.abs(z - 8));
     const ridges = Math.pow(Math.abs(Math.sin(x * .16 + z * .11 + terrainNoise(x * .03, z * .03) * 2.2)), 1.6);
     const folds = terrainNoise(x * .06 + 3.1, z * .05 - 7.2);
-    const road = Math.exp(-Math.pow((z - 8) / 9, 2)) * smoothTerrain(30, 60, -x);
-    return Math.max(0, (36 * Math.pow(t, 1.25) + 7 * t * ridges + 4 * t * (folds - .5)) * (1 - .45 * road)) * lat;
+    let rd = 1e9;
+    for (let i = 1; i < BA_ROAD.length; i++) {
+      const a = BA_ROAD[i - 1], b = BA_ROAD[i], dx = b[0] - a[0], dz = b[1] - a[1], q = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz)));
+      rd = Math.min(rd, Math.hypot(x - a[0] - dx * q, z - a[1] - dz * q));
+    }
+    const road = Math.exp(-Math.pow(rd / 8.5, 2)) * smoothTerrain(26, 40, -x);
+    return Math.max(0, (34 * Math.pow(t, .95) + 9 * t * ridges + 4 * t * (folds - .5)) * (1 - .8 * road)) * lat;
   };
   const sillaRelief = (x, z) => {
     const towardWest = smoothTerrain(40, 64, -x);
@@ -1180,7 +1193,7 @@
     const dry = terrainNoise(x * .11 - 14, z * .1 + 21);
     const altitude = smoothTerrain(15, 38, height);
     const grass = [ .13 + .09 * moss + .042 * dry + .032 * altitude, .29 + .12 * moss - .025 * altitude + .018 * dry, .11 + .052 * moss + .004 * altitude ];
-    const baH = baSierra(x, z), rockBlend = smoothTerrain(2.5, 12, baH) * (1 - .55 * Math.exp(-Math.pow((z - 8) / 6, 2)) * (1 - smoothTerrain(16, 26, baH)));
+    const baH = baSierra(x, z), rockBlend = smoothTerrain(1.6, 7, baH) * (1 - .85 * baValley(x, z));
     const strata = .8 + .26 * Math.abs(Math.sin(x * .16 + z * .11 + terrainNoise(x * .03, z * .03) * 2.2)) + .08 * terrainNoise(x * .23 + z * .075, z * .11 - 4);
     const rock = [ (.58 + .07 * dry) * strata, (.45 + .05 * moss) * strata, (.29 + .04 * dry) * strata ];
     const base = grass.map((value, i) => value * (1 - rockBlend) + rock[i] * rockBlend);
@@ -1339,12 +1352,11 @@
     const A0 = mvAnchor(a), B0 = mvAnchor(b);
     const aa = [ a[0], a[1], a[2], A0[0], A0[1] ], bb = [ b[0], b[1], b[2], B0[0], B0[1] ];
     const BA_PATHS = {
-      'ba00|mo': [ [ -17.5, 7 ], [ -17.5, 16 ], [ -10, 16 ] ],
-      'mo|vp': [ [ -10, 16 ], [ 6, 16 ] ],
-      'vp|dt': [ [ 6, 16 ], [ 22, 16 ] ],
-      'ba00|ph': [ [ -17.5, 5 ], [ -17.5, -4 ], [ -10, -4 ] ],
-      'ph|lq': [ [ -10, -4 ], [ 6, -4 ] ],
-      'lq|ho': [ [ 6, -4 ], [ 22, -4 ] ]
+      'ba00|vp': [ [ -22.8, -1.5 ], [ -22.8, 6 ], [ -6, 6 ] ],
+      'vp|dt': [ [ -6, 6 ], [ 10, 6 ] ],
+      'ba00|ph': [ [ -21.5, -11 ], [ -10, -11 ] ],
+      'ph|lq': [ [ -10, -11 ], [ 6, -11 ] ],
+      'lq|ho': [ [ 6, -11 ], [ 22, -11 ] ]
     };
     const path = (BA_PATHS[key] || [ [ aa[3], aa[4] ], [ bb[3], bb[4] ] ]).map(p => [ p[0], 1.03, p[1] ]);
     if (b[2] === 'pump' && (key === 'li00|li01' || key === 'li05|li04')) {
@@ -1397,7 +1409,7 @@
         road.push([ x, yOf(x, z), z ]);
       }
     }
-    const roadIn = [ [ -26, 1.03, 6 ], [ -30, yOf(-30, 6), 6 ] ];
+    const roadIn = [ [ -22.8, 1.03, -8.2 ], [ -22.8, 1.03, -1.5 ] ];
     mvPipeJobs.push({
       parts: [ roadIn.concat(road.slice(1)) ],
       r: .26,
@@ -3341,7 +3353,7 @@
     const points = mvCameraBounds();
     return (Math.min(...points.map(p => p[axis])) + Math.max(...points.map(p => p[axis]))) / 2;
   });
-  const MV_AROUND_PATH = [ [ 22, -4 ], [ 6, -4 ], [ -10, -4 ], [ -24, 6 ], [ -40, 6 ], [ -56, 8 ], [ -70, 9 ], [ -56, 8 ], [ -24, 6 ], [ -10, 16 ], [ 6, 16 ], [ 22, 16 ] ];
+  const MV_AROUND_PATH = [ [ 22, -11 ], [ 6, -11 ], [ -10, -11 ], [ -27.6, -11 ], [ -33, 2 ], [ -45, -2 ], [ -60, 4 ], [ -68, 17 ], [ -82, 25 ], [ -68, 17 ], [ -50, -3 ], [ -30, 0 ], [ -6, 6 ], [ 10, 6 ] ];
   const MV_AROUND_LEN = (() => {
     const L = [ 0 ];
     for (let i = 1; i < MV_AROUND_PATH.length; i++) L.push(L[i - 1] + Math.hypot(MV_AROUND_PATH[i][0] - MV_AROUND_PATH[i - 1][0], MV_AROUND_PATH[i][1] - MV_AROUND_PATH[i - 1][1]));
@@ -3407,19 +3419,19 @@
   function mvLakePose(t) {
     const pb1 = pointNodes.get('ba00') || [ 0, 0, 0, -24, 6 ];
     const K = [ {
-      e: [ -2, 40, 58 ],
-      l: [ -58, 8, 8 ]
+      e: [ 0, 42, 52 ],
+      l: [ -58, 8, 10 ]
     }, {
-      e: [ -18, 30, 40 ],
-      l: [ -62, 10, 8 ]
+      e: [ -30, 34, 54 ],
+      l: [ -72, 10, 20 ]
     }, {
-      e: [ -34, 26, 30 ],
-      l: [ -70, 14, 8 ]
+      e: [ -44, 26, 40 ],
+      l: [ -62, 8, 4 ]
     }, {
-      e: [ -46, 28, 26 ],
-      l: [ -78, 16, 10 ]
+      e: [ -26, 24, 22 ],
+      l: [ -48, 6, -2 ]
     }, {
-      e: [ -4, 18, 26 ],
+      e: [ -6, 18, 12 ],
       l: [ pb1[3], 2, pb1[4] ]
     } ];
     const u = Math.max(0, Math.min(1, t)) * (K.length - 1), i = Math.min(K.length - 2, Math.floor(u)), f = u - i;
