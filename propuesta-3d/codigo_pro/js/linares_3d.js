@@ -1573,6 +1573,11 @@ void main(){
     const key = start + '|' + end;
     const mvAnchor = n => { if (n[2] !== 'pump') return [n[3], n[4]]; const g = mvNodeAngle.get(n[0]) || 0; return [n[3] - Math.sin(g) * MV_PIPE_LANE, n[4] + Math.cos(g) * MV_PIPE_LANE]; }; const A0 = mvAnchor(a), B0 = mvAnchor(b); const aa = [a[0], a[1], a[2], A0[0], A0[1]], bb = [b[0], b[1], b[2], B0[0], B0[1]];
     const path = ((a, b) => key === 'li00|li01' ? [[a[3], 1.03, a[4]], [a[3] + 1.2, 1.03, a[4] - 4.6], [b[3] + 5.2, 1.03, b[4] + .4], [b[3], 1.03, b[4]]] : key === 'li03|li04a' ? [[a[3], 1.03, a[4]], [a[3] - 4.4, 1.03, a[4] + 1.4], [b[3], 1.03, b[4]]] : [[a[3], 1.03, a[4]], [b[3], 1.03, b[4]]])(aa, bb);
+    /* la tubería llega a la caseta en línea recta por su carril (sin cruzar la caseta en diagonal) */
+    if (b[2] === 'pump' && (key === 'li00|li01' || key === 'li05|li04')) {
+      const g = mvNodeAngle.get(b[0]) || 0, c = Math.cos(g), sn = Math.sin(g), k = ((a[3] - b[3]) * c + (a[4] - b[4]) * sn) >= 0 ? 10 : -10;
+      path.splice(key === 'li00|li01' ? 2 : 1, key === 'li00|li01' ? 1 : 0, [B0[0] + c * k, 1.03, B0[1] + sn * k]);
+    }
     const meta = { nodes: path, source: a[1], target: b[1] };
     pipeDefs.push(meta);
   }
@@ -1806,8 +1811,6 @@ void main(){
       const gx = 32.0 + i * .2;
       box(gx, 1.63, 6.3 + i * 8.2, 1.4, .20, 2.2, '#aeb5b5');
     }
-    ribbon([[32.8, 13.0], [30.0, 12.8], [27.6, 12.5]], 2.25, 1.60, .04, '#8e9999');
-    tube([[32.9, 1.08, 14.0], [30.8, 1.07, 13.5], [27.4, 1.04, 13.0]], .32, '#167ab3', { seg: 18, kind: 1 });
     /* MV PRO: la cortina y la toma se ajustan a la presa más chica */
     for (let g = 0; g < A.length; g++) { const arr = A[g]; for (let i = mvDamStart[g]; i < arr.length; i += 13) { arr[i] = 104 + (arr[i] - 104) * .66; arr[i + 2] = 14 + (arr[i + 2] - 14) * .78; } }
   }
