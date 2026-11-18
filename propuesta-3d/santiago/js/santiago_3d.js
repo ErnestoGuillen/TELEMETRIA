@@ -1136,7 +1136,13 @@
       const localTexture = 1.75 * gradualSlope * (subtleGround - .5);
       height += roundedRelief + naturalFolds + ridgeLift + localTexture;
     }
-    height += sillaRelief(x, z);
+    height += sillaRelief(x, z) + sillaRelief(72 - x, z);
+    if (x > 106) {
+      const d = Math.abs(z + 16), entry = smoothTerrain(34, 43, x - 72);
+      const floor = -.05 + Math.max(0, x - 132) * .02;
+      const open = 1 - smoothTerrain(4.5, 9.5, d);
+      if (height > floor) height = floor + (height - floor) * (1 - open * entry);
+    }
     if (x > 28 && x < 128 && z > -32 && z < 72) {
       const shore = lakeDistance(x, z);
       if (shore <= 0) return .43 - .89 * smoothTerrain(0, 3.7, -shore);
@@ -1375,6 +1381,21 @@
       def: def
     });
   }
+  const saCutZ = -16, saCutY = x => terrainHeight(x, saCutZ) + 1.03, saCutPath = [];
+  for (let x = 190; x >= 98; x -= 4) saCutPath.push([ x, saCutY(x), saCutZ ]);
+  saCutPath.push([ 86, 1.03, saCutZ ], [ 72, 1.03, saCutZ ], [ 70, 1.03, saCutZ - 2 ], [ 70, 1.03, -44 ]);
+  for (let x = 112; x <= 176; x += 7) {
+    const g = terrainHeight(x, saCutZ), y = saCutY(x);
+    box(x, (g + y - .31) / 2, saCutZ, .5, Math.max(.05, y - .31 - g), .9, '#b7b2a6');
+  }
+  mvPipeJobs.push({
+    parts: [ saCutPath ],
+    r: .31,
+    def: {
+      source: 'P.P. La Boca',
+      target: 'P.P. La Boca'
+    }
+  });
   function pumpStationScene(x, z) {
     pumpUnit(x, z, 4);
   }
