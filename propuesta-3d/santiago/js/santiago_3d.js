@@ -1137,10 +1137,10 @@
       height += roundedRelief + naturalFolds + ridgeLift + localTexture;
     }
     height += sillaRelief(x, z) + sillaRelief(72 - x, z);
-    if (x > 106) {
-      const d = Math.abs(z + 16), entry = smoothTerrain(34, 43, x - 72);
-      const floor = -.05 + Math.max(0, x - 132) * .02;
-      const open = 1 - smoothTerrain(4.5, 9.5, d);
+    if (x > 102) {
+      const d = Math.abs(z - 11), entry = smoothTerrain(30, 38, x - 72);
+      const floor = -.05 + Math.max(0, x - 128) * .018;
+      const open = 1 - smoothTerrain(6.5, 13.5, d);
       if (height > floor) height = floor + (height - floor) * (1 - open * entry);
     }
     if (x > 28 && x < 128 && z > -32 && z < 72) {
@@ -1381,9 +1381,23 @@
       def: def
     });
   }
-  const saCutZ = -16, saCutY = x => terrainHeight(x, saCutZ) + 1.03, saCutPath = [];
-  for (let x = 190; x >= 98; x -= 4) saCutPath.push([ x, saCutY(x), saCutZ ]);
-  saCutPath.push([ 86, 1.03, saCutZ ], [ 72, 1.03, saCutZ ], [ 70, 1.03, saCutZ - 2 ], [ 70, 1.03, -44 ]);
+  const saCutZ = 11, saCutY = x => terrainHeight(x, saCutZ) + 1.03, saCutPath = [];
+  for (let x = 190; x >= 110; x -= 4) saCutPath.push([ x, saCutY(x), saCutZ ]);
+  {
+    const st = saCutPath[saCutPath.length - 1], dx = lakeCenter[0] - st[0], dz = lakeCenter[1] - st[2], L = Math.hypot(dx, dz) || 1;
+    let e = [ st[0], st[2] ];
+    for (let k = 1; k < 80; k++) {
+      const q = [ st[0] + dx / L * k * .5, st[2] + dz / L * k * .5 ];
+      e = q;
+      if (lakeDistance(q[0], q[1]) < -1.6) break;
+    }
+    const n = Math.max(2, Math.ceil(Math.hypot(e[0] - st[0], e[1] - st[2])));
+    for (let k = 1; k <= n; k++) {
+      const x = st[0] + (e[0] - st[0]) * k / n, z = st[2] + (e[1] - st[2]) * k / n;
+      saCutPath.push([ x, Math.max(1.62, terrainHeight(x, z) + 1.03), z ]);
+    }
+    saCutPath.push([ e[0] + dx / L * 1.2, .55, e[1] + dz / L * 1.2 ]);
+  }
   for (let x = 112; x <= 176; x += 7) {
     const g = terrainHeight(x, saCutZ), y = saCutY(x);
     box(x, (g + y - .31) / 2, saCutZ, .5, Math.max(.05, y - .31 - g), .9, '#b7b2a6');
