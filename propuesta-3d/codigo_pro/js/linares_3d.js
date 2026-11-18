@@ -10,7 +10,7 @@
       ['li02', 'PB2 Linares', 'pump', 10, 10.6, 'LINPB002'],
       ['li02a', 'PB2A Linares', 'pump', -1.5, 8.2, 'LINPB02A'],
       ['li03', 'PB3 Linares', 'pump', -13, 4.4, 'LINPB003'],
-      ['li04a', 'Tanque Garrapatas', 'tank', -22, -1.6, 'TGRP0001'],
+      ['li04a', 'Garrapatas', 'tank', -22, -1.6, 'TGRP0001'],
       ['li05', 'Rompedor de carga', 'facility', -30, -0.8, 'ROMPE001'],
       ['li04', 'PB4 Linares', 'pump', -38.5, 2.4, 'LINPB004']
     ],
@@ -1228,6 +1228,60 @@ void main(){
     ring(x, .35, z, R * 1.24, '#94b6c2', .045, { seg: 6, em: .11 });
     return { x, y: yTop, z, name, baseY: .52, height: H, radius: R, levelId: id, screenY, screenZ: screenSurface, screenW: displayW, screenH: displayH, wallRadius, surfaceGap };
   }
+  function mvScaleBuild(x, z, sx, sz, fn) {
+    const st = A.map(g => g.length); fn();
+    for (let g = 0; g < A.length; g++) {
+      const arr = A[g];
+      for (let i = st[g]; i < arr.length; i += 13) {
+        arr[i] = x + (arr[i] - x) * sx; arr[i + 2] = z + (arr[i + 2] - z) * sz;
+        const nx = arr[i + 3] / sx, ny = arr[i + 4], nz = arr[i + 5] / sz, nl = Math.hypot(nx, ny, nz) || 1;
+        arr[i + 3] = nx / nl; arr[i + 4] = ny / nl; arr[i + 5] = nz / nl;
+      }
+    }
+  }
+  function mvFrustum(cx, cz, y0, y1, r0, r1, col, seg = 56, g = 0) {
+    const sl = (r0 - r1) / Math.max(.001, y1 - y0);
+    for (let i = 0; i < seg; i++) {
+      const a = i / seg * Math.PI * 2, b = (i + 1) / seg * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a), cb = Math.cos(b), sb = Math.sin(b);
+      const na = norm([ca, sl, sa]), nb = norm([cb, sl, sb]);
+      const p = [cx + r0 * ca, y0, cz + r0 * sa], q = [cx + r0 * cb, y0, cz + r0 * sb], P = [cx + r1 * ca, y1, cz + r1 * sa], Q = [cx + r1 * cb, y1, cz + r1 * sb];
+      tri(g, p, na, q, nb, Q, nb, col, 0, y0, 0, 1); tri(g, p, na, Q, nb, P, na, col, 0, y0, 0, 1);
+    }
+  }
+  function mvAnnulus(cx, cz, y, r0, r1, col, seg = 56) {
+    const up = [0, 1, 0];
+    for (let i = 0; i < seg; i++) {
+      const a = i / seg * Math.PI * 2, b = (i + 1) / seg * Math.PI * 2;
+      const p = [cx + r0 * Math.cos(a), y, cz + r0 * Math.sin(a)], q = [cx + r0 * Math.cos(b), y, cz + r0 * Math.sin(b)], P = [cx + r1 * Math.cos(a), y, cz + r1 * Math.sin(a)], Q = [cx + r1 * Math.cos(b), y, cz + r1 * Math.sin(b)];
+      tri(0, p, up, Q, up, q, up, col, 0, y, 0, 1); tri(0, p, up, P, up, Q, up, col, 0, y, 0, 1);
+    }
+  }
+  function mvSmallPresa(x, z, name) {
+    const id = Math.max(0, tankSpecs.findIndex(s => s.name === name));
+    const RX = 5.8, RZ = 3.9, H = 1.25, mw = H * .9, top = .52 + H + .12;
+    mvScaleBuild(x, z, RX, RZ, () => {
+      mvFrustum(x, z, -.08, top - .25, 1.55, 1.12, '#7f8d5f', 64);
+      mvFrustum(x, z, top - .25, top, 1.12, 1.065, '#bdb8aa', 64);
+      mvAnnulus(x, z, top, .99, 1.065, '#dcd8cc', 64);
+      cylinder(x, (top + .5) / 2, z, .99, top - .5, '#8f9a94', { seg: 64, caps: false });
+      cylinder(x, .5, z, .99, .04, '#24485c', { seg: 64 });
+      cylinder(x, .52 + mw / 2, z, .985, mw, '#0a5f9e', { seg: 64, kind: 5, em: 1.0, caps: false, levelId: id });
+      cylinder(x, .52 + mw, z, .985, .04, '#3f93cf', { seg: 64, kind: 6, em: 1.12, levelId: id });
+    });
+    const gx = x - RX * .55, gz = z + RZ * .86;
+    bar([gx, .5, gz], [gx, .52 + mw + .25, gz], .05, '#e8eef0', { seg: 6 });
+    for (let k = 0; k <= 5; k++) { const y = .52 + mw * k / 5; bar([gx, y, gz], [gx + .32, y, gz + .02], k % 5 === 0 ? .03 : .02, k % 5 === 0 ? '#ff9c2a' : '#ffffff', { seg: 5, em: .4 }); }
+    const vx = x + RX * .98, vz = z;
+    box(vx, (top - .3) / 2 + .1, vz, .9, top - .3, 1.5, '#b4b0a3');
+    box(vx + .15, top - .38, vz, .6, .08, 1.1, '#5d7b8a');
+    box(x - RX * .2, top + .55, z - RZ * 1.02, 1.5, 1.0, 1.1, '#c9cec9');
+    box(x - RX * .2, top + 1.1, z - RZ * 1.02, 1.7, .1, 1.3, '#62737b');
+    box(x - RX * .2, top + .5, z - RZ * 1.02 + .56, .5, .7, .04, '#3e5a6a');
+    for (let k = 0; k < 18; k++) { const a = k / 18 * Math.PI * 2, px = x + Math.cos(a) * RX * 1.035, pz = z + Math.sin(a) * RZ * 1.035; cylinder(px, top + .35, pz, .03, .7, '#a8b3b7', { seg: 5 }); }
+    const rail = []; for (let k = 0; k <= 72; k++) { const a = k / 72 * Math.PI * 2; rail.push([x + Math.cos(a) * RX * 1.035, top + .68, z + Math.sin(a) * RZ * 1.035]); }
+    tube(rail, .025, '#c3ccd0', { seg: 5 });
+    return { x, y: top + .2, z, name, baseY: .52, height: H, radius: RZ * 1.12, levelId: id, screenY: top + .55, screenZ: z + RZ, screenW: 1.68, screenH: 1.1, wallRadius: RZ, surfaceGap: .07 };
+  }
   function orientedCylinder(a, b, r, col, opt = {}) {
     const d = minus(b, a), L = Math.hypot(...d); const t = norm(d); const ref = Math.abs(t[1]) > .93 ? [1, 0, 0] : [0, 1, 0], u = norm(cross(ref, t)), v = norm(cross(t, u)), S = opt.seg || 16; const g = opt.g || 0, em = opt.em || 0, alpha = opt.alpha === undefined ? 1 : opt.alpha, kind = opt.kind || 0, levelId = opt.levelId === undefined ? 0 : opt.levelId;
     for (let i = 0; i < S; i++) { const theta = i / S * Math.PI * 2, beta = (i + 1) / S * Math.PI * 2; let n = plus(vscale(u, Math.cos(theta)), vscale(v, Math.sin(theta))), N = plus(vscale(u, Math.cos(beta)), vscale(v, Math.sin(beta))); const p = plus(a, vscale(n, r)), q = plus(a, vscale(N, r)), P = plus(b, vscale(n, r)), Q = plus(b, vscale(N, r)); tri(g, p, n, q, N, Q, N, col, em, levelId, kind, alpha); tri(g, p, n, Q, N, P, n, col, em, levelId, kind, alpha); if (opt.caps !== false) { tri(g, a, vscale(t, -1), q, vscale(t, -1), p, vscale(t, -1), col, em, levelId, kind, alpha); tri(g, b, t, P, t, Q, t, col, em, levelId, kind, alpha) } }
@@ -2016,7 +2070,7 @@ void main(){
   config.nodes.forEach(n => {
     const starts = A.map(group => group.length);
     const [, name, type, x, z] = n;
-    if (type === 'tank') tankLabels.push(tank(x, z, name, 0, 1.40));
+    if (type === 'tank') tankLabels.push(mvSmallPresa(x, z, name));
     else if (type === 'reservoir') reservoirScene(x, z);
     else if (type === 'pump') mvRotateBuild(x, z, mvNodeAngle.get(n[0]) || 0, () => pumpCaseta(x, z, name, casetaLightById.get(n[0])));
     else if (type === 'meter') flowMeterScene(x, z);
@@ -2323,7 +2377,7 @@ void main(){
       const value = node && node[5] ? live.get(node[5]) : null;
       const level = value && value.level !== null && Number.isFinite(Number(value.level)) ? Number(value.level) : null;
       const maximum = value && value.maximum !== null && Number.isFinite(Number(value.maximum)) ? Number(value.maximum) : null;
-      const modelHeight = 3.2 * 1.40 * .90;
+      const modelHeight = 4.0;
       const normalizedMaximum = maximum !== null && maximum > 25 ? maximum / 100 : maximum;
       const limit = normalizedMaximum !== null && normalizedMaximum > 0 && normalizedMaximum >= level ? normalizedMaximum : modelHeight;
       levelsUniform[i] = level === null || level <= 0 ? 0 : Math.max(0, Math.min(.94, level / limit * .90));
@@ -2599,7 +2653,7 @@ void main(){
     const g = live.get('TGRP0001');
     const level = g && g.level !== null && Number.isFinite(Number(g.level)) ? Number(g.level) : null;
     garrapatasLevel.textContent = level === null ? 'N/D' : fmt(level) + ' m';
-    garrapatasLevel.title = level === null ? 'Sin lectura válida de Garrapatas' : 'Nivel del Tanque Garrapatas' + (g.updated ? ' · ' + g.updated : '');
+    garrapatasLevel.title = level === null ? 'Sin lectura válida de Garrapatas' : 'Nivel de Garrapatas' + (g.updated ? ' · ' + g.updated : '');
     for (const n of config.nodes) {
       const f = flowLabels.get(n[0]);
       if (f) { const s = getData(n); f.value.textContent = s && s.flow != null ? fmt(s.flow, 0) + ' LPS' : 'N/D'; }
@@ -2693,8 +2747,14 @@ void main(){
   /* ===== MV PRO: navegación igual que Monterrey V / Anillo TV ===== */
   let mvZoomGoal = null, mvFree = false, mvFreeMode = 'move';
   const mvTour = { rate: 1 };
-  const mvAround = { elapsed: 0, zoom: 1, pitch: 1.20 };
+  const mvAround = { elapsed: 0, zoom: 1, pitch: 1.02, yaw0: 1.44 };
   const MV_CENTER = [0, 1, 2].map(axis => { const points = mvCameraBounds(); return (Math.min(...points.map(p => p[axis])) + Math.max(...points.map(p => p[axis]))) / 2; });
+  const MV_AROUND_CENTER = (() => { const ns = config.nodes.filter(n => n[2] !== 'reservoir'); return [ns.reduce((a, n) => a + n[3], 0) / ns.length + 6, 2.2, ns.reduce((a, n) => a + n[4], 0) / ns.length]; })();
+  const MV_AROUND_PATH = ['li01', 'li02', 'li02a', 'li03', 'li04a', 'li05', 'li04'].map(id => config.nodes.find(n => n[0] === id)).filter(Boolean).map(n => [n[3], n[4]]);
+  function mvAroundTarget(e) {
+    const u = (.5 - .5 * Math.cos(e * .03)) * (MV_AROUND_PATH.length - 1), i = Math.min(MV_AROUND_PATH.length - 2, Math.floor(u)), f = u - i, a = MV_AROUND_PATH[i], b = MV_AROUND_PATH[i + 1];
+    return [a[0] + (b[0] - a[0]) * f, 2.2, a[1] + (b[1] - a[1]) * f];
+  }
   const MV_LAKE_SECONDS = 22;
   const MV_STOP_SECONDS = 9;
   const MV_RETURN_SECONDS = 9;
@@ -2710,7 +2770,8 @@ void main(){
     const pump = n[2] === 'pump', tank = n[2] === 'tank';
     const height = pump ? 3.0 : tank ? 2.7 : 1.75;
     const angle = tank ? 0 : (mvNodeAngle.get(id) || 0), c = Math.cos(angle), s = Math.sin(angle);
-    return { eye: [n[3] + 8 * c - 24.8 * s, pump ? 15.6 : tank ? 13.3 : 12.8, n[4] + 8 * s + 24.8 * c], look: [n[3], height, n[4] + .2] };
+    if (tank) return { eye: [n[3] - 15, 13.5, n[4] + 19], look: [n[3], 1.2, n[4]] };
+    return { eye: [n[3] + 8 * c - 24.8 * s, pump ? 15.6 : 12.8, n[4] + 8 * s + 24.8 * c], look: [n[3], height, n[4] + .2] };
   }
   /* Recorrido de la presa: toma aérea, descenso por la orilla, vuelo rasante sobre el agua
      hacia la cortina y salida directa rumbo a PB1 */
@@ -2732,12 +2793,12 @@ void main(){
   }
   /* 1 = cámara libre del recorrido de la presa; 0 = encuadre automático de las casetas */
   function mvCineFreeWeight() {
-    if (state.auto !== 'spin' && state.auto !== 'presentation') return 0;
+    if (state.auto !== 'spin') return 0;
     const t = mvCine.clock;
     return t < MV_LAKE_SECONDS ? mvEase(t / 2.5) : 1 - mvEase((t - MV_LAKE_SECONDS) / 3.1);
   }
   function mvCinePose(time) {
-    if (time < MV_LAKE_SECONDS) { const p = time / MV_LAKE_SECONDS; return { ...mvLakePose(.5 * p + .5 * mvEase(p)), index: 0, progress: p }; }
+    if (time < MV_LAKE_SECONDS) { const p = time / MV_LAKE_SECONDS; return { ...(state.auto === 'presentation' ? mvLakePose(.1 * p) : mvLakePose(.5 * p + .5 * mvEase(p))), index: 0, progress: p }; }
     const routeEnd = MV_LAKE_SECONDS + MV_ROUTE_IDS.length * MV_STOP_SECONDS;
     if (time < routeEnd) {
       const elapsed = time - MV_LAKE_SECONDS;
@@ -2773,7 +2834,7 @@ void main(){
   function mvStartAround() {
     mvSetFree(false);
     if (state.auto === 'presentation') endPresentation();
-    mvAround.elapsed = 0; mvAround.zoom = 1; mvAround.pitch = 1.20;
+    mvLeaveOverview(); mvOverviewFit = false; mvFrameDistance = 0; mvAround.elapsed = 0; mvAround.zoom = 1; mvAround.pitch = 1.02; mvAround.yaw0 = state.yaw;
     state.auto = 'around'; syncButtons(); mvSyncNav();
   }
   function mvTickNav(dt) {
@@ -2799,12 +2860,13 @@ void main(){
       mvSetPose(mvCine.eye, mvCine.look);
     } else if (state.auto === 'around') {
       mvAround.elapsed += dt * mvTour.rate;
-      const angle = 1.50 + .64 * Math.sin(mvAround.elapsed * .095 - .55);
-      state.yaw = angle;
-      state.pitch += (mvAround.pitch - state.pitch) * (1 - Math.exp(-dt * 2.2));
-      const smooth = 1 - Math.exp(-dt * 2.0);
-      for (let i = 0; i < 3; i++)state.target[i] += (MV_CENTER[i] - state.target[i]) * smooth;
-      state.dist += (80 * mvAround.zoom - state.dist) * (1 - Math.exp(-dt * 2.2));
+      const smooth = 1 - Math.exp(-dt * 1.6);
+      let dy = (1.50 + .95 * Math.sin(mvAround.elapsed * .085)) - state.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+      state.yaw += dy * smooth;
+      state.pitch += (mvAround.pitch - state.pitch) * smooth;
+      const goal = mvAroundTarget(mvAround.elapsed);
+      for (let i = 0; i < 3; i++)state.target[i] += (goal[i] - state.target[i]) * smooth;
+      state.dist += (32 * mvAround.zoom - state.dist) * smooth;
     }
     if (mvZoomGoal !== null) { state.dist += (mvZoomGoal - state.dist) * Math.min(1, dt * 7); if (Math.abs(mvZoomGoal - state.dist) < .05) mvZoomGoal = null; }
   }
@@ -2867,7 +2929,7 @@ void main(){
   }, true);
   let vw = 0, vh = 0, density = 0, lastFrame = performance.now(), qualityFrames = 0, qualityMs = 0;
   const maxSize = Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) || 4096, gl.getParameter(gl.MAX_TEXTURE_SIZE) || 4096);
-  function resize() { const w = Math.max(1, Math.round(canvas.clientWidth)), h = Math.max(1, Math.round(canvas.clientHeight)), dpr = Math.max(1, window.devicePixelRatio || 1); let densityScale = Math.min(mvUltra ? 2.4 : 1.65, (mvUltra ? Math.max(1.5, dpr) : dpr) * state.quality); densityScale = Math.max(.65, Math.min(densityScale, Math.sqrt((mvUltra ? 30000000 : 9500000) / (w * h)), maxSize / w, maxSize / h)); densityScale = Math.max(.55, densityScale * mvMotionScale); canvas.width = Math.max(1, Math.round(w * densityScale)); canvas.height = Math.max(1, Math.round(h * densityScale)); vw = w; vh = h; density = dpr; gl.viewport(0, 0, canvas.width, canvas.height); drawChart(); }
+  function resize() { const w = Math.max(1, Math.round(canvas.clientWidth)), h = Math.max(1, Math.round(canvas.clientHeight)), dpr = Math.max(1, window.devicePixelRatio || 1); const px = w * h, mobile = Math.min(w, h) <= 600 && (window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 600), pref = mvUltra ? Math.max(1.5, dpr) : mobile ? Math.min(dpr, 1.4) : Math.max(dpr, px >= 5500000 ? 1.17 : px >= 3000000 ? 1.44 : 1.76); let densityScale = Math.min(mvUltra ? 2.4 : 2.05, pref * state.quality); densityScale = Math.max(.65, Math.min(densityScale, Math.sqrt((mvUltra ? 30000000 : mobile ? 1700000 : 12000000) / px), maxSize / w, maxSize / h)); densityScale = Math.max(.55, densityScale * mvMotionScale); canvas.width = Math.max(1, Math.round(w * densityScale)); canvas.height = Math.max(1, Math.round(h * densityScale)); vw = w; vh = h; density = dpr; gl.viewport(0, 0, canvas.width, canvas.height); drawChart(); }
   function drawLabels(mat, eye) {
     const tankInfo = tankLabels[0];
     const direction = tankInfo ? Math.hypot(eye[0] - tankInfo.x, eye[2] - tankInfo.z) || 1 : 1;
@@ -2902,9 +2964,9 @@ void main(){
     eye[2] = Math.max(-64, Math.min(88, eye[2]));
     const mvFW = mvCineFreeWeight(), mvFreeEye = [...eye];
     if (mvFW > 0) keepCameraAboveTerrain(mvFreeEye, state.target);
-    if ((state.auto === 'presentation' || state.auto === 'spin' || state.auto === 'around') && mvFW < 1) eye[2] = Math.max(eye[2], state.target[2] + 11);
+    if ((state.auto === 'presentation' || state.auto === 'spin') && mvFW < 1) eye[2] = Math.max(eye[2], state.target[2] + 11);
     let cameraTarget = state.target;
-    if (state.auto === 'spin' || state.auto === 'presentation' || state.auto === 'around' || mvOverviewFit) {
+    if (state.auto === 'spin' || state.auto === 'presentation' || mvOverviewFit) {
       if (mvFW < 1) cameraTarget = mvFitCamera(eye, state.target, dt); else mvFrameDistance = 0;
       if (mvFW > 0) { for (let i = 0; i < 3; i++)eye[i] += (mvFreeEye[i] - eye[i]) * mvFW; cameraTarget = cameraTarget.map((v, i) => v + (state.target[i] - v) * mvFW); }
     }
@@ -2952,7 +3014,9 @@ void main(){
     if (sillaPosition) { sillaLabel.style.left = sillaPosition[0] + 'px'; sillaLabel.style.top = sillaPosition[1] + 'px'; }
     requestAnimationFrame(render);
   }
-  setInterval(() => { if (state.date) $('clockText').textContent = new Date().toLocaleString('es-MX', { timeZone: 'America/Monterrey', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) }, 1000);
+  const mvClockDate = new Intl.DateTimeFormat('es-MX', { timeZone: 'America/Monterrey', day: '2-digit', month: 'short', year: 'numeric' }), mvClockTime = new Intl.DateTimeFormat('es-MX', { timeZone: 'America/Monterrey', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+  const mvClockTick = () => { if (!state.date) return; const d = new Date(); $('clockText').textContent = mvClockDate.format(d).replace(/\./g, '').toUpperCase() + ' · ' + mvClockTime.format(d).replace(/\u202f/g, ' ').toUpperCase(); };
+  mvClockTick(); setInterval(mvClockTick, 1000);
   window.addEventListener('resize', resize, { passive: true });
   window.addEventListener('resize', mvAlertReposition, { passive: true });
   window.addEventListener('visibilitychange', () => { lastFrame = performance.now(); });
@@ -3090,7 +3154,7 @@ void main(){
   }
 
   const mvTrendDirection = d => !Number.isFinite(d) ? null : Number(d.toFixed(2)) > 0 ? 'up' : 'down';
-  const mvTrendDisplay = d => { const dir = mvTrendDirection(d); if (dir === null) return 'SIN DATOS'; const r = Number(d.toFixed(2)); return (dir === 'up' ? '▲ +' : r < 0 ? '▼ −' : '▼ ') + Math.abs(r).toFixed(2) + ' m'; };
+  const mvTrendDisplay = d => { const dir = mvTrendDirection(d); if (dir === null) return 'SIN TENDENCIA'; const r = Number(d.toFixed(2)); return (dir === 'up' ? '▲ +' : r < 0 ? '▼ −' : '▼ ') + Math.abs(r).toFixed(2) + ' m'; };
   const mvLnStyle = document.createElement('style');
   mvLnStyle.textContent = `
     #presentationPanel .presentation-secondary-table{display:none!important}
@@ -3421,8 +3485,15 @@ void main(){
     const b = document.createElement('button'); b.type = 'button'; b.className = (expanded ? 'mv-alert-item ' : 'mv-alert-line ') + 'mv-alert-' + it.type; b.title = 'Localizar ' + it.name + ' en el modelo 3D'; const dot = document.createElement('span'); dot.className = 'mv-alert-pin';
     if (expanded) { const c = document.createElement('span'); c.className = 'mv-alert-item-body'; const hd = document.createElement('span'); hd.className = 'mv-alert-item-title'; const nm = document.createElement('strong'); nm.textContent = it.name; const kd = document.createElement('span'); kd.textContent = mvAlLabels[it.type]; hd.append(nm, kd); const dt = document.createElement('small'); dt.textContent = it.detail; c.append(hd, dt); b.append(dot, c); }
     else { const c = document.createElement('span'); c.className = 'mv-alert-marquee-copy'; const nm = document.createElement('strong'); nm.textContent = it.name; const kd = document.createElement('span'); kd.className = 'mv-alert-label'; kd.textContent = mvAlLabels[it.type]; c.append(nm, kd); b.append(dot, c); }
-    b.addEventListener('click', () => { $('mvAlertsPanel').hidden = true; selectNode(it.id); }); return b;
+    b.addEventListener('click', () => { $('mvAlertsPanel').hidden = true; mvFocusAlert(it.id); }); return b;
   };
+  function mvFocusAlert(id) {
+    const i = config.nodes.findIndex(n => n[0] === id); if (i < 0) return;
+    if (state.auto !== 'presentation') startPresentation();
+    jumpPresentation(i - state.presIndex);
+    state.paused = true; $('presentationPause').textContent = 'Reanudar';
+    syncButtons(); mvAlertReposition();
+  }
   function mvAlTicker() {
     clearTimeout(mvAlTimer); mvAl.classList.remove('is-cycle-open'); const t = $('mvAlertsTicker'); t.replaceChildren();
     if (!mvAlItems.length) { const d = document.createElement('div'); d.className = 'mv-alerts-normal' + (mvAlReceived ? '' : ' is-waiting'); const p = document.createElement('span'); p.className = 'mv-alert-pin'; const x = document.createElement('span'); x.textContent = mvAlReceived ? 'Sin alertas activas' : 'Esperando lecturas de Telemetría'; d.append(p, x); t.appendChild(d); return; }
@@ -3583,5 +3654,5 @@ void main(){
   syncButtons(); resize(); loadData(); mvAlertReposition(); setInterval(loadData, 10000);
   setInterval(() => { if (state.selected && !document.hidden) { const e = nodeById.get(state.selected); if (e) loadHistory(e.data); } }, 60000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) loadData(); });
-  requestAnimationFrame(render);
+  requestAnimationFrame(() => { requestAnimationFrame(render); setTimeout(() => document.documentElement.classList.add('mv-scene-ready'), 400); });
 })();
