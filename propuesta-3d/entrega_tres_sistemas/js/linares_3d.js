@@ -3399,7 +3399,10 @@
     mvAround.elapsed = 0;
     mvAround.zoom = 1;
     mvAround.pitch = 1.02;
-    mvAround.yaw0 = state.yaw;
+    {
+      const y = Math.atan2(Math.sin(state.yaw), Math.cos(state.yaw));
+      mvAround.yaw0 = Math.asin(Math.max(-1, Math.min(1, (y - 1.5) / 1)));
+    }
     {
       const t = state.target, P = MV_AROUND_PATH, total = MV_AROUND_LEN[MV_AROUND_LEN.length - 1];
       let best = 0, bd = 1e9;
@@ -3442,7 +3445,7 @@
       mvAround.elapsed += dt * mvTour.rate;
       const smooth = 1 - Math.exp(-dt * 1.6);
       const e = mvAround.elapsed, ramp = mvEase(e / 4);
-      let dy = mvAround.yaw0 + e * .085 - state.yaw;
+      let dy = 1.5 + 1 * Math.sin(e * .07 + mvAround.yaw0) - state.yaw;
       dy = Math.atan2(Math.sin(dy), Math.cos(dy));
       state.yaw += dy * smooth;
       state.pitch += (1.02 + .09 * Math.sin(e * .052) - state.pitch) * smooth;

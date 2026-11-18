@@ -2837,7 +2837,7 @@ void main(){
   function mvStartAround() {
     mvSetFree(false);
     if (state.auto === 'presentation') endPresentation();
-    mvLeaveOverview(); mvOverviewFit = false; mvFrameDistance = 0; mvAround.elapsed = 0; mvAround.zoom = 1; mvAround.pitch = 1.02; mvAround.yaw0 = state.yaw; { const t = state.target, P = MV_AROUND_PATH, total = MV_AROUND_LEN[MV_AROUND_LEN.length - 1]; let best = 0, bd = 1e9; for (let k = 0; k <= 40; k++) { const q = mvAroundTargetAt(k / 40 * total); const dd = Math.hypot(q[0] - t[0], q[2] - t[2]); if (dd < bd) { bd = dd; best = k / 40; } } mvAround.phase = Math.acos(Math.max(-1, Math.min(1, 1 - 2 * best))); }
+    mvLeaveOverview(); mvOverviewFit = false; mvFrameDistance = 0; mvAround.elapsed = 0; mvAround.zoom = 1; mvAround.pitch = 1.02; { const y = Math.atan2(Math.sin(state.yaw), Math.cos(state.yaw)); mvAround.yaw0 = Math.asin(Math.max(-1, Math.min(1, (y - 1.50) / 1.0))); } { const t = state.target, P = MV_AROUND_PATH, total = MV_AROUND_LEN[MV_AROUND_LEN.length - 1]; let best = 0, bd = 1e9; for (let k = 0; k <= 40; k++) { const q = mvAroundTargetAt(k / 40 * total); const dd = Math.hypot(q[0] - t[0], q[2] - t[2]); if (dd < bd) { bd = dd; best = k / 40; } } mvAround.phase = Math.acos(Math.max(-1, Math.min(1, 1 - 2 * best))); }
     state.auto = 'around'; syncButtons(); mvSyncNav();
   }
   function mvTickNav(dt) {
@@ -2865,7 +2865,7 @@ void main(){
       mvAround.elapsed += dt * mvTour.rate;
       const smooth = 1 - Math.exp(-dt * 1.6);
       const e = mvAround.elapsed, ramp = mvEase(e / 4);
-      let dy = (mvAround.yaw0 + e * .085) - state.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+      let dy = (1.50 + 1.0 * Math.sin(e * .07 + mvAround.yaw0)) - state.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
       state.yaw += dy * smooth;
       state.pitch += ((1.02 + .09 * Math.sin(e * .052)) - state.pitch) * smooth;
       const goal = mvAroundTarget(e);
