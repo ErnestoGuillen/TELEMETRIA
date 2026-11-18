@@ -112,6 +112,6 @@ header('Expires: 0');
     <div id="labels"></div>
     <div class="ui" id="notice"><div class="notice-title">WebGL no disponible</div><div class="notice-text">Este dispositivo o navegador no pudo iniciar la vista 3D. Prueba con Chrome o Safari actualizado y verifica que WebGL esté disponible.</div></div>
 
-   <script src="/Telemetria/js/anillo_tv_3d.js?v=20261118-4" defer></script>
+   <script src="/Telemetria/js/anillo_tv_3d.js?v=20261118-5" defer></script>
   </body>
 </html>

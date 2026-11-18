@@ -3573,7 +3573,7 @@
   const systemZoneItems = [ {
     id: 'china',
     title: 'Sistema China',
-    detail: 'Pendiente de desarrollo'
+    detail: 'Sierra El Fraile · 19 pozos'
   }, {
     id: 'buenosaires',
     title: 'Sistema Buenos Aires',
@@ -3605,7 +3605,8 @@
       linares: '/LINARES3D',
       cuchillo: '/CUCHILLO3D',
       santiago: '/SANTIAGO3D',
-      buenosaires: '/BUENOSAIRES3D'
+      buenosaires: '/BUENOSAIRES3D',
+      china: '/CHINA3D'
     };
     if (routes[id]) window.location.assign(routes[id]);
   }
@@ -3614,7 +3615,7 @@
     btn.type = 'button';
     btn.className = 'az-item';
     btn.setAttribute('aria-current', 'false');
-    if (![ 'mtyv', 'linares', 'cuchillo', 'santiago', 'buenosaires' ].includes(zone.id)) {
+    if (![ 'mtyv', 'linares', 'cuchillo', 'santiago', 'buenosaires', 'china' ].includes(zone.id)) {
       btn.disabled = true;
       btn.setAttribute('aria-disabled', 'true');
       btn.title = 'En desarrollo';
