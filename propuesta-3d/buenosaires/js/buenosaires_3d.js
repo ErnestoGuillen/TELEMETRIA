@@ -3,7 +3,7 @@
 (function() {
   const mvSkyPhoto = /[?&]cielo=foto/i.test(location.search);
   const $ = id => document.getElementById(id);
-  const BA_ROAD = [ [ -22.8, -1.5 ], [ -32.4, 0 ], [ -39.6, 3.4 ], [ -43.2, 0 ], [ -45.6, -4.1 ], [ -50.4, -4.1 ], [ -56.4, -.4 ], [ -61.2, 3 ], [ -64.2, 9 ], [ -66, 15 ], [ -72, 19.1 ], [ -81.6, 24.4 ], [ -90.6, 30.4 ] ];
+  const BA_ROAD = [ [ -29.5, -12 ], [ -31, -5 ], [ -32.4, 0 ], [ -39.6, 3.4 ], [ -43.2, 0 ], [ -45.6, -4.1 ], [ -50.4, -4.1 ], [ -56.4, -.4 ], [ -61.2, 3 ], [ -64.2, 9 ], [ -66, 15 ], [ -72, 19.1 ], [ -81.6, 24.4 ], [ -90.6, 30.4 ] ];
   const BA_WELLS = (() => {
     const list = [ [ 'BAPZ0001', 'Pozo 1' ], [ 'BAPZ0002', 'Pozo 2' ], [ 'BAPZ0004', 'Pozo 4' ], [ 'BAPZ0005', 'Pozo 5' ], [ 'BAPZ0006', 'Pozo 6' ], [ 'BAPZ0008', 'Pozo 8' ], [ 'BAPZ0010', 'Pozo 10' ], [ 'BAPZ0013', 'Pozo 13' ], [ 'BAPZ0014', 'Pozo 14' ], [ 'BAPZ0017', 'Pozo 17' ], [ 'BAPZ0018', 'Pozo 18' ], [ 'BAPZ0019', 'Pozo 19' ], [ 'BAPZ019B', 'Pozo 19 BIS' ], [ 'BAPZ0025', 'Pozo 25' ], [ 'BAPZ0028', 'Pozo 28' ], [ 'BAPZ0030', 'Pozo 30' ], [ 'BAPZ0033', 'Pozo 33' ], [ 'BAPZ0039', 'Pozo 39' ], [ 'BAPZ0040', 'Pozo Galería 4' ] ], L = [ 0 ];
     for (let i = 1; i < BA_ROAD.length; i++) L.push(L[i - 1] + Math.hypot(BA_ROAD[i][0] - BA_ROAD[i - 1][0], BA_ROAD[i][1] - BA_ROAD[i - 1][1]));
@@ -19,8 +19,8 @@
   })();
   const config = {
     title: 'Sistema Buenos Aires',
-    nodes: [ [ 'ba00', 'Cisterna Santa Catarina', 'facility', -27.6, -11, 'BATOTAL' ], ...BA_WELLS, [ 'mo', 'Morteros', 'facility', -33, 5.4, 'BACEM001' ], [ 'vp', 'Valle Poniente', 'meter', -6, 6, 'VALLEP01' ], [ 'dt', 'Daltile', 'meter', 10, 6, 'MMDT001' ], [ 'ph', 'Parshall Huasteca', 'meter', -10, -11, 'PAHU0001' ], [ 'lq', 'Las Quintas', 'meter', 6, -11, 'MAFLSC02' ], [ 'ho', 'Horcones', 'meter', 22, -11, 'MMH001' ] ],
-    lines: [ [ 'ba00', 'vp' ], [ 'vp', 'dt' ], [ 'ba00', 'ph' ], [ 'ph', 'lq' ], [ 'lq', 'ho' ] ]
+    nodes: [ [ 'ba00', 'Cisterna Santa Catarina', 'facility', -13.5, -15, 'BATOTAL' ], ...BA_WELLS, [ 'mo', 'Morteros', 'facility', 9, -6, 'BACEM001' ], [ 'vp', 'Valle Poniente', 'meter', 24, -6, 'VALLEP01' ], [ 'dt', 'Daltile', 'meter', 38, -6, 'MMDT001' ], [ 'ph', 'Parshall Huasteca', 'meter', 9, -24, 'PAHU0001' ], [ 'lq', 'Las Quintas', 'meter', 24, -24, 'MAFLSC02' ], [ 'ho', 'Horcones', 'meter', 38, -24, 'MMH001' ] ],
+    lines: [ [ 'ba00', 'mo' ], [ 'mo', 'vp' ], [ 'vp', 'dt' ], [ 'ba00', 'ph' ], [ 'ph', 'lq' ], [ 'lq', 'ho' ] ]
   };
   const mvNodeAngle = new Map, MV_PUMP_LANE = 6.2, MV_PIPE_LANE = 5.45;
   const nodeById = new Map(config.nodes.map((node, index) => [ node[0], {
@@ -1085,7 +1085,7 @@
       const a = BA_ROAD[i - 1], b = BA_ROAD[i], dx = b[0] - a[0], dz = b[1] - a[1], q = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz)));
       rd = Math.min(rd, Math.hypot(x - a[0] - dx * q, z - a[1] - dz * q));
     }
-    const road = Math.exp(-Math.pow(rd / 8.5, 2)) * smoothTerrain(26, 40, -x);
+    const road = 0;
     return Math.max(0, (34 * Math.pow(t, .95) + 9 * t * ridges + 4 * t * (folds - .5)) * (1 - .8 * road)) * lat;
   };
   const sillaRelief = (x, z) => {
@@ -1193,7 +1193,7 @@
     const dry = terrainNoise(x * .11 - 14, z * .1 + 21);
     const altitude = smoothTerrain(15, 38, height);
     const grass = [ .13 + .09 * moss + .042 * dry + .032 * altitude, .29 + .12 * moss - .025 * altitude + .018 * dry, .11 + .052 * moss + .004 * altitude ];
-    const baH = baSierra(x, z), rockBlend = smoothTerrain(1.6, 7, baH) * (1 - .85 * baValley(x, z));
+    const baH = baSierra(x, z), rockBlend = smoothTerrain(1.2, 6, baH);
     const strata = .8 + .26 * Math.abs(Math.sin(x * .16 + z * .11 + terrainNoise(x * .03, z * .03) * 2.2)) + .08 * terrainNoise(x * .23 + z * .075, z * .11 - 4);
     const rock = [ (.58 + .07 * dry) * strata, (.45 + .05 * moss) * strata, (.29 + .04 * dry) * strata ];
     const base = grass.map((value, i) => value * (1 - rockBlend) + rock[i] * rockBlend);
@@ -1352,11 +1352,12 @@
     const A0 = mvAnchor(a), B0 = mvAnchor(b);
     const aa = [ a[0], a[1], a[2], A0[0], A0[1] ], bb = [ b[0], b[1], b[2], B0[0], B0[1] ];
     const BA_PATHS = {
-      'ba00|vp': [ [ -22.8, -1.5 ], [ -22.8, 6 ], [ -6, 6 ] ],
-      'vp|dt': [ [ -6, 6 ], [ 10, 6 ] ],
-      'ba00|ph': [ [ -21.5, -11 ], [ -10, -11 ] ],
-      'ph|lq': [ [ -10, -11 ], [ 6, -11 ] ],
-      'lq|ho': [ [ 6, -11 ], [ 22, -11 ] ]
+      'ba00|mo': [ [ 1.9, -2.6 ], [ 4, -2.6 ], [ 4, -6 ], [ 9, -6 ] ],
+      'mo|vp': [ [ 9, -6 ], [ 24, -6 ] ],
+      'vp|dt': [ [ 24, -6 ], [ 38, -6 ] ],
+      'ba00|ph': [ [ 1.9, -2.6 ], [ 4, -2.6 ], [ 4, -24 ], [ 9, -24 ] ],
+      'ph|lq': [ [ 9, -24 ], [ 24, -24 ] ],
+      'lq|ho': [ [ 24, -24 ], [ 38, -24 ] ]
     };
     const path = (BA_PATHS[key] || [ [ aa[3], aa[4] ], [ bb[3], bb[4] ] ]).map(p => [ p[0], 1.03, p[1] ]);
     if (b[2] === 'pump' && (key === 'li00|li01' || key === 'li05|li04')) {
@@ -1409,7 +1410,7 @@
         road.push([ x, yOf(x, z), z ]);
       }
     }
-    const roadIn = [ [ -22.8, 1.03, -8.2 ], [ -22.8, 1.03, -1.5 ] ];
+    const roadIn = [ [ -24, 1.03, -12 ], [ -29.5, 1.03, -12 ] ];
     mvPipeJobs.push({
       parts: [ roadIn.concat(road.slice(1)) ],
       r: .26,
@@ -1756,20 +1757,95 @@
     });
   }
   function mvCisterna(x, z) {
-    box(x, .08, z, 13, .16, 10, '#8a948c');
-    cylinder(x - 2.4, 1.4, z, 3.2, 2.6, '#c9cec9', {
-      seg: 40
+    box(x, .06, z, 31, .12, 23, '#7d8781');
+    box(x, .14, z, 30, .05, 22, '#9aa39d');
+    box(x + 6, .17, z + 9.2, 18, .02, 2.6, '#4c5458');
+    for (const [tx, tz] of [ [ -9, -4.2 ], [ 1.8, -4.2 ] ]) {
+      const cx = x + tx, cz = z + tz, R = 4.9, Ht = 5.4;
+      cylinder(cx, .3, cz, R + .35, .5, '#b9bdb5', {
+        seg: 56
+      });
+      cylinder(cx, .5 + Ht / 2, cz, R, Ht, '#dfe2dc', {
+        seg: 56,
+        caps: false
+      });
+      for (const k of [ .2, .45, .7, .95 ]) ring(cx, .5 + Ht * k, cz, R + .02, k === .95 ? '#2f62a8' : '#c5cac4', k === .95 ? .12 : .05, {
+        seg: 8
+      });
+      mvFrustum(cx, cz, .5 + Ht, .5 + Ht + .9, R, R * .62, '#a9b4b8', 56);
+      mvFrustum(cx, cz, .5 + Ht + .9, .5 + Ht + 1.4, R * .62, R * .18, '#97a4a9', 56);
+      cylinder(cx, .5 + Ht + 1.55, cz, .6, .35, '#cfd8dc', {
+        seg: 16
+      });
+      const rail = [];
+      for (let k = 0; k <= 48; k++) {
+        const a = k / 48 * Math.PI * 2;
+        rail.push([ cx + Math.cos(a) * (R - .15), .5 + Ht + .55, cz + Math.sin(a) * (R - .15) ]);
+      }
+      tube(rail, .03, '#e8b53c', {
+        seg: 5
+      });
+      const lx = cx + R + .2;
+      bar([ lx, .3, cz - .25 ], [ lx, .5 + Ht + .6, cz - .25 ], .04, '#e8b53c', {
+        seg: 6
+      });
+      bar([ lx, .3, cz + .25 ], [ lx, .5 + Ht + .6, cz + .25 ], .04, '#e8b53c', {
+        seg: 6
+      });
+      for (let y = .6; y < .5 + Ht; y += .35) bar([ lx, y, cz - .25 ], [ lx, y, cz + .25 ], .025, '#e8b53c', {
+        seg: 5
+      });
+      box(cx, 1.6, cz + R + .05, 3.6, .55, .08, '#2f62a8', 0, .2);
+    }
+    const bx = x + 9.5, bz = z + 2.5;
+    box(bx, 2.4, bz, 9.5, 4.6, 6.2, '#d6d9d4');
+    box(bx, 4.85, bz, 9.9, .3, 6.6, '#5f6e75');
+    box(bx, 2.5, bz + 3.12, 9.6, .25, .04, '#2f62a8');
+    for (let r = 0; r < 2; r++) for (let k = 0; k < 6; k++) box(bx - 3.9 + k * 1.55, 1.3 + r * 2.2, bz + 3.13, 1, .9, .04, '#6c97b4', 0, .18);
+    box(bx + 3.6, 1.1, bz + 3.15, 1.4, 2.2, .05, '#46606e');
+    box(bx - 2, 5.3, bz - 1, 1.6, .6, 1.2, '#a3aeb3');
+    cylinder(bx + 2.5, 6, bz - 1.5, .06, 2, '#9aa5aa', {
+      seg: 6
     });
-    cylinder(x - 2.4, 2.78, z, 3.3, .16, '#7e8b91', {
-      seg: 40
+    box(x - 4, 1.7, z + 6, 12, 3.2, 5, '#c9cec9');
+    box(x - 4, 3.42, z + 6, 12.4, .25, 5.4, '#2f62a8');
+    for (let k = 0; k < 5; k++) box(x - 9 + k * 2.5, 2.4, z + 8.52, 1.4, .8, .04, '#6c97b4', 0, .15);
+    pumpUnit(x - 4, z + 11.2, 5);
+    for (const tx of [ -9, 1.8 ]) {
+      tube([ [ x + tx, .7, z + .7 ], [ x + tx, .7, z + 3 ], [ x - 4 + (tx < 0 ? -2.5 : 2.5), .7, z + 3 ] ], .32, '#2f7fbf', {
+        seg: 14,
+        kind: 1
+      });
+    }
+    tube([ [ x - 11, .7, z + 12.4 ], [ x + 15.4, .7, z + 12.4 ] ], .4, '#2f7fbf', {
+      seg: 16,
+      kind: 1
     });
-    cylinder(x - 2.4, 2.95, z, 1, .25, '#a8b6bc', {
-      seg: 20
-    });
-    box(x + 3.6, 1.5, z - 1.8, 3.6, 2.8, 3.4, '#c3c9c6');
-    box(x + 3.6, 3, z - 1.8, 3.9, .2, 3.7, '#2f62a8');
-    box(x + 3.6, 1.3, z - .08, .9, 1.8, .05, '#46606e');
-    for (let k = 0; k < 2; k++) box(x + 2.8 + k * 1.6, 2.1, z - .08, .8, .5, .05, '#6c97b4', 0, .15);
+    for (let k = 0; k < 6; k++) {
+      const vx = x - 9 + k * 4.6;
+      cylinder(vx, 1.15, z + 12.4, .22, .5, '#c0392b', {
+        seg: 10
+      });
+      bar([ vx, 1.4, z + 12.4 ], [ vx, 1.75, z + 12.4 ], .04, '#d8dde0', {
+        seg: 6
+      });
+    }
+    const F = [ [ -15.3, -11.3 ], [ 15.3, -11.3 ], [ 15.3, 11.3 ], [ -15.3, 11.3 ], [ -15.3, -11.3 ] ];
+    for (let k = 1; k < F.length; k++) {
+      const a = F[k - 1], b = F[k], L = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.round(L / 2.4);
+      for (let j = 0; j <= n; j++) cylinder(x + a[0] + (b[0] - a[0]) * j / n, .9, z + a[1] + (b[1] - a[1]) * j / n, .05, 1.6, '#9aa5aa', {
+        seg: 6
+      });
+      for (const hy of [ .55, 1.05, 1.55 ]) bar([ x + a[0], hy, z + a[1] ], [ x + b[0], hy, z + b[1] ], .014, '#b9c3c7', {
+        seg: 4
+      });
+    }
+    for (const [lx, lz] of [ [ -14, -10 ], [ 14, -10 ], [ 14, 10 ], [ -14, 10 ] ]) {
+      cylinder(x + lx, 3, z + lz, .08, 6, '#7f8b90', {
+        seg: 8
+      });
+      box(x + lx * .94, 5.95, z + lz * .94, .6, .12, .35, '#4b5559');
+    }
   }
   function flowMeterScene(x, z) {
     pad(x, z, 2.9);
@@ -2458,6 +2534,7 @@
       if (Math.hypot(x, z) > 93) return true;
       if (ground(x, z) > 1.2) return true;
       if (lakeDistance(x, z) < 3.5) return true;
+      if (Math.abs(x + 13.5) < 18 + margin && Math.abs(z + 15) < 14 + margin) return true;
       if (distToPoly(x, z, route) < 6.5 + margin) return true;
       if (distToPoly(x, z, polePts) < 2.2 + margin) return true;
       if (casetas.some(n => n[2] === 'pump' ? (() => {
@@ -3353,7 +3430,7 @@
     const points = mvCameraBounds();
     return (Math.min(...points.map(p => p[axis])) + Math.max(...points.map(p => p[axis]))) / 2;
   });
-  const MV_AROUND_PATH = [ [ 22, -11 ], [ 6, -11 ], [ -10, -11 ], [ -27.6, -11 ], [ -33, 2 ], [ -45, -2 ], [ -60, 4 ], [ -68, 17 ], [ -82, 25 ], [ -68, 17 ], [ -50, -3 ], [ -30, 0 ], [ -6, 6 ], [ 10, 6 ] ];
+  const MV_AROUND_PATH = [ [ 38, -15 ], [ 20, -15 ], [ -13.5, -15 ], [ -31, -5 ], [ -45, -2 ], [ -60, 4 ], [ -68, 17 ], [ -82, 25 ], [ -68, 17 ], [ -50, -3 ], [ -31, -5 ], [ -13.5, -15 ], [ 20, -15 ] ];
   const MV_AROUND_LEN = (() => {
     const L = [ 0 ];
     for (let i = 1; i < MV_AROUND_PATH.length; i++) L.push(L[i - 1] + Math.hypot(MV_AROUND_PATH[i][0] - MV_AROUND_PATH[i - 1][0], MV_AROUND_PATH[i][1] - MV_AROUND_PATH[i - 1][1]));
@@ -4743,6 +4820,11 @@
         H = 1.3;
         y = 3.6 + H / 2;
         post = [ 2.6, 3.65 ];
+        if (n[0] === 'ba00') {
+          H = 2;
+          y = 9.6;
+          post = null;
+        }
       }
       mvPl.tiles.push({
         id: n[0],
