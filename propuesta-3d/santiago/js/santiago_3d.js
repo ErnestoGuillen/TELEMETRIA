@@ -4213,7 +4213,7 @@
       const d = mvTrendDirection(trend);
       if (d) V2.classList.add(d);
     } else {
-      L1.textContent = kind === 'pump' ? 'Flujo de salida' : kind === 'facility' ? 'Conducción 30"' : 'Flujo';
+      L1.textContent = kind === 'pump' ? 'Flujo de salida' : kind === 'facility' ? 'Flujo' : 'Flujo';
       V1.textContent = s && num(s.flow) ? fmt(s.flow, 0) + ' LPS' : 'N/D';
       L2.textContent = 'Comunicación';
       V2.textContent = stateTxt;
