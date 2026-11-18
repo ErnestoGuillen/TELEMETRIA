@@ -20,7 +20,7 @@
       li02: [ 22.8, 3.6 ],
       li02a: [ 6.6, 2.6 ],
       li03: [ -9.6, 2 ],
-      li04a: [ -18.4, 6.2 ],
+      li04a: [ -24.6, 5.6 ],
       li05: [ -21.6, -6.8 ],
       li04: [ -24, -21.5 ]
     };
@@ -897,9 +897,9 @@
   }
   function mvSmallPresa(x, z, name) {
     const id = Math.max(0, tankSpecs.findIndex(s => s.name === name));
-    const RX = 5.8, RZ = 3.9, H = 1.25, mw = H * .9, top = .52 + H + .12;
+    const RX = 4.3, RZ = 3, H = 1.25, mw = H * .9, top = .52 + H + .12;
     mvScaleBuild(x, z, RX, RZ, () => {
-      mvFrustum(x, z, -.08, top - .25, 1.55, 1.12, '#7f8d5f', 64);
+      mvFrustum(x, z, -.08, top - .25, 1.34, 1.12, '#7f8d5f', 64);
       mvFrustum(x, z, top - .25, top, 1.12, 1.065, '#bdb8aa', 64);
       mvAnnulus(x, z, top, .99, 1.065, '#dcd8cc', 64);
       cylinder(x, (top + .5) / 2, z, .99, top - .5, '#8f9a94', {
@@ -3487,6 +3487,8 @@
     mvSyncNav();
   };
   $('around').onclick = () => state.auto === 'around' ? mvStopAll() : mvStartAround();
+  $('around').hidden = true;
+  $('around').style.setProperty('display', 'none', 'important');
   $('free').onclick = () => {
     if (!mvFree) mvSetFree(true); else if (mvFreeMode === 'move') {
       mvFreeMode = 'rotate';

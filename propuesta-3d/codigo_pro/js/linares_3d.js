@@ -24,7 +24,7 @@
   /* MV PRO: acomodo como el mapa SCADA: presa -> PB1, línea a PB2/PB2A/PB3, baja a Garrapatas, diagonal al rompedor y PB4 */
   const mvNodeAngle = new Map(), MV_PUMP_LANE = 6.2, MV_PIPE_LANE = 5.45;
   (() => {
-    const layout = { li00: [57.8, 14.0], li01: [39.0, 5.2], li02: [22.8, 3.6], li02a: [6.6, 2.6], li03: [-9.6, 2.0], li04a: [-18.4, 6.2], li05: [-21.6, -6.8], li04: [-24.0, -21.5] };
+    const layout = { li00: [57.8, 14.0], li01: [39.0, 5.2], li02: [22.8, 3.6], li02a: [6.6, 2.6], li03: [-9.6, 2.0], li04a: [-24.6, 5.6], li05: [-21.6, -6.8], li04: [-24.0, -21.5] };
     for (const n of config.nodes) { const q = layout[n[0]]; if (q) { n[3] = q[0]; n[4] = q[1]; } }
     const order = ['li00', 'li01', 'li02', 'li02a', 'li03', 'li04a', 'li05', 'li04'].map(id => config.nodes.find(n => n[0] === id)).filter(Boolean);
     order.forEach((n, i) => { const a = order[Math.max(0, i - 1)], b = order[Math.min(order.length - 1, i + 1)]; const tx = b[3] - a[3], tz = b[4] - a[4], l = Math.hypot(tx, tz) || 1; mvNodeAngle.set(n[0], n[0] === 'li00' ? 0 : Math.atan2(-tz / l, -tx / l)); });
@@ -1258,9 +1258,9 @@ void main(){
   }
   function mvSmallPresa(x, z, name) {
     const id = Math.max(0, tankSpecs.findIndex(s => s.name === name));
-    const RX = 5.8, RZ = 3.9, H = 1.25, mw = H * .9, top = .52 + H + .12;
+    const RX = 4.3, RZ = 3.0, H = 1.25, mw = H * .9, top = .52 + H + .12;
     mvScaleBuild(x, z, RX, RZ, () => {
-      mvFrustum(x, z, -.08, top - .25, 1.55, 1.12, '#7f8d5f', 64);
+      mvFrustum(x, z, -.08, top - .25, 1.34, 1.12, '#7f8d5f', 64);
       mvFrustum(x, z, top - .25, top, 1.12, 1.065, '#bdb8aa', 64);
       mvAnnulus(x, z, top, .99, 1.065, '#dcd8cc', 64);
       cylinder(x, (top + .5) / 2, z, .99, top - .5, '#8f9a94', { seg: 64, caps: false });
@@ -2883,6 +2883,7 @@ void main(){
   $('spin').onclick = () => state.auto === 'spin' ? mvStopAll() : mvStartTour();
   $('spinSpeed').onclick = () => { mvTour.rate = mvTour.rate === 1 ? 1.8 : 1; mvSyncNav(); };
   $('around').onclick = () => state.auto === 'around' ? mvStopAll() : mvStartAround();
+  $('around').hidden = true; $('around').style.setProperty('display', 'none', 'important');
   $('free').onclick = () => { if (!mvFree) mvSetFree(true); else if (mvFreeMode === 'move') { mvFreeMode = 'rotate'; mvSyncNav(); } else mvSetFree(false); };
   { const r = $('reset').onclick, tp = $('top').onclick; $('reset').onclick = () => { mvSetFree(false); mvZoomGoal = null; r(); }; $('top').onclick = () => { mvSetFree(false); mvZoomGoal = null; tp(); }; }
   { const sp = $('presentationToggle').onclick; $('presentationToggle').onclick = () => { mvSetFree(false); sp(); }; }
