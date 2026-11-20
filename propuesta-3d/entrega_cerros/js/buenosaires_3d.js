@@ -611,16 +611,26 @@
   function refreshPipeLevels(records) {
     pipeWater.update(name => {
       const node = config.nodes.find(n => n[1] === name);
-      if (!node || !node[5]) return null;
-      if (node[2] !== 'tank' && node[1] !== 'Cisterna Santa Catarina') return null;
+      if (!node || !node[5]) return undefined;
       const row = records && records[node[5]];
-      return row && Tuberias3D.reference(row.level, row.status, null, tankDisplayScale(row), row.updated);
+      if (!row) return null;
+      if (node[2] === 'tank') return Tuberias3D.reference(row.level, row.status, null, tankDisplayScale(row), row.updated);
+      if (row.status !== 'operando' && row.status !== 'actual') return null;
+      if (node[2] === 'reservoir') {
+        const pct = Array.isArray(row.extra) ? row.extra.find(q => q && q.unit === '%') : null, lv = Number(row.level);
+        return (row.level !== null && Number.isFinite(lv) && lv > 0) || (pct && Number(pct.value) > 0) ? { fill: 1 } : { fill: 0 };
+      }
+      const flow = Number(row.flow);
+      if (row.flow !== null && row.flow !== undefined && Number.isFinite(flow)) return { fill: flow > 0 ? 1 : 0 };
+      const tower = typeof MV_TALL !== 'undefined' ? MV_TALL.find(t => t[0] === node[0]) : null;
+      if (tower) return Tuberias3D.reference(row.level, row.status, null, tower[4], row.updated);
+      return undefined;
     });
   }
   function pipe(path, r, meta, label) {
     const pts = roundPath(path,.85);
     const names = [...new Set([meta.source, meta.target].filter(Boolean))];
-    pipeWater.add(label, pts, r + .08, names);
+    pipeWater.add(label, pts, r + .08, names, { source: meta.source });
     tube(pts, r + .105, '#bcc5c9', {seg:20, g:1, alpha:.30, em:.03, kind:0});
   }
   function inletAtTank(x, z, name, r) {

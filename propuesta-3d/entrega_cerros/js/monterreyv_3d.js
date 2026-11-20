@@ -657,6 +657,10 @@
     pipeWater.update(name => {
       const row = records && records[name];
       return row && Tuberias3D.reference(row.nivel_m, row.estado, Number(row.capacidad_cm) / 100, 8, row.hora);
+    }, key => {
+      const f = flowReadings.find(q => q.backendKey === key);
+      if (!f || f.connection === 'sin_datos' || f.connection === 'sin_comunicacion') return null;
+      return f.lps;
     });
   }
   function pipe(path, r, meta, index) {
@@ -666,7 +670,7 @@
     const to = meta.target || attachedTank(joined[joined.length-1]);
     const names = [...new Set([from,to].filter(Boolean))];
     const label = 'Tramo ' + (index+1) + (names.length ? ' · ' + names.join(' — ') : '');
-    pipeWater.add(label, pts, r + .08, names);
+    pipeWater.add(label, pts, r + .08, names, { source: from });
     tube(pts, r + .105, '#bcc5c9', {seg:20, g:1, alpha:.30, em:.03, kind:0});
   }
   function inletAtTank(x, z, name, r) {
@@ -1539,6 +1543,7 @@
     A = saved;
   }
   rebuildPipeBuffers();
+  pipeWater.attachFlows(flowReadings.map(f => ({ key: f.backendKey, points: [ [ f.x, f.z ], [ f.x + (f.dx || 0) / 25, f.z + (f.dy || 0) / 24.5 ] ] })));
   refreshPipeLevels(null);
   const buffers = [];
   for (let group = 0; group < 3; group++) {
